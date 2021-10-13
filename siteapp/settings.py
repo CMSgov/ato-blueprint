@@ -214,7 +214,7 @@ if (GOVREADY_URL.scheme == "https") or (GOVREADY_URL.scheme == "" and "https" in
 if "https" in environment:
 	print("WARNING: Use of 'https' environment paramenter deprecated. Please use 'govready-url' environment parameter in future.")
 
-ACCOUNT_ADAPTER = primary_app + '.good_settings_helpers.AllauthAccountAdapter'
+ACCOUNT_ADAPTER = primary_app + '.good_settings_helpers.NoNewUsersAccountAdapter'
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_UNIQUE_EMAIL = False # otherwise unconfirmed addresses may block real users
