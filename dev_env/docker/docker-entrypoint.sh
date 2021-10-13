@@ -19,7 +19,7 @@ export -p > /usr/src/app/dev_env/docker/remote_interpreter/env_var.sh
 ln -sf /usr/src/app/dev_env/docker/environment.json /usr/src/app/local/environment.json
 
 echo "[ + ] Running checks"
-pip3 install -r requirements.txt --ignore-installed
+pip3 install -r requirements.txt --ignore-installed --no-deps
 
 echo "[ + ] Running checks"
 ./manage.py check --deploy
