@@ -3630,8 +3630,7 @@ def update_control_status(request, system_id):
             control_msg = "The id for this control is no longer valid in the database."
             return JsonResponse({"message": control_msg}, status=422)
 
-        allowed = ["2","3","4","5"]
-        if status not in allowed:
+        if status not in set(str(code) for (code, label) in ElementControl.Statuses.choices):
             control_msg = "Status choice not allowed."
             return JsonResponse({"message": control_msg}, status=422)
 
