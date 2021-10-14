@@ -16,12 +16,12 @@ Welcome to Compliance Automation
     </div>
     <div class="col-md-5" style="margin: 40px 0px 30px 0px;">
       <!-- Nav tabs -->
-      <ul class="nav nav-tabs" role="tablist">
-        {% if not hide_registration %}
-         <li id="tab-register" role="presentation" {% if request.POST.action|escapejs != 'login' %}class="active"{% endif %}><a href="#register" aria-controls="register" role="tab" data-toggle="tab">Register</a></li>
-         {% endif %}
-         <li id="tab-signin" role="presentation" {% if request.POST.action|escapejs == 'login' %}class="active"{% endif %}><a href="#signin" aria-controls="signin" role="tab" data-toggle="tab">Sign in</a></li>
-      </ul>
+      {% if not hide_registration %}
+        <ul class="nav nav-tabs" role="tablist">
+          <li id="tab-register" role="presentation" {% if request.POST.action|escapejs != 'login' %}class="active"{% endif %}><a href="#register" aria-controls="register" role="tab" data-toggle="tab">Register</a></li>
+          <li id="tab-signin" role="presentation" {% if request.POST.action|escapejs == 'login' %}class="active"{% endif %}><a href="#signin" aria-controls="signin" role="tab" data-toggle="tab">Sign in</a></li>
+        </ul>
+      {% endif %}
 
       <!-- Tab panes -->
       <div class="tab-content">
