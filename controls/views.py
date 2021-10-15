@@ -2092,7 +2092,8 @@ def save_smt(request):
                 statement.body = form_values['body']
                 statement.remarks = form_values['remarks']
                 statement.status = form_values['status']
-                statement.inheritance_id = form_values["inheritance_name"]
+                if "inheritance_name" in form_values:
+                    statement.inheritance_id = form_values["inheritance_name"]
             else:
                 new_statement = True
         else:
