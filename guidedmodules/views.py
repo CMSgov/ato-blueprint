@@ -487,7 +487,7 @@ def save_answer(request, task, answered, context, __):
                         system.root_element.assign_baseline_controls(request.user, catalog, baseline)
                         catalog_display = catalog.replace("_", " ")
                         messages.add_message(request, messages.INFO,
-                                                     f'I\'ve set the control baseline to "{catalog_display} {baseline}."')
+                                                     f'We\'ve set the control baseline to "{catalog_display} {baseline}."')
                         # Log setting baseline
                         logger.info(
                             event=f"system assign_baseline {baseline}",
@@ -499,7 +499,7 @@ def save_answer(request, task, answered, context, __):
                             security_sensitivity_level, smt = system.set_security_sensitivity_level(baseline)
                             if security_sensitivity_level == baseline.lower():
                                 messages.add_message(request, messages.INFO,
-                                                              f'I\'ve set the system FISMA impact level to "{security_sensitivity_level}.')
+                                                              f'We\'ve set the system FISMA impact level to "{security_sensitivity_level}.')
                                 # Log setting security_sensitivity_level
                                 logger.info(
                                     event=f"system assign_security_sensitivity_level {security_sensitivity_level}",
@@ -525,7 +525,7 @@ def save_answer(request, task, answered, context, __):
                         project.root_task.on_answer_changed()
 
                         messages.add_message(request, messages.INFO,
-                                                     f'I\'ve updated the system and project name.')
+                                                     f'We\'ve updated the system and project name.')
 
                 # Process element actions
                 # -----------------------------------
@@ -584,12 +584,9 @@ def save_answer(request, task, answered, context, __):
                             smts_added = Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name)
                             smts_added_count = len(smts_added)
                             # Prepare message
-                            if smts_added_count > 0:
-                                messages.add_message(request, messages.INFO,
-                                                 f'I\'ve added "{producer_element.name}" and its {smts_added_count} control implementation statements to the system. You\'re welcome. :-)')
-                            else:
+                            if not smts_added_count:
                                 messages.add_message(request, messages.WARNING,
-                                                 f'Oops. I tried adding "{producer_element.name}" to the system, but no control implementation statements were found.')
+                                                 f'I tried adding "{producer_element.name}" to the system, but no control implementation statements were found.')
 
                     # Delete elements matching role from the selected components of a system
                     if a_verb == "del_role" and skipped_reason is None:
@@ -599,7 +596,7 @@ def save_answer(request, task, answered, context, __):
                             if smts_assigned_count > 0:
                                 Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).delete()
                                 messages.add_message(request, messages.INFO,
-                                                     f'I\'ve deleted "{producer_element.name}" and its {smts_assigned_count} control implementation statements from the system.')
+                                                     f'We\'ve deleted "{producer_element.name}" and its {smts_assigned_count} control implementation statements from the system.')
 
                 # Process project actions
                 # -----------------------------------
@@ -1030,7 +1027,7 @@ def show_question(request, task, answered, context, q):
     context.update({
          "back_url": back_url,
     })
- 
+
     return render(request, "question.html", context)
 
 @task_view
@@ -2195,5 +2192,5 @@ def export_ssp_csv(form_data, system):
     writer.writerows(zip(*data))
 
     return response
-  
-  
+
+
