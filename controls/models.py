@@ -750,7 +750,7 @@ class System(auto_prefetch.Model):
         # Fetch all selected controls
         elm = self.root_element
 
-        counts = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name, status__in=status_list).values('status').order_by('status').annotate(count=Count('status'))
+        counts = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name, status__in=status_list).filter(consumer_element_id=elm.id).values('status').order_by('status').annotate(count=Count('status'))
         status_stats.update({r['status']: r['count'] for r in counts})
 
         # TODO add index on statement status
