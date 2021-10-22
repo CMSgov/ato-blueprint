@@ -2109,6 +2109,7 @@ def save_smt(request):
                 statement_type=new_statement_type_enum.name,
                 status=form_values['status'],
                 remarks=form_values['remarks'],
+                consumer_element_id=form_values['consumer_element_id'],
             )
             new_statement = True
 
