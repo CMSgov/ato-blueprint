@@ -5,7 +5,7 @@ import yaml
 import re
 from pathlib import Path
 import sys
-
+from typing import List
 import auto_prefetch
 from django.db import models
 from django.utils.functional import cached_property
@@ -14,6 +14,7 @@ from controls.utilities import *
 
 CATALOG_PATH = os.path.join(os.path.dirname(__file__), 'data', 'catalogs')
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
+
 
 class CatalogData(auto_prefetch.Model):
     catalog_key = models.CharField(max_length=100, help_text="Unique key for catalog", unique=True, blank=False, null=False)
@@ -29,45 +30,6 @@ class CatalogData(auto_prefetch.Model):
         # For debugging.
         return "'%s id=%d'" % (self.catalog_key, self.id)
 
-class Catalogs(object):
-    """Represent list of catalogs"""
-
-    # well known catalog identifiers
-    NIST_SP_800_53_rev4 = 'NIST_SP-800-53_rev4'
-    NIST_SP_800_53_rev5 = 'NIST_SP-800-53_rev5'
-    NIST_SP_800_171_rev1 = 'NIST_SP-800-171_rev1'
-    CMMC_ver1 = 'CMMC_ver1'
-
-    def __init__(self):
-        self.catalog_keys = self._list_catalog_keys()
-        self.index = self._build_index()
-
-    def _list_catalog_keys(self):
-        return list(CatalogData.objects.order_by('catalog_key').values_list('catalog_key', flat=True).distinct())
-
-    def _load_catalog_json(self, catalog_key):
-        catalog = Catalog(catalog_key)
-        return catalog._load_catalog_json()
-
-    def _build_index(self):
-        """Build a small catalog_index from metadata"""
-        index = []
-        for catalog_key in self.catalog_keys:
-            catalog = self._load_catalog_json(catalog_key)
-            index.append(
-                {'id': catalog['id'], 'catalog_key': catalog_key, 'catalog_key_display': catalog_key.replace("_", " "),
-                 'metadata': catalog['metadata']})
-        return index
-
-    def list(self):
-        catalog_titles = [item['metadata']['title'] for item in self.index]
-        return catalog_titles
-
-    def list_catalogs(self):
-        """
-        List catalog objects
-        """
-        return [Catalog.GetInstance(catalog_key=key) for key in self.catalog_keys]
 
 class Catalog(object):
     """Represent a catalog"""
@@ -101,8 +63,6 @@ class Catalog(object):
     def __init__(self, catalog_key='NIST_SP-800-53_rev4', parameter_values=dict()):
         self.catalog_key = catalog_key
         self.catalog_key_display = catalog_key.replace("_", " ")
-        self.catalog_path = CATALOG_PATH
-        self.catalog_file = catalog_key + "_catalog.json"
         try:
             self.oscal = self._load_catalog_json()
             self.status = "ok"
@@ -379,7 +339,6 @@ class Catalog(object):
                 "description": description,
                 "description_print": description_print,
                 "guidance": None,
-                "catalog_file": None,
                 "catalog_key": None,
                 "catalog_id": None,
                 "sort_id": None,
@@ -401,8 +360,7 @@ class Catalog(object):
                 "description": description,
                 "description_print": description_print,
                 "guidance": self.get_control_prose_as_markdown(control, part_types={"guidance"}),
-                "catalog_file": self.catalog_file,
-                "catalog_key": self.catalog_file.split('_catalog.json')[0],
+                "catalog_key": self.catalog_key,
                 "catalog_id": self.catalog_id,
                 "sort_id": self.get_control_property_by_name(control, "sort-id"),
                 "label": self.get_control_property_by_name(control, "label"),
@@ -446,3 +404,38 @@ class Catalog(object):
     def get_parameter_ids_for_control(self, control_id):
         return self.parameters_by_control.get(control_id, [])
 
+    @property
+    def catalog_title(self):
+        metadata = self.oscal.get('metadata', {})
+        return metadata.get('title', '')
+
+
+class Catalogs:
+    """
+    Service class for enumerating Catalogs
+    """
+
+    # well known catalog identifiers
+    NIST_SP_800_53_rev4 = 'NIST_SP-800-53_rev4'
+    NIST_SP_800_53_rev5 = 'NIST_SP-800-53_rev5'
+    NIST_SP_800_171_rev1 = 'NIST_SP-800-171_rev1'
+    CMMC_ver1 = 'CMMC_ver1'
+
+    @classmethod
+    def keys(cls):
+        """Returns a list of all known Catalog keys"""
+        results = CatalogData.objects \
+            .order_by('catalog_key') \
+            .values_list('catalog_key', flat=True) \
+            .distinct()
+        return list(results)
+
+    @classmethod
+    def get(cls, catalog_key):
+        """Return a catalog by key"""
+        return Catalog.GetInstance(catalog_key)
+
+    @classmethod
+    def catalogs(cls) -> List[Catalog]:
+        """Returns a list of all Catalogs"""
+        return [cls.get(key) for key in cls.keys()]
