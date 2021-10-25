@@ -1358,25 +1358,16 @@ def component_library_component(request, element_id):
             "form_source": "component_library",
             "inheritances": inheritances,
         }
-        return render(request, "components/element_detail_tabs.html", context)
+        return render(request, "components/element_detail_tabs.html", context)   
 
-    
-    if len(impl_smts) == 0:
-        # TODO: not reached given previous if statement
-        # New component, no control statements assigned yet
-        catalog_key = "catalog_key_missing"
-        catalog_controls = None
-        oscal_string = None
-        opencontrol_string = None
-    elif len(impl_smts) > 0:
-        # TODO: We may have multiple catalogs in this case in the future
-        # Retrieve used catalog_key
-        catalog_key = impl_smts[0].sid_class
-        # Retrieve control ids
-        catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
-        # Build OSCAL and OpenControl
-        oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
-        opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
+    # TODO: We may have multiple catalogs in this case in the future
+    # Retrieve used catalog_key
+    catalog_key = impl_smts[0].sid_class
+    # Retrieve control ids
+    catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
+    # Build OSCAL and OpenControl
+    oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
+    opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
 
     # Use natsort here to handle the sid that has letters and numbers
     # (e.g. to put AC-14 after AC-2 whereas before it was putting AC-14 before AC-2)
