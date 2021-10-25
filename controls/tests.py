@@ -137,11 +137,9 @@ class ControlUITests(SeleniumTest):
 
     def test_catalog_list(self):
         """
-        Check the catalog listing method has the 3 default catalogs
+        Check the catalog listing method has the 4 default catalogs
         """
-
-        # os.makedirs(EXTERNAL_CATALOG_PATH, exist_ok=True)
-        catalog_list = Catalogs().list_catalogs()
+        catalog_list = Catalogs.catalogs()
         self.assertEqual(len(catalog_list), 4)
 
 #####################################################################
@@ -1176,3 +1174,41 @@ class ImportExportOSCALTests(OrganizationSiteFunctionalTests):
         self.assertEqual(['AC-2(4)', 'AC-2(5)', 'AC-2(11)', 'AC-2(13)', 'AC-3', 'AC-4', 'SI-3(2)', 'SI-4(2)', 'SI-4(5)'], regular_sid_controls)
 
 
+class CatalogTests(TestCase):
+
+    def test_catalog_get_instance(self):
+        catalog = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4)
+        self.assertIsInstance(catalog, Catalog)
+        self.assertEqual(catalog.catalog_key, Catalogs.NIST_SP_800_53_rev4)
+
+    def test_catalog_get_instance_unknown(self):
+        catalog = Catalog.GetInstance('XYZZY')
+        # TODO: this covers the current behavior, which is problematic me thinks
+        self.assertEqual(catalog.status, "error")
+
+    def test_catalog_title(self):
+        catalog = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4)
+        expected_title = \
+            "NIST Special Publication 800-53 Revision 4: Security and" \
+                " Privacy Controls for Federal Information Systems" \
+                " and Organizations"
+        self.assertEqual(catalog.catalog_title, expected_title)
+      
+
+class CatalogsTest(TestCase):
+
+    def test_catalogs_keys(self):
+        keys = Catalogs.keys()
+        # 4 "built in" catalogs
+        self.assertEqual(len(keys), 4)
+
+    def test_catalogs_catalogs(self):
+        catalogs = Catalogs.catalogs()
+        self.assertEqual(len(catalogs), 4)
+        for catalog in catalogs:
+            self.assertIsInstance(catalog, Catalog)
+
+    def test_catalogs_get(self):
+        catalog = Catalogs.get(Catalogs.NIST_SP_800_53_rev4)
+        self.assertIsInstance(catalog, Catalog)
+        self.assertEqual(catalog.catalog_key, Catalogs.NIST_SP_800_53_rev4)

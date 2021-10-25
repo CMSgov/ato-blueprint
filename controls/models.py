@@ -16,7 +16,7 @@ from controls.enums.components import ComponentTypeEnum, ComponentStateEnum
 from siteapp.model_mixins.tags import TagModelMixin
 from controls.enums.statements import StatementTypeEnum
 from controls.enums.remotes import RemoteTypeEnum
-from controls.oscal import Catalogs, Catalog, CatalogData
+from controls.oscal import Catalog, CatalogData
 from controls.utilities import *
 import uuid
 import tools.diff_match_patch.python3 as dmp_module

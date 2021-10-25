@@ -38,7 +38,7 @@ from guidedmodules.tests import TestCaseWithFixtureData
 from siteapp.models import (Organization, Portfolio, Project,
                             ProjectMembership, User)
 from controls.models import Statement, Element, System
-from controls.oscal import CatalogData, Catalogs, Catalog
+from controls.oscal import CatalogData
 from siteapp.settings import HEADLESS, DOS, DOCKER, SELENIUM_BROWSER
 from siteapp.views import project_edit
 from tools.utils.linux_to_dos import convert_w

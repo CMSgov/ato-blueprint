@@ -20,6 +20,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
+from django.db.models import Count
 from django.db.models.functions import Lower
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, \
     HttpResponseNotAllowed
@@ -29,7 +30,7 @@ from django.utils.text import slugify
 from django.views import View
 from django.views.generic import ListView
 from simple_history.utils import update_change_reason
-
+from controls.oscal import Catalogs
 from siteapp.models import Project, Organization, Tag
 from siteapp.settings import GOVREADY_URL
 from system_settings.models import SystemSettings
@@ -67,7 +68,7 @@ def catalogs(request):
     """Index page for catalogs"""
 
     context = {
-        "catalogs": Catalogs(),
+        "catalogs": Catalogs.catalogs()
     }
     return render(request, "controls/index-catalogs.html", context)
 
@@ -144,7 +145,7 @@ def control(request, catalog_key, cl_id):
     }
     return render(request, "controls/detail.html", context)
 
-@functools.lru_cache()
+
 def controls_selected(request, system_id):
     """Display System's selected controls view"""
 
@@ -154,9 +155,9 @@ def controls_selected(request, system_id):
     if request.user.has_perm('view_system', system):
         # Retrieve primary system Project
         # Temporarily assume only one project and get first project
+
         project = system.projects.all()[0]
         controls = system.root_element.controls.all()
-        impl_smts = system.root_element.statements_consumed.all()
 
         # sort controls
         controls = list(controls)
@@ -171,19 +172,32 @@ def controls_selected(request, system_id):
         for legacy_smt in impl_smts_legacy:
             impl_smts_legacy_dict[legacy_smt.sid] = legacy_smt
 
-        # Get count of componentes (e.g., producer_elements) associated with a control
-        impl_smts_cmpts_count = {}
-        ikeys = system.smts_control_implementation_as_dict.keys()
-        for c in controls:
-            impl_smts_cmpts_count[c.oscal_ctl_id] = 0
-            if c.oscal_ctl_id in ikeys:
-                impl_smts_cmpts_count[c.oscal_ctl_id] = len(set([s.producer_element for s in system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts']]))
-
+        # collect component counts by statement id
+        component_counts = system.root_element \
+            .statements_consumed \
+            .filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name) \
+            .values('sid') \
+            .annotate(component_count=Count('producer_element_id')) \
+            .order_by('sid')
+        impl_smts_cmpts_count = dict((c_count['sid'], c_count['component_count'])
+                                      for c_count in component_counts)
+        
         # Get list of catalog objects
-        catalog_list = Catalogs().list_catalogs()
-        # Remove the 3 nist catalogs that are hard-coded already in template
-        external_catalogs = [catalog for catalog in catalog_list if catalog.catalog_key not in ['NIST_SP-800-53_rev4', 'NIST_SP-800-53_rev5', 'NIST_SP-800-171_rev1', 'CMMC_ver1' ]]
 
+        # TODO: we should fix the template so that we don't require
+        # this magic.
+        # Template has hardcoded links for some catalogs, so we remove
+        # them from the list.
+
+        internal_catalog_keys = [
+            Catalogs.CMMC_ver1, Catalogs.NIST_SP_800_171_rev1, 
+            Catalogs.NIST_SP_800_53_rev4, Catalogs.NIST_SP_800_53_rev5
+        ]
+        external_catalogs = [
+            catalog for catalog in Catalogs.catalogs()
+            if catalog.catalog_key not in internal_catalog_keys
+        ]
+        
         # Return the controls
         context = {
             "system": system,
@@ -194,7 +208,9 @@ def controls_selected(request, system_id):
             "impl_smts_legacy_dict": impl_smts_legacy_dict,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         }
-        return render(request, "systems/controls_selected.html", context)
+
+        html = render(request, "systems/controls_selected.html", context)
+        return html
     else:
         # User does not have permission to this system
         raise Http404
@@ -1340,25 +1356,18 @@ def component_library_component(request, element_id):
             "is_admin": request.user.is_superuser,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "form_source": "component_library",
-            "inheritance": inheritance,
+            "inheritances": inheritances,
         }
-        return render(request, "components/element_detail_tabs.html", context)
+        return render(request, "components/element_detail_tabs.html", context)   
 
-    if len(impl_smts) == 0:
-        # New component, no control statements assigned yet
-        catalog_key = "catalog_key_missing"
-        catalog_controls = None
-        oscal_string = None
-        opencontrol_string = None
-    elif len(impl_smts) > 0:
-        # TODO: We may have multiple catalogs in this case in the future
-        # Retrieve used catalog_key
-        catalog_key = impl_smts[0].sid_class
-        # Retrieve control ids
-        catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
-        # Build OSCAL and OpenControl
-        oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
-        opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
+    # TODO: We may have multiple catalogs in this case in the future
+    # Retrieve used catalog_key
+    catalog_key = impl_smts[0].sid_class
+    # Retrieve control ids
+    catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
+    # Build OSCAL and OpenControl
+    oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
+    opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
 
     # Use natsort here to handle the sid that has letters and numbers
     # (e.g. to put AC-14 after AC-2 whereas before it was putting AC-14 before AC-2)
