@@ -2118,6 +2118,7 @@ def save_smt(request):
                 statement_type=new_statement_type_enum.name,
                 status=form_values['status'],
                 remarks=form_values['remarks'],
+                consumer_element_id=form_values['consumer_element_id'],
             )
             new_statement = True
 
@@ -2152,6 +2153,7 @@ def save_smt(request):
         # Create new Prototype Statement object on new statement creation (not statement edit)
         if new_statement:
             try:
+                statement.status = None
                 statement_prototype = statement.create_prototype()
             except Exception as e:
                 statement_status = "error"
