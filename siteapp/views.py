@@ -9,6 +9,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Permission
 from django.db import transaction
+from django.db.models import Count
 from django.db.models import Q
 from django.forms import ModelForm, model_to_dict
 from django.http import (Http404, HttpResponse, HttpResponseForbidden,
@@ -30,7 +31,7 @@ from discussion.models import Discussion
 from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
 
-from controls.models import Element, System, Statement, Poam, Deployment
+from controls.models import Element, ElementControl, System, Statement, Poam, Deployment
 from system_settings.models import SystemSettings, Classification, Sitename
 
 from .forms import PortfolioForm, EditProjectForm, AccountSettingsForm
@@ -1044,11 +1045,31 @@ def project(request, project):
     can_upgrade_app = project.root_task.module.app.has_upgrade_priv(request.user) if project.root_task else True
     authoring_tool_enabled = project.root_task.module.is_authoring_tool_enabled(request.user) if project.root_task else True
 
-    # Calculate approximate compliance as degrees to display
+    # Get total number of controls assigned to the Project (based on baseline).
+    total_controls_count = ElementControl.objects.filter(element_id=project.system.root_element).count()
+    # Get a count of the Statuses for the controls; Assessed, Ready for Assessment, ...
+    stat = (ElementControl.objects
+        .filter(element_id=project.system.root_element)
+        .values("status")
+        .annotate(scount=Count("status"))
+        .order_by()
+    )
+    # Get the Status allowed values
+    es = ElementControl.Statuses.choices
+    st = dict(es)
+    statuses = {}
+    # Add the counts to a dictionary keyed by the Status label; {"Assessed": 1, "Ready for assessment": 3,...}
+    for els in stat:
+        statuses[st[els["status"]]] = els["scount"]
+
+    controls_addressed_count = statuses["Assessed"] + statuses["Ready for assessment"]
+
+    # Calculate approximate compliance as decimal representation of percent
     percent_compliant = 0
-    if len(project.system.control_implementation_as_dict) > 0:
-        percent_compliant = project.system.controls_status_count['Addressed'] / len(
-            project.system.control_implementation_as_dict)
+    if total_controls_count > 0:
+        percent_compliant = controls_addressed_count/total_controls_count
+
+    # Calculate approximate compliance as degrees to display
     # Need to reverse calculation for displaying as per styles in .piechart class
     approx_compliance_degrees = 365 - (365 * percent_compliant)
     if approx_compliance_degrees > 358:
@@ -1124,6 +1145,8 @@ def project(request, project):
         "elements": elements,
         "producer_elements_control_impl_smts_dict": producer_elements_control_impl_smts_dict,
         "producer_elements_control_impl_smts_status_dict": producer_elements_control_impl_smts_status_dict,
+        "total_controls_count": total_controls_count,
+        "controls_addressed_count": controls_addressed_count
     })
 
 def project_edit(request, project_id):
