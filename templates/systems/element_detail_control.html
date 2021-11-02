@@ -11,21 +11,21 @@
 {% endblock %}
 
 {% block pagetitle %}
-{{p}}
   <div id="above-tab-content" class="row">
-    <h2 class="margin-bottom-1">System Component: {{ element.name }}</h2>
+    <div>
+      <h2 class="margin-bottom-1">System Component: {{ element.name }}</h2>
+      <ul class="usa-list usa-list--unstyled margin-bottom-2">
+        <li><b>Description:</b> {{ element.description }}</li>
+        <li><b>State:</b> {{ element.component_state|title }}</li>
+        <li><b>Type:</b> {{ element.component_type|title }}</li>
+        <li><b>Version:</b> {{ element.oscal_version }}</li>
+      </ul>
+    </div>
   </div>
 {% endblock %}
 
 {% block body_content %}
-<div class="systems-top">
-  <ul class="usa-list usa-list--unstyled margin-bottom-2">
-    <li><b>Description:</b> {{ element.description }}</li>
-    <li><b>State:</b> {{ element.component_state|title }}</li>
-    <li><b>Type:</b> {{ element.component_type|title }}</li>
-    <li><b>Version:</b> {{ element.oscal_version }}</li>
-  </ul>
-  <div class="usa-step-indicator__header">
+<div class="systems-top">  <div class="usa-step-indicator__header">
     <h4 class="usa-step-indicator__heading">
       <span class="usa-step-indicator__heading-counter">
         <span class="usa-step-indicator__current-step"></span>
@@ -42,7 +42,7 @@
         <ul class="usa-sidenav">
           {% for k, smt in page_data.items %}
             <li class="usa-sidenav__item">
-              <a href="{% url "system_element_control" system.id element.id catalog_key smt.sid %}" data-sid="{{ smt.sid }}" class="{% if forloop.first %}usa-current{% endif %}" data-status="{% if smt.status == "Implemented" %}implemented{% endif %}">{{ smt.label|upper }}
+              <a href="{% url "system_element_control" system.id element.id catalog_key smt.sid %}" data-sid="{{ smt.sid }}" class="{% if smt.sid == control.id %}usa-current{% endif %}" data-status="{% if smt.status == "Implemented" %}implemented{% endif %}">{{ smt.label|upper }}
               {% if smt.status == "Implemented" %}
                 <svg class="usa-icon position-relative usa-icon--size-1 float-right margin-top-05 text-green" aria-hidden="true" focusable="false" role="img"><use xlink:href="{% static "vendor/uswds-2.12.0/img/sprite.svg#check_circle" %}"></use></svg>
               {% elif smt.status == "Partially Implemented" %}
@@ -56,11 +56,11 @@
     <div class="col-md-9">
       <div class="margin-bottom-1">
         {% for k, c in page_data.items %}
-          {% if forloop.first %}
+          {% if c.sid == control.id %}
             <h3 class="text-bold margin-bottom-2">{{ c.label|upper }}: {{ control.title }}</h3>
             <ul class="usa-list usa-list--unstyled">
               <li><b>Control Family</b>: {{ c.family }}</li>
-              <li><b>Responsibility</b>: {% for smt in impl_smts %}{% if smt.sid == c.sid %}{{ smt.inheritance.name }}{% endif %}{% endfor %}</li>
+              <li><b>Responsibility</b>: {% for smt in impl_smts %}{% if smt.sid == control.id %}{{ smt.inheritance.name }}{% endif %}{% endfor %}</li>
               <li><b>Control Description</b>: {{ c.description|linebreaks }}</li>
             </ul>
           {% endif %}
@@ -77,7 +77,7 @@
         </h4>
         <div id="b-a1" class="usa-accordion__content usa-prose">
         {% for k, c in page_data.items %}
-          {% if forloop.first %}
+          {% if c.sid == control.id %}
             {% if c.implementation %}
               <p>{{ c.implementation|linebreaks }}</p>
             {% else %}
@@ -95,7 +95,7 @@
         </h4>
         <div id="b-a2" class="usa-accordion__content usa-prose">
         {% for k, c in page_data.items %}
-          {% if forloop.first %}
+          {% if c.sid == control.id %}
             <p>{{ c.guidance|linebreaks }}</p>
           {% endif %}
         {% endfor %}

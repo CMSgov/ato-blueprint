@@ -12,31 +12,34 @@ from urllib.parse import quote, urlunparse
 from uuid import uuid4
 
 import rtyaml
+import siteapp.views as project_nav
 import trestle.oscal.component as trestlecomponent
 import trestle.oscal.ssp as trestlessp
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models import Q
-from django.db.models import Count
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.db.models import Count, Q
 from django.db.models.functions import Lower
-from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, \
-    HttpResponseNotAllowed
+from django.http import (Http404, HttpResponse, HttpResponseForbidden,
+                         HttpResponseNotAllowed, HttpResponseRedirect,
+                         JsonResponse)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.text import slugify
 from django.views import View
 from django.views.generic import ListView
 from simple_history.utils import update_change_reason
-from controls.oscal import Catalogs
-from siteapp.models import Project, Organization, Tag
+from siteapp.models import Invitation, Organization, Project, Tag
 from siteapp.settings import GOVREADY_URL
 from system_settings.models import SystemSettings
-from .forms import ElementEditForm
-from .forms import ImportOSCALComponentForm, SystemAssessmentResultForm
-from .forms import StatementPoamForm, PoamForm, ElementForm, DeploymentForm
+
+from controls.oscal import Catalogs
+
+from .forms import (DeploymentForm, ElementEditForm, ElementForm,
+                    ImportOSCALComponentForm, PoamForm, StatementPoamForm,
+                    SystemAssessmentResultForm)
 from .models import *
 from .utilities import *
 
@@ -44,6 +47,7 @@ logging.basicConfig()
 import structlog
 from structlog import get_logger
 from structlog.stdlib import LoggerFactory
+
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
@@ -181,7 +185,7 @@ def controls_selected(request, system_id):
             .order_by('sid')
         impl_smts_cmpts_count = dict((c_count['sid'], c_count['component_count'])
                                       for c_count in component_counts)
-        
+
         # Get list of catalog objects
 
         # TODO: we should fix the template so that we don't require
@@ -190,14 +194,16 @@ def controls_selected(request, system_id):
         # them from the list.
 
         internal_catalog_keys = [
-            Catalogs.CMMC_ver1, Catalogs.NIST_SP_800_171_rev1, 
+            Catalogs.CMMC_ver1, Catalogs.NIST_SP_800_171_rev1,
             Catalogs.NIST_SP_800_53_rev4, Catalogs.NIST_SP_800_53_rev5
         ]
         external_catalogs = [
             catalog for catalog in Catalogs.catalogs()
             if catalog.catalog_key not in internal_catalog_keys
         ]
-        
+
+        nav = project_nav.project_navigation(request, project)
+
         # Return the controls
         context = {
             "system": system,
@@ -207,6 +213,8 @@ def controls_selected(request, system_id):
             "impl_smts_cmpts_count": impl_smts_cmpts_count,
             "impl_smts_legacy_dict": impl_smts_legacy_dict,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
+            "nav": nav,
         }
 
         html = render(request, "systems/controls_selected.html", context)
@@ -404,6 +412,8 @@ class SelectedComponentsList(ListView):
             context['project'] = project
             context['system'] = system
             context['elements'] = Element.objects.all().exclude(element_type='system')
+            context['nav'] = project_nav.project_navigation(self.request, project)
+            context['send_invitation'] = Invitation.form_context_dict(self.request.user, project, [self.request.user]),
             return context
         else:
             # User does not have permission to this system
@@ -1132,6 +1142,9 @@ def system_element(request, system_id, element_id):
         opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
         states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
         types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
+
+        nav = project_nav.project_navigation(request, project)
+
         # Return the system's element information
         context = {
             "states": states,
@@ -1147,6 +1160,8 @@ def system_element(request, system_id, element_id):
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "opencontrol": opencontrol_string,
             "page_data": page_data,
+            "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
+            "nav": nav,
         }
         return render(request, "systems/element_detail_tabs.html", context)
 
@@ -1187,6 +1202,9 @@ def system_element_control(request, system_id, element_id, catalog_key, control_
         opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
         states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
         types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
+
+        nav = project_nav.project_navigation(request, project)
+
         # Return the system's element information
         context = {
             "states": states,
@@ -1203,6 +1221,8 @@ def system_element_control(request, system_id, element_id, catalog_key, control_
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "opencontrol": opencontrol_string,
             "page_data": page_data,
+            "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
+            "nav": nav,
         }
         return render(request, "systems/element_detail_control.html", context)
 
@@ -1358,7 +1378,7 @@ def component_library_component(request, element_id):
             "form_source": "component_library",
             "inheritances": inheritances,
         }
-        return render(request, "components/element_detail_tabs.html", context)   
+        return render(request, "components/element_detail_tabs.html", context)
 
     # TODO: We may have multiple catalogs in this case in the future
     # Retrieve used catalog_key
@@ -1635,9 +1655,10 @@ def controls_selected_export_xacta_xslx(request, system_id):
             else:
                 setattr(control, 'impl_smts', None)
 
-        from openpyxl import Workbook
-        from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
         from tempfile import NamedTemporaryFile
+
+        from openpyxl import Workbook
+        from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 
         wb = Workbook()
         ws = wb.active
@@ -1947,6 +1968,8 @@ def editor(request, system_id, catalog_key, cl_id):
 
         elements =  Element.objects.all().exclude(element_type='system')
 
+        nav = project_nav.project_navigation(request, project)
+
         context = {
             "system": system,
             "project": project,
@@ -1960,6 +1983,8 @@ def editor(request, system_id, catalog_key, cl_id):
             "opencontrol": "opencontrol_string",
             "elements": elements,
             "element_control": element_control,
+            "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
+            "nav": nav,
         }
         return render(request, "controls/editor.html", context)
     else:
@@ -2966,9 +2991,11 @@ def poam_export(request, system_id, format='xlsx'):
     if request.user.has_perm('view_system', system):
 
         if format == 'xlsx':
-            from openpyxl import Workbook
-            from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
             from tempfile import NamedTemporaryFile
+
+            from openpyxl import Workbook
+            from openpyxl.styles import (Alignment, Border, Font, PatternFill,
+                                         Side)
 
             wb = Workbook()
             ws = wb.active
@@ -2976,7 +3003,8 @@ def poam_export(request, system_id, format='xlsx'):
             wrap_alignment = Alignment(wrap_text=True)
             ws.title = "POA&Ms"
         else:
-            import csv, io
+            import csv
+            import io
             csv_buffer = io.StringIO(newline='\n')
             csv_writer = csv.writer(csv_buffer)
 

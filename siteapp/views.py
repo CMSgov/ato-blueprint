@@ -1,16 +1,22 @@
 import json
+import logging
 import random
-
-from django.core import serializers
-from django.db import IntegrityError
+import sys
 from datetime import datetime
+
+from controls.enums.statements import StatementTypeEnum
+from controls.forms import ImportProjectForm
+from controls.models import (Deployment, Element, ElementControl, Poam,
+                             Statement, System)
+from controls.views import add_selected_components
+from discussion.models import Discussion
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Permission
-from django.db import transaction
-from django.db.models import Count
-from django.db.models import Q
+from django.core import serializers
+from django.db import IntegrityError, transaction
+from django.db.models import Count, Q
 from django.forms import ModelForm, model_to_dict
 from django.http import (Http404, HttpResponse, HttpResponseForbidden,
                          HttpResponseNotAllowed, HttpResponseRedirect,
@@ -22,32 +28,22 @@ from django.views.decorators.http import require_http_methods
 from django.views.generic import ListView
 from guardian.core import ObjectPermissionChecker
 from guardian.decorators import permission_required_or_403
-from guardian.shortcuts import get_perms_for_model, get_perms, assign_perm
-
-from controls.enums.statements import StatementTypeEnum
-from controls.forms import ImportProjectForm
-from controls.views import add_selected_components
-from discussion.models import Discussion
+from guardian.shortcuts import assign_perm, get_perms, get_perms_for_model
 from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
-
-from controls.models import Element, ElementControl, System, Statement, Poam, Deployment
-from system_settings.models import SystemSettings, Classification, Sitename
-
-from .forms import PortfolioForm, EditProjectForm, AccountSettingsForm
-from .good_settings_helpers import \
-    AllauthAccountAdapter  # ensure monkey-patch is loaded
-from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support, Tag, ProjectAsset
-from .notifications_helpers import *
-
-import sys
-import logging
-
-from siteapp.serializers import UserSerializer, ProjectSerializer
-from rest_framework import serializers
-from rest_framework import viewsets
+from rest_framework import serializers, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from system_settings.models import Classification, Sitename, SystemSettings
+
+from siteapp.serializers import ProjectSerializer, UserSerializer
+
+from .forms import AccountSettingsForm, EditProjectForm, PortfolioForm
+from .good_settings_helpers import \
+    AllauthAccountAdapter  # ensure monkey-patch is loaded
+from .models import (Folder, Invitation, Organization, Portfolio, Project,
+                     ProjectAsset, Support, Tag, User)
+from .notifications_helpers import *
 
 logging.basicConfig()
 import structlog
@@ -88,7 +84,7 @@ def logged_out(request):
 def homepage(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect("/projects")
-    from allauth.account.forms import SignupForm, LoginForm
+    from allauth.account.forms import LoginForm, SignupForm
 
     signup_form = SignupForm()
     login_form = LoginForm()
@@ -362,8 +358,9 @@ def get_compliance_apps_catalog_for_user(user):
 def get_compliance_apps_catalog(organization, userid):
     # Load the compliance apps available to the given organization.
 
-    from guidedmodules.models import AppVersion
     from collections import defaultdict
+
+    from guidedmodules.models import AppVersion
 
     appvers = AppVersion.get_startable_apps(organization, userid)
 
@@ -391,8 +388,8 @@ def get_compliance_apps_catalog(organization, userid):
 
 
 def render_app_catalog_entry(appversion, appversions, organization):
-    from guidedmodules.module_logic import render_content
     from guidedmodules.models import image_to_dataurl
+    from guidedmodules.module_logic import render_content
 
     key = "{source}/{name}".format(source=appversion.source.slug, name=appversion.appname)
 
@@ -1102,6 +1099,7 @@ def project(request, project):
     producer_elements_control_impl_smts_dict = project.system.producer_elements_control_impl_smts_dict
     producer_elements_control_impl_smts_status_dict = project.system.producer_elements_control_impl_smts_status_dict
 
+    nav = project_navigation(request, project)
     # Render.
     return render(request, "project.html", {
         "is_project_page": True,
@@ -1110,44 +1108,73 @@ def project(request, project):
         "confidentiality": confidentiality,
         "integrity": integrity,
         "availability": availability,
-
         "controls_status_count": project.system.controls_status_count,
         "poam_status_count": project.system.poam_status_count,
         "percent_compliant": percent_compliant,
         "percent_compliant_100": percent_compliant * 100,
         "approx_compliance_degrees": approx_compliance_degrees,
-
         "is_admin": request.user in project.get_admins(),
         "can_upgrade_app": can_upgrade_app,
         "can_start_task": can_start_task,
         "can_start_any_apps": can_start_any_apps,
-
         "title": project.title,
-        # "open_invitations": other_open_invitations,
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
         "has_outputs": has_outputs,
-
         "enable_experimental_evidence": SystemSettings.enable_experimental_evidence,
-
         "layout_mode": layout_mode,
         "columns": columns,
         "action_buttons": action_buttons,
-
         "projects": Project.objects.all(),
         "portfolios": Portfolio.objects.all(),
         "users": User.objects.all(),
-
         "class_status": Classification.objects.last(),
-
         "authoring_tool_enabled": authoring_tool_enabled,
         "import_project_form": ImportProjectForm(),
-
         "elements": elements,
         "producer_elements_control_impl_smts_dict": producer_elements_control_impl_smts_dict,
         "producer_elements_control_impl_smts_status_dict": producer_elements_control_impl_smts_status_dict,
         "total_controls_count": total_controls_count,
-        "controls_addressed_count": controls_addressed_count
+        "controls_addressed_count": controls_addressed_count,
+        "nav": nav,
     })
+
+
+def project_navigation(request, project):
+    purl = project.get_absolute_url()
+    task = project.root_task.get_or_create_subtask(request.user, "ssp_intro")
+    nav = {
+        "home": {
+            "url": purl,
+            "title": "Project Home",
+            "id": "project-home",
+        },
+        "settings": {
+            "url": purl + "/settings",
+            "title": "Project Settings",
+            "id": "project-settings",
+        },
+        "invite": {
+            "url": "#",
+            "title": "Invite Collaborators",
+            "id": "project-invite",
+        },
+        "ssp": {
+            "url": task.get_absolute_url(),
+            "title": "System Security Plan",
+            "id": "project-ssp"
+        },
+        "controls": {
+            "url": "/systems/" + str(project.system.id) + "/controls/selected",
+            "title": "Controls",
+            "id": "project-controls",
+        },
+        "components": {
+            "url": "/systems/" + str(project.system.id) + "/components/selected",
+            "title": "Components",
+            "id": "project-components",
+        },
+    }
+    return nav
 
 def project_edit(request, project_id):
     if request.method == 'POST':
@@ -1230,26 +1257,24 @@ def project_settings(request, project):
             av_info["reason"] = project.is_safe_upgrade(av)
         available_versions.append(av_info)
 
+    nav = project_navigation(request, project)
+
     # Render.
     return render(request, "project_settings.html", {
         "is_project_page": True,
         "project": project,
-
         "is_admin": request.user in project.get_admins(),
         "can_upgrade_app": project.root_task.module.app.has_upgrade_priv(request.user),
         "available_versions": available_versions,
-
         "title": project.title,
         "open_invitations": other_open_invitations,
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
-
         "action_buttons": action_buttons,
-
         "projects": Project.objects.all(),
         "portfolios": Portfolio.objects.all(),
         "users": User.objects.all(),
-
-        "import_project_form": ImportProjectForm()
+        "import_project_form": ImportProjectForm(),
+        "nav": nav,
     })
 
 
@@ -1377,7 +1402,8 @@ def project_api(request, project):
     # Create sample POST body data by randomly choosing question
     # answers.
     def select_randomly(sample, level=0):
-        import collections, random
+        import collections
+        import random
         if not isinstance(sample, dict): return sample
         if level == 0:
             keys = list(sample)
@@ -1416,9 +1442,10 @@ def project_api(request, project):
     # Format sample output.
     def format_sample(sample):
         import json
+
         from pygments import highlight
-        from pygments.lexers import JsonLexer
         from pygments.formatters import HtmlFormatter
+        from pygments.lexers import JsonLexer
         sample = json.dumps(sample, indent=2)
         return highlight(sample, JsonLexer(), HtmlFormatter())
 
@@ -2230,9 +2257,10 @@ def accept_invitation(request, code=None):
 
 
 def accept_invitation_do_accept(request, inv):
+    import urllib.parse
+
     from django.contrib.auth import authenticate, login, logout
     from django.http import HttpResponseRedirect
-    import urllib.parse
 
     # Can't accept if this object has expired. Warn the user but
     # send them to the homepage.
@@ -2500,8 +2528,8 @@ def organization_settings_save(request):
 
 
 def shared_static_pages(request, page):
-    from django.utils.module_loading import import_string
     from django.contrib.humanize.templatetags.humanize import intcomma
+    from django.utils.module_loading import import_string
     password_hasher = import_string(settings.PASSWORD_HASHERS[0])()
     password_hash_method = password_hasher.algorithm.upper().replace("_", " ") \
                            + " (" + intcomma(password_hasher.iterations) + " iterations)"
@@ -2595,7 +2623,8 @@ def update_project_asset(request, project_id, asset_id):
         if hasattr(asset, key):
             setattr(asset, key, value)
     asset.save()
-    from django.core import serializers
     import json
+
+    from django.core import serializers
     response_data = json.loads(serializers.serialize('json', [asset]))[0]
     return JsonResponse({"status": "ok", "data": response_data})

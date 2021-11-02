@@ -1,0 +1,13 @@
+<div id="action-buttons" class="action-row">
+  {% block action_buttons %}
+  <div class="btn-group width-full" role="group" aria-label="action buttons group">
+    {% for k, n in nav.items %}
+      {% if n.url != None or n.url != '' %}
+        <a id="{{ n.id }}" href="{{ n.url }}" class="usa-button width-full margin-bottom-1
+        {% if k == "ssp" or k == "controls" or k == "components" %} bg-green{% endif %}
+        ">{{ n.title }}</a>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% endblock %}
+</div>

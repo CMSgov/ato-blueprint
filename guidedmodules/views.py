@@ -29,6 +29,8 @@ from siteapp.models import User, Invitation, Project, ProjectMembership
 from guidedmodules.forms import ExportCSVTemplateSSPForm
 from controls.models import Element, ElementRole, Statement, System
 
+from siteapp.views import project_navigation
+
 import fs, fs.errors
 
 import logging
@@ -1227,13 +1229,16 @@ def task_finished(request, task, answered, context, *unused_args):
             )
             return response
 
+    project = task.project
+    nav = project_navigation(request, project)
+
     context.update({
         "had_any_questions": len(set(answered.as_dict()) - answered.was_imputed) > 0,
         "top_of_page_output": top_of_page_output,
         "outputs": outputs,
         "all_answers": answered.render_answers(show_metadata=True, show_imputed_nulls=False),
         "can_review": task.has_review_priv(request.user),
-        "project": task.project,
+        "project": project,
         "can_upgrade_app": task.project.root_task.module.app.has_upgrade_priv(request.user),
         "authoring_tool_enabled": task.project.root_task.module.is_authoring_tool_enabled(request.user),
         # task_progress_project_list parameters
@@ -1246,6 +1251,8 @@ def task_finished(request, task, answered, context, *unused_args):
         "next_module_spec": next_module_spec,
         "gr_pdf_generator": settings.GR_PDF_GENERATOR,
         "export_csv_form": ExportCSVTemplateSSPForm(),
+        "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
+        "nav": nav,
     })
     return render(request, "task-finished.html", context)
 
