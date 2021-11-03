@@ -1059,7 +1059,12 @@ def project(request, project):
     for els in stat:
         statuses[st[els["status"]]] = els["scount"]
 
-    controls_addressed_count = statuses["Assessed"] + statuses["Ready for assessment"]
+    controls_addressed_count = 0
+    if "Assessed" in statuses:
+        controls_addressed_count +=  statuses["Assessed"]
+
+    if "Ready for assessment" in statuses:
+        controls_addressed_count +=  statuses["Ready for assessment"]
 
     # Calculate approximate compliance as decimal representation of percent
     percent_compliant = 0
