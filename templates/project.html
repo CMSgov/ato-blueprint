@@ -87,11 +87,11 @@
               <header class="usa-card__header">
                 <h2 class="usa-card__heading">
                   {% if not q.can_start_new_task and q.question.spec.app_overrides_name_and_icon is None %}
-                    {% comment %} display the project title on this specific card {% endcomment %}
                     {% if q.question.key == "system_basic_info" %}
-                      {{ project.title }}
+                      {{ project.title }} {{ q.task.title }}
+                    {% else %}
+                      {{ q.task.title }}
                     {% endif %}
-                    {{ q.task.title }}
                   {% else %}
                     {{q.question.spec.title}}
                   {% endif %}
