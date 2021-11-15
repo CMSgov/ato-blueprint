@@ -2633,3 +2633,22 @@ def update_project_asset(request, project_id, asset_id):
     from django.core import serializers
     response_data = json.loads(serializers.serialize('json', [asset]))[0]
     return JsonResponse({"status": "ok", "data": response_data})
+
+
+def project_create_form(request):
+    src = SystemSettings.objects.get(setting="auto_start_project")
+    if src.active:
+        slug = src.details.get('source_slug', None)
+        catalog, _ = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
+
+    q = ModuleQuestion.objects.filter(module_id = 168).order_by('definition_order')
+    context = {
+        "question": q,
+        "catalog": catalog,
+    }
+    html = render(request, 'one_page.html', context)
+    return html
+
+
+def project_create_submit(request):
+    """Validate the Project create form and create the project."""

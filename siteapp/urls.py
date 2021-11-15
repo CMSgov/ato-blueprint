@@ -1,12 +1,11 @@
+from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
-from django.conf import settings
 from django.urls import path, re_path
 from django.views.generic import RedirectView
-from rest_framework import routers
-from rest_framework import serializers
-from siteapp.views import UserViewSet
-from siteapp.views import ProjectViewSet
+from rest_framework import routers, serializers
+
+from siteapp.views import ProjectViewSet, UserViewSet
 
 from .model_mixins.tags import build_tag_urls
 from .models import Project
@@ -14,12 +13,13 @@ from .models import Project
 admin.autodiscover()
 
 import controls.views_api
+
 import siteapp.views as views
-import siteapp.views_landing as views_landing
 import siteapp.views_health as views_health
+import siteapp.views_landing as views_landing
+
 from .good_settings_helpers import signup_wrapper
 from .settings import *
-
 
 # Routers provide a way of automatically determining the URL conf.
 router = routers.DefaultRouter()
@@ -64,6 +64,8 @@ urlpatterns = [
     url(r'account/settings$', views.account_settings, name="account_settings"),
 
     # projects
+    url(r'^project/create', views.project_create_form, name='project_create_form'),
+    url(r'^project/create/__submit', views.project_create_submit, name='project_create_submit'),
     url(r"^projects$", views.ProjectList.as_view(), name="projects"),
     url(r"^projects/lifecycle$", views.project_list_lifecycle, name="projects_lifecycle"),
     url(r'^projects/(?P<project_id>.*)/__edit$', views.project_edit, name="edit_project"),
@@ -154,6 +156,7 @@ if 'django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKEN
     ]
 
 import notifications.urls
+
 urlpatterns += [
     url('^user/notifications/', include(notifications.urls, namespace='notifications')),
     url('^_mark_notifications_as_read', views.mark_notifications_as_read),
