@@ -1,6 +1,7 @@
-from .settings import *
 import re
 import sys
+
+from .settings import *
 
 INSTALLED_APPS += [
     'debug_toolbar',
@@ -121,8 +122,6 @@ AUTHENTICATION_BACKENDS += ['siteapp.models.DirectLoginBackend']
 
 INTERNAL_IPS = ['127.0.0.1'] # for django_debug_toolbar
 
-# Allow run-time disabling of the Django Debug Toolbar.
-DISABLE_DJANGO_DEBUG_TOOLBAR = False# Note profiling by pyinstrument will be replaced by django debug toolbar
 TESTING_MODE = 'test' in sys.argv # Are we running tests with test mode and debugging?
 if TESTING_MODE or ENABLE_TOOLBAR == False:
     DISABLE_DJANGO_DEBUG_TOOLBAR = True
@@ -172,7 +171,7 @@ with open("VERSION") as f:
     APP_VERSION_STRING = f.readline().strip()
     APP_VERSION_COMMIT = f.readline().strip()
 if not APP_VERSION_COMMIT and os.path.exists(".git"):
-    import subprocess # nosec
+    import subprocess  # nosec
     APP_VERSION_COMMIT = subprocess.check_output(["/usr/bin/git", "rev-parse", "HEAD"]).strip().decode("ascii")
     if subprocess.run(["/usr/bin/git", "diff-index", "--quiet", "HEAD", "--"]):
         # see https://stackoverflow.com/questions/3878624/how-do-i-programmatically-determine-if-there-are-uncommitted-changes

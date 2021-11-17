@@ -5,8 +5,11 @@
 # in settings from various normal places you might store them. #
 ################################################################
 
-import os, os.path, json
-from platform import uname, system
+import json
+import os
+import os.path
+from platform import system, uname
+
 from django.core.exceptions import ValidationError
 
 # What's the name of the app containing this file? That determines
@@ -70,6 +73,7 @@ ENABLE_TOOLBAR = bool(environment.get("enable_tool_bar"))
 
 # Set GOVREADY_URL if 'govready-url' set in environment.json.
 from urllib.parse import urlparse
+
 GOVREADY_URL = urlparse(environment.get("govready-url",""))
 
 # Set Django's ALLOWED_HOSTS parameter.
@@ -133,10 +137,6 @@ REST_FRAMEWORK = {
 	'PAGE_SIZE': 10
 }
 
-# profile every request and save the HTML output to the folder profiles
-if DEBUG:
-	PYINSTRUMENT_PROFILE_DIR = 'profiles'
-
 # Add standard middleware.
 MIDDLEWARE = [
 	#'django.middleware.cache.UpdateCacheMiddleware',# Has to be before django.middleware.cache.FetchFromCacheMiddleware
@@ -149,8 +149,6 @@ MIDDLEWARE = [
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
 	'simple_history.middleware.HistoryRequestMiddleware',
-	'pyinstrument.middleware.ProfilerMiddleware',
-	#'django.middleware.cache.FetchFromCacheMiddleware',
 	'session_security.middleware.SessionSecurityMiddleware',
 	'siteapp.middleware.HealthCheckMiddleware',
 ]
@@ -229,6 +227,7 @@ ACCOUNT_PASSWORD_MIN_LENGTH = (4 if DEBUG else 6) # in debugging, allow simple p
 # improve how the allauth forms are rendered using django-bootstrap forms,
 # in combination with a monkeypatch run elsewhere
 import bootstrap3.templatetags.bootstrap3
+
 ALLAUTH_FORM_RENDERER = bootstrap3.templatetags.bootstrap3.bootstrap_form
 
 # Require strong passwords (but not when debugging because that's annoying).
@@ -307,6 +306,7 @@ if environment.get('memcached'):
 # is handy, especially in simple Docker deployments. Unhandled exception
 # stack traces are logged to the console.
 from django.utils.log import DEFAULT_LOGGING
+
 LOGGING = DEFAULT_LOGGING
 if not DEBUG:
 	LOGGING['handlers']['console']['filters'].remove('require_debug_true')
@@ -361,6 +361,7 @@ USE_L10N = True
 # need to set this on startup.
 
 import locale
+
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 # Dump outbound emails to the console by default for debugging.
@@ -496,9 +497,7 @@ else:
 DOS = True if system() == "Windows" or 'Microsoft' in uname().release else False
 # Load all additional settings from settings_application.py.
 from .settings_application import *
-
 # Load logging configuration from settings_logging.py.
 from .settings_logging import *
-
 # Profiling.
 from .settings_profiling import *
