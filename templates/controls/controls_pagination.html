@@ -1,0 +1,173 @@
+{% load static %}
+<nav aria-label="Pagination" class="usa-pagination">
+  <ul class="usa-pagination__list">
+    {% if controls.has_previous %}
+      <li class="usa-pagination__item usa-pagination__arrow">
+      <a
+        href="?page={{ controls.previous_page_number }}"
+        class="usa-pagination__link usa-pagination__previous-page"
+        aria-label="Previous page"
+      >
+        <svg class="usa-icon" aria-hidden="true" role="img">
+          <use xlink:href="{% static "vendor/uswds-2.12.0/img/sprite.svg#navigate_before" %}"></use>
+        </svg>
+        <span class="usa-pagination__link-text"> Previous </span>
+      </a>
+    {% endif %}
+    {% if controls.paginator.num_pages <= 7 %}
+      {% for p in '1234567' %}
+        {% if p|add:"0" <= controls.paginator.num_pages %}
+          <li class="usa-pagination__item usa-pagination__page-no">
+            <a
+              href="?page={{ p }}"
+              class="usa-pagination__button {% if p|add:"0" == controls.number %}usa-current{% endif %}"
+              aria-label="Page {{ p }}"
+              aria-current="p"
+            >
+              {{ p }}
+            </a>
+          </li>
+        {% endif %}
+      {% endfor %}
+    {% else %}
+      <li class="usa-pagination__item usa-pagination__page-no">
+        <a
+          href="?page=1"
+          class="usa-pagination__button {% if controls.number == 1 %}usa-current{% endif %}"
+          aria-label="Page 1"
+          aria-current="1"
+        >
+          {{ 1 }}
+        </a>
+      </li>
+      {% if controls.number >= 6 %}
+        <li
+          class="usa-pagination__item usa-pagination__overflow"
+          role="presentation"
+        >
+          <span> … </span>
+        </li>
+      {% endif %}
+
+      {% if controls.number <= 5 %}
+        {% for page in "2345" %}
+          <li class="usa-pagination__item usa-pagination__page-no">
+            <a
+              href="?page={{ page }}"
+              class="usa-pagination__button {% if controls.number == page|add:"0" %}usa-current{% endif %}"
+              aria-label="Page {{ page }}"
+              aria-current="{{ page }}"
+            >
+              {{ page }}
+            </a>
+          </li>
+        {% endfor %}
+      {% elif controls.number >= controls.paginator.num_pages|add:"-4" %}
+          <li class="usa-pagination__item usa-pagination__page-no">
+            <a
+              href="?page={{ controls.paginator.num_pages|add:"-4" }}"
+              class="usa-pagination__button {% if controls.number == controls.paginator.num_pages|add:"-4" %}usa-current{% endif %}"
+              aria-label="Page {{ controls.paginator.num_pages|add:"-4" }}"
+              aria-current="{{ controls.paginator.num_pages|add:"-4" }}"
+            >
+              {{ controls.paginator.num_pages|add:"-4" }}
+            </a>
+          </li>
+          <li class="usa-pagination__item usa-pagination__page-no">
+            <a
+              href="?page={{ controls.paginator.num_pages|add:"-3" }}"
+              class="usa-pagination__button {% if controls.number == controls.paginator.num_pages|add:"-3" %}usa-current{% endif %}"
+              aria-label="Page {{ controls.paginator.num_pages|add:"-3" }}"
+              aria-current="{{ controls.paginator.num_pages|add:"-3" }}"
+            >
+              {{ controls.paginator.num_pages|add:"-3" }}
+            </a>
+          </li>
+          <li class="usa-pagination__item usa-pagination__page-no">
+            <a
+              href="?page={{ controls.paginator.num_pages|add:"-2" }}"
+              class="usa-pagination__button {% if controls.number == controls.paginator.num_pages|add:"-2" %}usa-current{% endif %}"
+              aria-label="Page {{ controls.paginator.num_pages|add:"-2" }}"
+              aria-current="{{ controls.paginator.num_pages|add:"-2" }}"
+            >
+              {{ controls.paginator.num_pages|add:"-2" }}
+            </a>
+          </li>
+          <li class="usa-pagination__item usa-pagination__page-no">
+            <a
+              href="?page={{ controls.paginator.num_pages|add:"-1" }}"
+              class="usa-pagination__button {% if controls.number == controls.paginator.num_pages|add:"-1" %}usa-current{% endif %}"
+              aria-label="Page {{ controls.paginator.num_pages|add:"-1" }}"
+              aria-current="{{ controls.paginator.num_pages|add:"-1" }}"
+            >
+              {{ controls.paginator.num_pages|add:"-1" }}
+            </a>
+          </li>
+      {% else %}
+          <li class="usa-pagination__item usa-pagination__page-no">
+            <a
+              href="?page={{ controls.previous_page_number }}"
+              class="usa-pagination__button"
+              aria-label="Page {{ controls.previous_page_number }}"
+              aria-current="{{ controls.previous_page_number }}"
+            >
+              {{ controls.previous_page_number }}
+            </a>
+          </li>
+          <li class="usa-pagination__item usa-pagination__page-no">
+            <a
+              href="?page={{ controls.number }}"
+              class="usa-pagination__button usa-current"
+              aria-label="Page {{ controls.number }}"
+              aria-current="{{ controls.number }}"
+            >
+              {{ controls.number }}
+            </a>
+          </li>
+          <li class="usa-pagination__item usa-pagination__page-no">
+            <a
+              href="?page={{ controls.next_page_number }}"
+              class="usa-pagination__button"
+              aria-label="Page {{ controls.next_page_number }}"
+              aria-current="{{ controls.next_page_number }}"
+            >
+              {{ controls.next_page_number }}
+            </a>
+          </li>
+      {% endif %}
+
+      {% if controls.number < controls.paginator.num_pages|add:"-4" %}
+        <li
+          class="usa-pagination__item usa-pagination__overflow"
+          role="presentation"
+        >
+          <span> … </span>
+        </li>
+      {% endif %}
+      <li class="usa-pagination__item usa-pagination__page-no">
+        <a
+          href="?page={{ controls.paginator.num_pages }}"
+          class="usa-pagination__button {% if controls.number == controls.paginator.num_pages %}usa-current{% endif %}"
+          aria-label="Page {{ controls.paginator.num_pages }}"
+          aria-current="{{ controls.paginator.num_pages }}"
+        >
+          {{ controls.paginator.num_pages }}
+        </a>
+      </li>
+    {% endif %}
+
+    {% if controls.has_next %}
+      <li class="usa-pagination__item usa-pagination__arrow">
+        <a
+          href="?page={{ controls.next_page_number }}"
+          class="usa-pagination__link usa-pagination__next-page"
+          aria-label="Next page"
+        >
+          <span class="usa-pagination__link-text"> Next </span>
+          <svg class="usa-icon" aria-hidden="true" role="img">
+            <use xlink:href="{% static "vendor/uswds-2.12.0/img/sprite.svg#navigate_next" %}"></use>
+          </svg>
+        </a>
+      </li>
+    {% endif %}
+</div>

@@ -170,6 +170,10 @@ def controls_selected(request, system_id):
         except Exception as e:
             logger.error(f"Error flattening controls: {e}")
 
+        paginator = Paginator(controls, 25)
+        page_number = request.GET.get('page')
+        ctrls = paginator.get_page(page_number)
+
         # Determine if a legacy statement exists for the control
         impl_smts_legacy = Statement.objects.filter(consumer_element=system.root_element, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name)
         impl_smts_legacy_dict = {}
@@ -208,7 +212,7 @@ def controls_selected(request, system_id):
         context = {
             "system": system,
             "project": project,
-            "controls": controls,
+            "controls": ctrls,
             "external_catalogs": external_catalogs,
             "impl_smts_cmpts_count": impl_smts_cmpts_count,
             "impl_smts_legacy_dict": impl_smts_legacy_dict,
