@@ -140,11 +140,11 @@ REST_FRAMEWORK = {
 # Add standard middleware.
 MIDDLEWARE = [
 	#'django.middleware.cache.UpdateCacheMiddleware',# Has to be before django.middleware.cache.FetchFromCacheMiddleware
-	#HealthCheckMiddleware needs to be before CommonMiddleware to avoid ALLOWED_HOSTED check for health check
-	'siteapp.middleware.HealthCheckMiddleware',
 	'django.middleware.security.SecurityMiddleware',
 	'whitenoise.middleware.WhiteNoiseMiddleware',
 	'django.contrib.sessions.middleware.SessionMiddleware',
+	#HealthCheckMiddleware needs to be before CommonMiddleware to avoid ALLOWED_HOSTED check for health check
+	'siteapp.middleware.HealthCheckMiddleware',
 	'django.middleware.common.CommonMiddleware',
 	'django.middleware.csrf.CsrfViewMiddleware',
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
