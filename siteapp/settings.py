@@ -143,6 +143,8 @@ MIDDLEWARE = [
 	'django.middleware.security.SecurityMiddleware',
 	'whitenoise.middleware.WhiteNoiseMiddleware',
 	'django.contrib.sessions.middleware.SessionMiddleware',
+	#HealthCheckMiddleware needs to be before CommonMiddleware to avoid ALLOWED_HOSTED check for health check
+	'siteapp.middleware.HealthCheckMiddleware',
 	'django.middleware.common.CommonMiddleware',
 	'django.middleware.csrf.CsrfViewMiddleware',
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -150,7 +152,6 @@ MIDDLEWARE = [
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
 	'simple_history.middleware.HistoryRequestMiddleware',
 	'session_security.middleware.SessionSecurityMiddleware',
-	'siteapp.middleware.HealthCheckMiddleware',
 ]
 # The cache connection to use for the cache middleware.
 #CACHE_MIDDLEWARE_ALIAS='default'
