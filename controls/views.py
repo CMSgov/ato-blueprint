@@ -171,7 +171,7 @@ def controls_selected(request, system_id):
             logger.error(f"Error flattening controls: {e}")
 
         paginator = Paginator(controls, 25)
-        page_number = request.GET.get('page')
+        page_number = request.GET.get('page', 1)
         ctrls = paginator.get_page(page_number)
         pager = paginator.get_elided_page_range(number=page_number, on_each_side=1, on_ends=1)
 
