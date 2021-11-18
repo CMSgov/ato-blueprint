@@ -8,12 +8,19 @@
   Control
 {% endblock %}
 
-
-<!-- action buttons included from project-base.html -->
-
-<!-- authoring_tool_enabled included from project-base.html -->
+{% block pagetitle %}
+  <div id="above-tab-content" class="row">
+    <div>
+      <h2 class="margin-bottom-1">
+        {{ control.family_title }}: {{ control.label }} {{ control.title }}
+      </h2>
+      <p><b>Version:</b> {{ catalog.catalog_key_display }}</p>
+    </div>
+  </div>
+{% endblock %}
 
 {% block body_content %}
+{{ impl_smts }}
 <div class="systems-top">
   <div id="above-tab-content" class="row">
     <div class="systems-control-heading">

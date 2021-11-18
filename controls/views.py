@@ -1942,7 +1942,7 @@ def controls_selected_export_xacta_xslx(request, system_id):
         raise Http404
 
 @login_required
-def editor(request, system_id, catalog_key, cl_id):
+def control_editor(request, system_id, catalog_key, cl_id):
     """System Control detail view"""
 
     catalog_key, system = get_editor_system(catalog_key, system_id)
@@ -1950,7 +1950,7 @@ def editor(request, system_id, catalog_key, cl_id):
     # Retrieve related statements if user has permission on system
     if request.user.has_perm('view_system', system):
         # Retrieve primary system Project
-        project, catalog, cg_flat, impl_smts, impl_smts_legacy = get_editor_data(request, system, catalog_key, cl_id)
+        project, catalog, cg_flat, impl_smts, impl_smts_legacy, page_data = get_control_editor_data(request, system, catalog_key, cl_id)
 
         element_control = ElementControl.objects.filter(element_id=system.root_element_id, oscal_ctl_id=cl_id).get()
 
@@ -1991,6 +1991,7 @@ def editor(request, system_id, catalog_key, cl_id):
             "element_control": element_control,
             "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
             "nav": nav,
+            "page_data": page_data,
         }
         return render(request, "controls/editor.html", context)
     else:
@@ -1998,7 +1999,7 @@ def editor(request, system_id, catalog_key, cl_id):
         raise Http404
 
 @login_required
-def get_editor_data(request, system, catalog_key, cl_id):
+def get_control_editor_data(request, system, catalog_key, cl_id):
     """
     Get data for editor views
     """
@@ -2021,7 +2022,15 @@ def get_editor_data(request, system, catalog_key, cl_id):
         # Retrieve Legacy Implementation Statements
         impl_smts_legacy = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name)
 
-        return project, catalog, cg_flat, impl_smts, impl_smts_legacy
+        cat = Catalog.GetInstance(catalog_key=catalog_key)
+        ctrl = catalog.get_control_by_id(cl_id)
+        page_data = {
+            "description": cat.get_control_prose_as_markdown(ctrl, "statement"),
+            "guidance": cat.get_control_prose_as_markdown(ctrl, "guidance"),
+            "implementation": cat.get_control_prose_as_markdown(ctrl, "implementation"),
+        }
+
+        return project, catalog, cg_flat, impl_smts, impl_smts_legacy, page_data
 
 def get_editor_system(catalog_key, system_id):
     """
@@ -2044,7 +2053,7 @@ def editor_compare(request, system_id, catalog_key, cl_id):
     cl_id = oscalize_control_id(cl_id)
     # Retrieve related statements if owner has permission on system
     if request.user.has_perm('view_system', system):
-        project, catalog, cg_flat, impl_smts = get_editor_data(request, system, catalog_key, cl_id)
+        project, catalog, cg_flat, impl_smts = get_control_editor_data(request, system, catalog_key, cl_id)
         context = {
             "system": system,
             "project": project,
