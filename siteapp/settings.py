@@ -140,6 +140,8 @@ REST_FRAMEWORK = {
 # Add standard middleware.
 MIDDLEWARE = [
 	#'django.middleware.cache.UpdateCacheMiddleware',# Has to be before django.middleware.cache.FetchFromCacheMiddleware
+	#HealthCheckMiddleware needs to be before CommonMiddleware to avoid ALLOWED_HOSTED check for health check
+	'siteapp.middleware.HealthCheckMiddleware',
 	'django.middleware.security.SecurityMiddleware',
 	'whitenoise.middleware.WhiteNoiseMiddleware',
 	'django.contrib.sessions.middleware.SessionMiddleware',
@@ -150,7 +152,6 @@ MIDDLEWARE = [
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
 	'simple_history.middleware.HistoryRequestMiddleware',
 	'session_security.middleware.SessionSecurityMiddleware',
-	'siteapp.middleware.HealthCheckMiddleware',
 ]
 # The cache connection to use for the cache middleware.
 #CACHE_MIDDLEWARE_ALIAS='default'
