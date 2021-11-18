@@ -88,7 +88,9 @@
           class="usa-sr-only usa-table__announcement-region"
           aria-live="polite"
         ></div>
-        {% include "controls/controls_pagination.html" %}
+        {% if controls.paginator.num_pages > 1 %}
+          {% include "controls/controls_pagination.html" %}
+        {% endif %}
       </div>
     {% endif %}
   </div>
