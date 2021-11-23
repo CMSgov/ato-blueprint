@@ -1942,95 +1942,94 @@ def controls_selected_export_xacta_xslx(request, system_id):
         raise Http404
 
 @login_required
-def control_editor(request, system_id, catalog_key, cl_id):
+def control_editor(request, system_id, catalog_key, control_id, statement_id=None):
     """System Control detail view"""
 
     catalog_key, system = get_editor_system(catalog_key, system_id)
 
     # Retrieve related statements if user has permission on system
     if request.user.has_perm('view_system', system):
-        # Retrieve primary system Project
-        project, catalog, cg_flat, impl_smts, impl_smts_legacy, page_data = get_control_editor_data(request, system, catalog_key, cl_id)
-
-        element_control = ElementControl.objects.filter(element_id=system.root_element_id, oscal_ctl_id=cl_id).get()
-
-        # TODO: Update system-security-plan to oscal 1.0.0
-        # need parties and roles to not be empty
-        # Build OSCAL SSP
-        # Example: https://github.com/usnistgov/oscal-content/tree/master/examples/ssp/json/ssp-example.json
-        # oscalize key
-        cl_id = oscalize_control_id(cl_id)
-
-        # Build combined statement if it exists
-        if cl_id in system.control_implementation_as_dict:
-            combined_smt = system.control_implementation_as_dict[cl_id]['combined_smt']
-        else:
-            combined_smt = ""
-
-        # Define status options
-        impl_statuses = ["Not implemented", "Planned", "Partially implemented", "Implemented", "Unknown"]
-
-      # Only elements for the given control id, sid, and statement type
-
-        elements =  Element.objects.all().exclude(element_type='system')
-
-        nav = project_nav.project_navigation(request, project)
-
-        context = {
-            "system": system,
-            "project": project,
-            "catalog": catalog,
-            "control": cg_flat[cl_id.lower()],
-            "impl_smts": impl_smts,
-            "impl_statuses": impl_statuses,
-            "impl_smts_legacy": impl_smts_legacy,
-            "combined_smt": combined_smt,
-            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "opencontrol": "opencontrol_string",
-            "elements": elements,
-            "element_control": element_control,
-            "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
-            "nav": nav,
-            "page_data": page_data,
-        }
-        return render(request, "controls/editor.html", context)
-    else:
-        # User does not have permission to this system
-        raise Http404
-
-@login_required
-def get_control_editor_data(request, system, catalog_key, cl_id):
-    """
-    Get data for editor views
-    """
-
-    # Retrieve related statements if user has permission on system
-    if request.user.has_perm('view_system', system):
-        # Retrieve primary system Project
-        # Temporarily assume only one project and get first project
         project = system.projects.first()
         parameter_values = project.get_parameter_values(catalog_key)
         catalog = Catalog(catalog_key, parameter_values=parameter_values)
         cg_flat = catalog.get_flattened_controls_all_as_dict()
         # If control id does not exist in catalog
-        if cl_id.lower() not in cg_flat:
-            return render(request, "controls/detail.html", {"catalog": catalog, "control": {}})
+        if control_id.lower() not in cg_flat:
+            return render(request, 'controls/detail.html', {'catalog': catalog, 'control': {}})
 
-        # Get and return the control
-        # Retrieve any related Implementation Statements filtering by control, and system.root_element, Catalog, Type
-        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).order_by('pid')
-        # Retrieve Legacy Implementation Statements
-        impl_smts_legacy = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element, sid_class=catalog_key, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name)
+        statements = get_statement_by_component(system, control_id, catalog_key)
 
-        cat = Catalog.GetInstance(catalog_key=catalog_key)
-        ctrl = catalog.get_control_by_id(cl_id)
-        page_data = {
-            "description": cat.get_control_prose_as_markdown(ctrl, "statement"),
-            "guidance": cat.get_control_prose_as_markdown(ctrl, "guidance"),
-            "implementation": cat.get_control_prose_as_markdown(ctrl, "implementation"),
+        narrative = None
+        if statements and statement_id:
+            for k, s in statements.items():
+                if s['sid'] == int(statement_id):
+                    narrative = s
+        elif statements:
+            narrative = list(statements.items())[0]
+
+        catalog = get_catalog_data_by_control(catalog_key, control_id)
+
+        nav = project_nav.project_navigation(request, project)
+
+        context = {
+            'catalog': catalog,
+            'nav': nav,
+            'project': project,
+            'send_invitation': Invitation.form_context_dict(request.user, project, [request.user]),
+            'statements': statements,
+            'system': system,
+            'narrative': narrative,
         }
+        return render(request, 'controls/editor.html', context)
+    else:
+        # User does not have permission to this system
+        raise Http404
 
-        return project, catalog, cg_flat, impl_smts, impl_smts_legacy, page_data
+
+def get_catalog_data_by_control(catalog_key, control_id):
+    """
+    Return all of the data associated with a given control for a given catalog
+    """
+    cat = Catalog.GetInstance(catalog_key=catalog_key)
+    ctrl = cat.get_control_by_id(control_id)
+    catalog_data = {
+        'control': cat.get_flattened_control_as_dict(ctrl),
+        'description': cat.get_control_prose_as_markdown(ctrl, 'statement'),
+        'guidance': cat.get_control_prose_as_markdown(ctrl, 'guidance'),
+        'implementation': cat.get_control_prose_as_markdown(ctrl, 'implementation'),
+        'catalog_display': cat.catalog_key_display,
+    }
+    return catalog_data
+
+
+def get_statement_by_component(system, control_id, catalog_key):
+    """
+    Given a system element, a control ID and a catalog key, return the associated
+    statements.
+    """
+    # Get and return the control
+    # Retrieve any related Implementation Statements filtering by control, and system.root_element, Catalog, Type
+    stmts = Statement.objects.filter(
+        sid=control_id,
+        consumer_element=system.root_element,
+        sid_class=catalog_key,
+        statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name
+    ).order_by('pid')
+
+    st = {}
+    for s in stmts:
+        st[s.producer_element.name] = {
+            'body': s.body,
+            'sid': s.id,
+            'href': reverse('control_editor_statement',
+                args=[system.id, catalog_key, control_id, s.id])
+        }
+    if st:
+        statements = dict(sorted(st.items()))
+    else:
+        statements = {}
+
+    return statements
 
 def get_editor_system(catalog_key, system_id):
     """
