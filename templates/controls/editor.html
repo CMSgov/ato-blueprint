@@ -20,7 +20,7 @@
 {% endblock %}
 
 {% block body_content %}
-{{ statements }}
+{{narrative}}
 <div class="row margin-bottom-4">
   <div class="margin-top-1 padding-top-4 border-top-2px border-blue">
     <div class="col-md-3 padding-right-2">
@@ -47,10 +47,15 @@
       {% endfor %}
       <ul class="usa-list usa-list--unstyled">
         <li>
-          <b>Responsibility</b>: <span id="responsibility">{% for k, smt in statements.items %}{% if forloop.first %}{{ smt.inheritance }}{% endif %}{% endfor %}</span>
+          {% if inheritance.name %}
+          <b>Responsibility</b>: <span id="responsibility">{{ narrative.inheritance.name }}</span>
+          {% else %}
+          <b>Responsibility</b>: <span id="responsibility">Fully Allocated</span>
+          {% endif %}
         </li>
         <li><b>Control Description</b>: {{ catalog.control.description|linebreaks }}</li>
       </ul>
+      {% include 'systems/_responsibilities.html' %}
       <div class="usa-accordion usa-accordion--bordered" aria-multiselectable="true">
         <h4 class="usa-accordion__heading">
           <button
@@ -87,8 +92,8 @@
             aria-controls="b-a3"
           >Control Narrative</button>
         </h4>
-        <div id="b-a3" class="usa-accordion__content usa-prose">
-              <p>{{ narrative.body }}</p>
+        <div id="b-a3" class="usa-accordion__content usa-prose padding-0">
+          {% include 'controls/statement_edit_form.html' %}
         </div>
       </div>
     </div>

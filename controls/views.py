@@ -1942,7 +1942,7 @@ def controls_selected_export_xacta_xslx(request, system_id):
         raise Http404
 
 @login_required
-def control_editor(request, system_id, catalog_key, control_id, statement_id=None):
+def control_editor(request, system_id, catalog_key, cl_id, statement_id=None):
     """System Control detail view"""
 
     catalog_key, system = get_editor_system(catalog_key, system_id)
@@ -1954,21 +1954,13 @@ def control_editor(request, system_id, catalog_key, control_id, statement_id=Non
         catalog = Catalog(catalog_key, parameter_values=parameter_values)
         cg_flat = catalog.get_flattened_controls_all_as_dict()
         # If control id does not exist in catalog
-        if control_id.lower() not in cg_flat:
+        if cl_id.lower() not in cg_flat:
             return render(request, 'controls/detail.html', {'catalog': catalog, 'control': {}})
 
-        statements = get_statement_by_component(system, control_id, catalog_key)
+        statements = get_statement_by_component(system, cl_id, catalog_key)
+        statements, narrative = get_narrative(statements, statement_id)
 
-        narrative = None
-        if statements and statement_id:
-            for k, s in statements.items():
-                if s['sid'] == int(statement_id):
-                    narrative = s
-        elif statements:
-            narrative = list(statements.items())[0]
-
-        catalog = get_catalog_data_by_control(catalog_key, control_id)
-
+        catalog = get_catalog_data_by_control(catalog_key, cl_id)
         nav = project_nav.project_navigation(request, project)
 
         context = {
@@ -1998,6 +1990,7 @@ def get_catalog_data_by_control(catalog_key, control_id):
         'guidance': cat.get_control_prose_as_markdown(ctrl, 'guidance'),
         'implementation': cat.get_control_prose_as_markdown(ctrl, 'implementation'),
         'catalog_display': cat.catalog_key_display,
+        'catalog_key': catalog_key,
     }
     return catalog_data
 
@@ -2020,7 +2013,11 @@ def get_statement_by_component(system, control_id, catalog_key):
     for s in stmts:
         st[s.producer_element.name] = {
             'body': s.body,
+            'inheritance': s.inheritance,
             'sid': s.id,
+            'producer_element_name': s.producer_element.name,
+            'producer_element_id': s.producer_element.id,
+            'status': s.status,
             'href': reverse('control_editor_statement',
                 args=[system.id, catalog_key, control_id, s.id])
         }
@@ -2030,6 +2027,34 @@ def get_statement_by_component(system, control_id, catalog_key):
         statements = {}
 
     return statements
+
+
+def get_narrative(statements, statement_id):
+    narrative = None
+    # Determine the next item in the dictionary
+    next = None
+    if statements and statement_id:
+        get_next = False
+        for k, s in statements.items():
+            if get_next:
+                next = k
+                get_next = False
+            if s['sid'] == int(statement_id):
+                narrative = s
+                statements[k]['active'] = True
+                get_next = True
+    elif statements:
+        k = list(statements.keys())[0]
+        if len(statements) > 1:
+            next = list(statements.keys())[1]
+
+        narrative = statements[k]
+        statements[k]['active'] = True
+
+    if next:
+        narrative['next'] = statements[next]['sid']
+
+    return statements, narrative
 
 def get_editor_system(catalog_key, system_id):
     """
