@@ -44,14 +44,14 @@
     {% else %}
       <div id="tab-content" class="">
         <h2 class="padding-bottom-2">Controls for {{ project.title }}</h2>
-        <h4 class="padding-bottom-1">
+        <div class="padding-bottom-1 font-sans-md">
           {% if security_sensitivity %}
             These are the required controls for a <b>{{ security_sensitivity }}</b> level system. <br />
           {% endif %}
           To change the control baseline for this system, use the 
           <a href="{{project.get_absolute_url}}">FISMA Level Module</a>
             to adjust the Impact Level.
-        </h4>
+        </div>
         <div class="display-flex flex-column flex-align-start">
           <div class="flex-align-center">
             <table id="controls-list" class="usa-table usa-table--striped font-sans-3xs">
