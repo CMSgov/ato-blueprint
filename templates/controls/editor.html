@@ -8,6 +8,36 @@
   Control
 {% endblock %}
 
+{% block breadcrumbs %}
+<nav class="usa-breadcrumb margin-left-2" aria-label="Breadcrumbs,,">
+  <ol class="usa-breadcrumb__list">
+    <li class="usa-breadcrumb__list-item">
+      <a href="/" class="usa-breadcrumb__link">
+        <span>Home</span>
+      </a>
+    </li>
+    <li class="usa-breadcrumb__list-item">
+      <a href="/projects" class="usa-breadcrumb__link">
+        <span>Projects</span>
+      </a>
+    </li>
+    <li class="usa-breadcrumb__list-item">
+      <a href="{{project.get_absolute_url}}" class="usa-breadcrumb__link">
+        <span>{{project.title}}</span>
+      </a>
+    </li>
+    <li class="usa-breadcrumb__list-item">
+      <a href="{% url 'controls_selected' system.id %}" class="usa-breadcrumb__link">
+        <span>Controls</span>
+      </a>
+    </li>
+    <li class="usa-breadcrumb__list-item">
+      <span>{{ catalog.control.label }} {{ catalog.control.title }}</span>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
 {% block pagetitle %}
   <div id="above-tab-content" class="row">
     <div>
