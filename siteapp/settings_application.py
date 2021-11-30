@@ -26,18 +26,24 @@ if OKTA_CONFIG:
     AUTHENTICATION_BACKENDS += ['siteapp.authentication.OIDCAuthentication.OIDCAuth', ]
 
     OKTA_DOMAIN = OKTA_CONFIG['domain']
-    BASE_URL = environment['govready-url'].replace(':443', '')
+    BASE_URL = environment['govready-url'].replace(':443', '')  
     # User information
     USER_CRM_ID = None
     USER_EMAIL = None
-
-    OKTA_ADMIN_DOMAIN = OKTA_DOMAIN
     OIDC_RP_SIGN_ALGO = "RS256"
-    OIDC_OP_JWKS_ENDPOINT = f"{OKTA_ADMIN_DOMAIN}/oauth2/v1/keys"
-    OIDC_OP_AUTHORIZATION_ENDPOINT = f"{OKTA_ADMIN_DOMAIN}/oauth2/v1/authorize"
-    OIDC_OP_TOKEN_ENDPOINT = f"{OKTA_ADMIN_DOMAIN}/oauth2/v1/token"
-    OIDC_OP_USER_ENDPOINT = f"{OKTA_ADMIN_DOMAIN}/oauth2/v1/userinfo"
-    OIDC_RP_SCOPES = "openid profile email groups"
+
+    def _endpoint(name: str, default_endpoint: str):
+        endpoint = OKTA_CONFIG.get(name, default_endpoint)
+        if not endpoint.startswith("/"):
+            raise ValueError(f"OpenID Connect {name} endpoint {endpoint} must start with a '/'")
+        return OKTA_DOMAIN + endpoint
+    
+    OIDC_OP_JWKS_ENDPOINT = _endpoint("oidc_op_jwks_endpoint", "/oauth2/v1/keys")
+    OIDC_OP_AUTHORIZATION_ENDPOINT = _endpoint("oidc_op_authorization_endpoint", "/oauth2/v1/authorize")
+    OIDC_OP_TOKEN_ENDPOINT = _endpoint("oidc_op_token_endpoint", "/oauth2/v1/token")
+    OIDC_OP_USER_ENDPOINT = _endpoint("oidc_op_user_endpoint", "/oauth2/v1/userinfo")
+   
+    OIDC_RP_SCOPES = "openid email profile groups"
     OIDC_RP_CLIENT_ID = OKTA_CONFIG['client_id']
     OIDC_RP_CLIENT_SECRET = OKTA_CONFIG['client_secret']
     OIDC_VERIFY_SSL = True
