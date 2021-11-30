@@ -1160,7 +1160,7 @@ def project_navigation(request, project):
         },
         "invite": {
             "url": "#",
-            "title": "Invite Collaborators",
+            "title": "Invite",
             "id": "project-invite",
         },
         "ssp": {
@@ -1170,12 +1170,12 @@ def project_navigation(request, project):
         },
         "controls": {
             "url": "/systems/" + str(project.system.id) + "/controls/selected",
-            "title": "Controls",
+            "title": "System Controls",
             "id": "project-controls",
         },
         "components": {
             "url": "/systems/" + str(project.system.id) + "/components/selected",
-            "title": "Components",
+            "title": "Manage Components",
             "id": "project-components",
         },
     }

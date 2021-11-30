@@ -429,8 +429,8 @@ class Element(auto_prefetch.Model, TagModelMixin):
 class ElementControl(auto_prefetch.Model):
 
     class Statuses(models.IntegerChoices):
-        NEEDSWORK = 2, 'Needs work'
-        READY = 3, 'Ready for assessment'
+        NEEDSWORK = 2, 'Pending'
+        READY = 3, 'Implemented'
         ASSESSED = 4, 'Assessed'
         CHANGES = 5, 'Changes requested'
 

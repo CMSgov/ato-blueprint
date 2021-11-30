@@ -43,54 +43,50 @@
       </div>
     {% else %}
       <div id="tab-content" class="">
-        <table id="controls-list" class="usa-table usa-table--striped font-sans-3xs">
-          <caption>
-            Selected controls <div id="download-controls" data-doc="{{document.id|escapejs}}" data-sys="{{ system.id }}" class="float-right"><svg class="usa-icon position-relative usa-icon--size-3 top-1" aria-hidden="true" focusable="false" role="img"><use xlink:href="{% static "vendor/uswds-2.12.0/img/sprite.svg#file_download" %}"></use></svg></div>
-          </caption>
-          <thead>
-            <tr>
-              <th data-sortable scope="col" role="columnheader">Control</th>
-              <th scope="col" role="columnheader">Catalog</th>
-              <th scope="col" role="columnheader"></th>
-              <th data-sortable scope="col" role="columnheader"></th>
-              <th data-sortable scope="col" role="columnheader">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-          {% for control in controls %}
-            <tr>
-              <td data-sort-value="{{ control.get_flattened_oscal_control_as_dict.id_display|upper }}">
-                <a href="{% url 'control_editor' system_id=system.id catalog_key=control.oscal_catalog_key cl_id=control.oscal_ctl_id %}">{{ control.get_flattened_oscal_control_as_dict.id_display|upper }} </a>
-              </td>
-              <td>
-                <span class="systems-control-catalog">{{ control.oscal_catalog_key }}</span>
-              </td>
-              <td>
-                {{ control.get_flattened_oscal_control_as_dict.title }}
-              </td>
-              <td data-sort-value="{{ total }}">
-                {% with total=impl_smts_cmpts_count|get_item:control.oscal_ctl_id %}
-                {% if total > 0 %}
-                  {{ total }} component{{ total|pluralize }}
-                {% else %}
-                    &mdash;
-                {% endif %}
-                {% endwith %}
-              </td>
-              <td data-sort-value="{{ control.get_status }}">
-                {{ control.get_status }}
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+        <h2 class="padding-bottom-2">Controls for {{ project.title }}</h2>
+        <h4 class="padding-bottom-1">
+          {% if security_sensitivity %}
+            These are the required controls for a <b>{{ security_sensitivity }}</b> level system. <br />
+          {% endif %}
+          To change the control baseline for this system, use the 
+          <a href="{{project.get_absolute_url}}">FISMA Level Module</a>
+            to adjust the Impact Level.
+        </h4>
+        <div class="display-flex flex-column flex-align-start">
+          <div class="flex-align-center">
+            <table id="controls-list" class="usa-table usa-table--striped font-sans-3xs">
+              <thead>
+                <tr>
+                  <th class="bg-accent-cool-light" data-sortable scope="col" role="columnheader">Control</th>
+                  <th scope="col" role="columnheader">Control Name</th>
+                  <th data-sortable scope="col" role="columnheader">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for control in controls %}
+                <tr>
+                  <td class="bg-accent-cool-lighter" data-sort-value="{{ control.get_flattened_oscal_control_as_dict.id_display|upper }}">
+                    <a href="{% url 'control_editor' system_id=system.id catalog_key=control.oscal_catalog_key cl_id=control.oscal_ctl_id %}">{{ control.get_flattened_oscal_control_as_dict.id_display|upper }} </a>
+                  </td>
+                  <td>
+                    {{ control.get_flattened_oscal_control_as_dict.title }}
+                  </td>
+                  <td data-sort-value="{{ control.get_status }}">
+                    {{ control.get_status }}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            {% if controls.paginator.num_pages > 1 %}
+              {% include "controls/controls_pagination.html" %}
+            {% endif %}
+          </div>
+        </div>
         <div
           class="usa-sr-only usa-table__announcement-region"
           aria-live="polite"
         ></div>
-        {% if controls.paginator.num_pages > 1 %}
-          {% include "controls/controls_pagination.html" %}
-        {% endif %}
       </div>
     {% endif %}
   </div>
