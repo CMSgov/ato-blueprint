@@ -122,7 +122,11 @@
           >Control Narrative</button>
         </h4>
         <div id="b-a3" class="usa-accordion__content usa-prose padding-0">
-          {% include 'controls/statement_edit_form.html' %}
+          {% if narrative %}
+            {% include 'controls/statement_edit_form.html' %}
+          {% else %}
+            <p class="margin-1 padding-top-2">There are no Components that address this Control.</p>
+          {% endif %}
         </div>
       </div>
     </div>
