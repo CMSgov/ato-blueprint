@@ -62,7 +62,7 @@ SIGNUP = "signup"
 def home_user(request):
     # If the user is logged in, then redirect them to the projects page.
     if not request.user.is_authenticated:
-        if settings.OKTA_CONFIG:
+        if settings.OIDC_CONFIG:
             return HttpResponseRedirect("/oidc/authenticate")
         return HttpResponseRedirect("/login")
 
@@ -153,7 +153,7 @@ def homepage(request):
         from django.contrib.auth import logout
         logout(request)
         return HttpResponseRedirect('/')  # reload
-    if settings.OKTA_CONFIG:
+    if settings.OIDC_CONFIG:
         return HttpResponseRedirect("/oidc/authenticate")
     return render(request, "index.html", {
         "hide_registration":  SystemSettings.hide_registration,

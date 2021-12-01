@@ -133,7 +133,7 @@ urlpatterns = [
 ]
 
 
-if settings.OKTA_CONFIG:
+if settings.OIDC_CONFIG:
     urlpatterns += [
         path('oidc/', include('mozilla_django_oidc.urls')),
         url(r'^accounts/logout/$', views.logged_out, name="logged_out"),
