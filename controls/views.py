@@ -1951,7 +1951,7 @@ def control_editor(request, system_id, catalog_key, cl_id, statement_id=None):
     if request.user.has_perm('view_system', system):
         project = system.projects.first()
         parameter_values = project.get_parameter_values(catalog_key)
-        catalog = Catalog(catalog_key, parameter_values=parameter_values)
+        catalog = Catalog.GetInstance(catalog_key=catalog_key)
         cg_flat = catalog.get_flattened_controls_all_as_dict()
         # If control id does not exist in catalog
         if cl_id.lower() not in cg_flat:
