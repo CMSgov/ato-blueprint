@@ -1957,7 +1957,7 @@ def control_editor(request, system_id, catalog_key, cl_id, statement_id=None):
         if cl_id.lower() not in cg_flat:
             return render(request, 'controls/detail.html', {'catalog': catalog, 'control': {}})
 
-        statements = get_statement_by_component(system, cl_id, catalog_key)
+        statements = get_statements_by_component(system, cl_id, catalog_key)
         statements, narrative = get_narrative(statements, statement_id)
 
         catalog = get_catalog_data_by_control(catalog_key, cl_id)
@@ -1995,7 +1995,7 @@ def get_catalog_data_by_control(catalog_key, control_id):
     return catalog_data
 
 
-def get_statement_by_component(system, control_id, catalog_key):
+def get_statements_by_component(system, control_id, catalog_key):
     """
     Given a system element, a control ID and a catalog key, return the associated
     statements.
@@ -2030,6 +2030,21 @@ def get_statement_by_component(system, control_id, catalog_key):
 
 
 def get_narrative(statements, statement_id):
+    """
+    Given a statement_id, or None if one wasn't provided, determine which item
+    in the statements dict is Active and determine whether this is the last item
+    in the statements dict.
+
+    :param dict statements: A dictionary containing the project specific
+    Control statements for a given Control keyed by the Component name.
+    :param int statement_id: The Statement ID for the narrative to display
+    and edit.
+    :return dict statements: Return the statement dict with the Active item
+    flagged.
+    :return dict narrative: Return the values associate with the Control
+    narrative that is to be displayed/edited, including whether or not there
+    is a next item.
+    """
     narrative = None
     # Determine the next item in the dictionary
     next = None
