@@ -39,7 +39,7 @@ class OIDCAuth(OIDCAuthenticationBackend):
         user.first_name = claims[settings.OIDC_CLAIMS_MAP['first_name']]
         user.last_name = claims[settings.OIDC_CLAIMS_MAP['last_name']]
         user.username = claims[settings.OIDC_CLAIMS_MAP['username']]
-        groups = claims.get(settings.OIDC_CLAIMS_MAP['groups'], ['admin'])
+        groups = claims.get(settings.OIDC_CLAIMS_MAP['groups'], [])
         user.is_staff = self.is_admin(groups)
         user.is_superuser = user.is_staff
 
