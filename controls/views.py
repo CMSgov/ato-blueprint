@@ -1958,7 +1958,7 @@ def control_editor(request, system_id, catalog_key, cl_id, statement_id=None):
             return render(request, 'controls/detail.html', {'catalog': catalog, 'control': {}})
 
         statements = get_statements_by_component(system, cl_id, catalog_key, statement_id)
-        statements, narrative = get_narrative(statements, statement_id)
+        narrative = get_narrative(statements, statement_id)
 
         catalog = get_catalog_data_by_control(catalog_key, cl_id)
         nav = project_nav.project_navigation(request, project)
@@ -2041,18 +2041,15 @@ def get_statements_by_component(system, control_id, catalog_key, statement_id):
 def get_narrative(statements, statement_id):
     """
     Given a statement_id, or None if one wasn't provided, determine which item
-    in the statements dict is Active and determine whether this is the last item
-    in the statements dict.
+    in the statements dict to display and determine whether this is the last
+    item in the dict.
 
     :param dict statements: A dictionary containing the project specific
     Control statements for a given Control keyed by the Component name.
     :param int statement_id: The Statement ID for the narrative to display
     and edit.
-    :return dict statements: Return the statement dict with the Active item
-    flagged.
-    :return dict narrative: Return the values associate with the Control
-    narrative that is to be displayed/edited, including whether or not there
-    is a next item.
+    :return dict narrative: Return a dict containing the values associate with
+    the Control narrative that is to be displayed/edited.
     """
     narrative = None
     # Determine the next item in the dictionary
@@ -2076,7 +2073,7 @@ def get_narrative(statements, statement_id):
     if next:
         narrative['next'] = statements[next]['sid']
 
-    return statements, narrative
+    return narrative
 
 def get_editor_system(catalog_key, system_id):
     """
@@ -2188,6 +2185,8 @@ def save_smt(request):
                 statement.remarks = form_values['remarks']
                 if 'status' in form_values:
                     statement.status = form_values['status']
+                else:
+                    statement.status = None
                 if "inheritance_name" in form_values:
                     statement.inheritance_id = form_values["inheritance_name"]
             else:

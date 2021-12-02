@@ -19,6 +19,7 @@
         type="checkbox"
         name="status"
         value="Implemented"
+        {% if narrative.status == "Implemented" %}checked{% endif %}
       />
       <label class="usa-checkbox__label" for="check-implemented">
         Mark as implemented
