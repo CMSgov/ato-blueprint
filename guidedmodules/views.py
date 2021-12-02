@@ -1,44 +1,44 @@
+import logging
 import os
-
+import re
 from datetime import datetime
-from zipfile import ZipFile
-from zipfile import BadZipFile
-from django.shortcuts import render,  get_object_or_404
-from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
+from pathlib import PurePath
+from zipfile import BadZipFile, ZipFile
+
+import fs
+import fs.errors
+from controls.enums.statements import StatementTypeEnum
+from controls.models import Element, ElementRole, Statement, System
 from controls.utilities import de_oscalize_control_id
+from discussion.models import Discussion
+from discussion.validators import validate_file_extension
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-from django.conf import settings
-from django.utils import timezone
 from django.db import transaction
-
-import re
-
-from pathlib import PurePath
+from django.http import (Http404, HttpResponse, HttpResponseForbidden,
+                         HttpResponseNotAllowed, HttpResponseRedirect,
+                         JsonResponse)
+from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 from django.utils.text import slugify
-
-from controls.enums.statements import StatementTypeEnum
-from discussion.validators import validate_file_extension
-from .models import Module, ModuleQuestion, Task, TaskAnswer, TaskAnswerHistory, InstrumentationEvent
-
-import guidedmodules.module_logic as module_logic
-import guidedmodules.answer_validation as answer_validation
-
-from discussion.models import Discussion
-from siteapp.models import User, Invitation, Project, ProjectMembership
-from guidedmodules.forms import ExportCSVTemplateSSPForm
-from controls.models import Element, ElementRole, Statement, System
-
+from siteapp.models import Invitation, Project, ProjectMembership, User
 from siteapp.views import project_navigation
 
-import fs, fs.errors
+import guidedmodules.answer_validation as answer_validation
+import guidedmodules.module_logic as module_logic
+from guidedmodules.forms import ExportCSVTemplateSSPForm
 
-import logging
+from .models import (InstrumentationEvent, Module, ModuleQuestion, Task,
+                     TaskAnswer, TaskAnswerHistory)
+
 logging.basicConfig()
 import csv
+
 import structlog
 from structlog import get_logger
 from structlog.stdlib import LoggerFactory
+
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
@@ -790,7 +790,8 @@ def show_question(request, task, answered, context, q):
     # and providing a download link.
     answer_rendered = None
     if taskq and taskq.question.spec["type"] == "file" and answer:
-        from .module_logic import TemplateContext, RenderedAnswer, HtmlAnswerRenderer
+        from .module_logic import (HtmlAnswerRenderer, RenderedAnswer,
+                                   TemplateContext)
         tc = TemplateContext(answered, HtmlAnswerRenderer(show_metadata=False))
         ra = RenderedAnswer(task, taskq.question, True, answer, existing_answer, tc)
         answer_rendered = ra.__html__()
@@ -1399,8 +1400,9 @@ def authoring_tool_auth(f):
 @login_required
 @transaction.atomic
 def authoring_import_appsource(request):
-    from guidedmodules.models import AppSource
     from collections import OrderedDict
+
+    from guidedmodules.models import AppSource
 
     appsource_zipfile = request.FILES.get("file")
     if appsource_zipfile:
@@ -1438,8 +1440,9 @@ def authoring_import_appsource(request):
 @login_required
 @transaction.atomic
 def authoring_create_q(request):
-    from guidedmodules.models import AppSource
     from collections import OrderedDict
+
+    from guidedmodules.models import AppSource
 
     new_q_appsrc = AppSource.objects.get(slug="govready-q-files-stubs")
 
@@ -1526,7 +1529,8 @@ def upgrade_app(request):
     if not appver.has_upgrade_priv(request.user):
         return HttpResponseForbidden()
 
-    from .app_loading import load_app_into_database, AppImportUpdateMode, ModuleDefinitionError, IncompatibleUpdate
+    from .app_loading import (AppImportUpdateMode, IncompatibleUpdate,
+                              ModuleDefinitionError, load_app_into_database)
     with appver.source.open() as store:
             # Load app.
             try:
@@ -2159,13 +2163,14 @@ def export_ssp_csv(form_data, system):
     """
 
     smts = system.root_element.statements_consumed.filter(
-        statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).order_by('pid')
+        statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).order_by('sid')
 
     selected_controls = list(smts.values_list('sid', flat=True))
     # If the user selected to format the control id in OSCAL this will be skipped
     if not form_data.get('oscal_format'):
         # De-oscalize every control id (sid)
         selected_controls = [de_oscalize_control_id(control) for control in selected_controls]
+
     db_catalog_keys = list(smts.values_list('sid_class', flat=True))
     catalog_keys = []
     # XYZ_3_0 --> XYZ 3.0
@@ -2174,17 +2179,11 @@ def export_ssp_csv(form_data, system):
             catalog_keys.append(" ".join(catalog.split("_")[:2]) + " " + ".".join(catalog.split("_")[-2:]))
         else:
             catalog_keys.append(catalog)
-    imps = list(smts.values_list('body', flat=True))
     headers = [form_data.get('info_system'), form_data.get('control_id'), form_data.get('catalog'), form_data.get('shared_imps'), form_data.get('private_imps')]
     system_name = system.root_element.name # TODO: Should this come from questionnaire answer or project name as we have it?
 
-    data = [
-        [system_name] * len(selected_controls),
-        selected_controls,
-        catalog_keys,
-        [""] * len(selected_controls),# shared imps are not implemented
-        imps
-    ]
+    rows = csv_export_create_rows(smts, system_name, db_catalog_keys[0])
+
     filename = str(PurePath(slugify(system_name+ "-" + datetime.now().strftime("%Y-%m-%d-%H-%M"))).with_suffix('.csv'))
 
     # Create the HttpResponse object with the appropriate CSV header.
@@ -2195,9 +2194,32 @@ def export_ssp_csv(form_data, system):
 
     writer = csv.writer(response)
     writer.writerow(headers)
-    # spread and write rows
-    writer.writerows(zip(*data))
+    writer.writerows(rows)
 
     return response
 
+
+def csv_export_create_rows(controls, system, catalog_key):
+    """
+    Concatenate control narratives from different components but for the same
+    control into one statement. All of the statements regarding AC-01 should
+    be in concatenated into one statement.
+    """
+    temp = {}
+    for s in controls:
+        if s.sid not in temp:
+            temp[s.sid] = {
+                'system': system,
+                'id': s.get_label(s.sid),
+                'catalog': s.source,
+                'shared': '',
+                'private': s.body,
+            }
+        else:
+            temp[s.sid]['private'] = "\r\n".join([temp[s.sid]['private'], s.body])
+
+    rows = []
+    for k, v in temp.items():
+        rows.append(list(v.values()))
+    return rows
 
