@@ -1957,7 +1957,7 @@ def control_editor(request, system_id, catalog_key, cl_id, statement_id=None):
         if cl_id.lower() not in cg_flat:
             return render(request, 'controls/detail.html', {'catalog': catalog, 'control': {}})
 
-        statements = get_statements_by_component(system, cl_id, catalog_key)
+        statements = get_statements_by_component(system, cl_id, catalog_key, statement_id)
         statements, narrative = get_narrative(statements, statement_id)
 
         catalog = get_catalog_data_by_control(catalog_key, cl_id)
@@ -1995,7 +1995,7 @@ def get_catalog_data_by_control(catalog_key, control_id):
     return catalog_data
 
 
-def get_statements_by_component(system, control_id, catalog_key):
+def get_statements_by_component(system, control_id, catalog_key, statement_id):
     """
     Given a system element, a control ID and a catalog key, return the associated
     statements.
@@ -2011,6 +2011,10 @@ def get_statements_by_component(system, control_id, catalog_key):
 
     st = {}
     for s in stmts:
+        active = False
+        if statement_id and s.id == int(statement_id):
+            active = True
+
         st[s.producer_element.name] = {
             'body': s.body,
             'inheritance': s.inheritance,
@@ -2019,10 +2023,15 @@ def get_statements_by_component(system, control_id, catalog_key):
             'producer_element_id': s.producer_element.id,
             'status': s.status,
             'href': reverse('control_editor_statement',
-                args=[system.id, catalog_key, control_id, s.id])
+                args=[system.id, catalog_key, control_id, s.id]),
+            'active': active,
         }
+
     if st:
         statements = dict(sorted(st.items()))
+        if not statement_id:
+            k = list(statements.keys())[0]
+            statements[k]['active'] = True
     else:
         statements = {}
 
@@ -2049,22 +2058,20 @@ def get_narrative(statements, statement_id):
     # Determine the next item in the dictionary
     next = None
     if statements and statement_id:
-        get_next = False
+        has_next = False
         for k, s in statements.items():
-            if get_next:
+            if has_next:
                 next = k
-                get_next = False
+                has_next = False
             if s['sid'] == int(statement_id):
                 narrative = s
-                statements[k]['active'] = True
-                get_next = True
+                has_next = True
     elif statements:
         k = list(statements.keys())[0]
         if len(statements) > 1:
             next = list(statements.keys())[1]
 
         narrative = statements[k]
-        statements[k]['active'] = True
 
     if next:
         narrative['next'] = statements[next]['sid']
