@@ -1,19 +1,17 @@
+from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
-from django.conf import settings
+from siteapp.model_mixins.tags import TagView, build_tag_urls
 
 from controls.models import Element
-from siteapp.model_mixins.tags import TagView, build_tag_urls
 
 admin.autodiscover()
 
 from django.views.decorators.csrf import csrf_exempt
-from controls import urls_api
+from siteapp.settings import *
 
 import controls.views
-from controls import views
-
-from siteapp.settings import *
+from controls import urls_api, views
 
 urlpatterns = [
     # Docs
@@ -30,7 +28,8 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/controls/add$', views.system_controls_add, name="system_controls_add"),
     url(r'^(?P<system_id>.*)/controls/remove/(?P<element_control_id>.*)$',  views.system_control_remove, name="system_control_remove"),
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)/compare$', views.editor_compare, name="control_compare"),
-    url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)$', views.editor, name="control_editor"),
+    url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)/statement/(?P<statement_id>.*)$', views.control_editor, name="control_editor_statement"),
+    url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)/$', views.control_editor, name="control_editor"),
     url(r'^editor_autocomplete/', views.EditorAutocomplete.as_view(), name="search_system_component"),
     url(r'^related_system_components/', views.RelatedComponentStatements.as_view(), name="related_system_components"),
     url(r'^(?P<system_id>.*)/components/add_system_component$', views.add_system_component, name="add_system_component"),

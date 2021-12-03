@@ -1,0 +1,44 @@
+<form id="narrative-form" class="statement_form">
+    <!-- Never change name of the producer element already associated with a statement -->
+    {% csrf_token %}
+    <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ narrative.producer_element_id }}">
+    <input type="hidden" class="form-control" id="producer_element_name" name="producer_element_name" value="{{ narrative.producer_element_name }}">
+    <input type="hidden" id="control_id" name="control_id" value="{{ catalog.control.id }}">
+    <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
+    <input type="hidden" id="sid" name="sid" value="{{ narrative.sid }}">
+    <input type="hidden" id="sid_class" name="sid_class" value="{{ catalog.catalog_key }}">
+    <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
+    <input type="hidden" id="smt_id" name="smt_id" value="{{ narrative.sid }}">
+    <input type="hidden" id="pid" name="pid" value="">
+    <input type="hidden" id="remarks" name="remarks" value="">
+    <textarea class="form-control minh-15 overflow-y-scroll" id="body_{{ forloop.counter }}" name="body" placeholder="How component contributes to control" cols="50">{{ narrative.body }}</textarea>
+    <div class="usa-checkbox margin-left-1 padding-bottom-2">
+      <input
+        class="usa-checkbox__input"
+        id="check-implemented"
+        type="checkbox"
+        name="status"
+        value="Implemented"
+        {% if narrative.status == "Implemented" %}checked{% endif %}
+      />
+      <label class="usa-checkbox__label" for="check-implemented">
+        Mark as implemented
+      </label>
+    </div>
+    <div class="border-top margin-top-5 padding-top-1 margin-x-05 ">
+      <ul class="display-inline float-left margin-top-1 padding-left-0">
+        <li class="display-inline margin-right-1"><a id="discuss-statement" href="#" data-sid="{{ narrative.sid }}">Discuss</a></li>
+        <li class="display-inline margin-right-1"><a id="assign-statement" href="#" data-sid="{{ narrative.sid }}">Assign</a></li>
+        <li class="display-inline"><a id="control-delete" href="#" data-sid="{{ narrative.sid }}">Delete</a></li>
+      </ul>
+      {% if narrative.next %}
+        <a id="control-next" class="usa-button usa-button--base bg-green display-inline-block float-right" href="{% url 'control_editor_statement' system_id=system.id catalog_key=catalog.catalog_key cl_id=catalog.control.id statement_id=narrative.next %}">
+          Save & next
+        </a>
+      {% else %}
+        <a id="control-next" class="usa-button usa-button--base bg-green display-inline-block float-right" href="{% url 'control_editor_statement' system_id=system.id catalog_key=catalog.catalog_key cl_id=catalog.control.id statement_id=narrative.sid %}">
+          Save
+        </a>
+      {% endif %}
+    </div>
+</form>

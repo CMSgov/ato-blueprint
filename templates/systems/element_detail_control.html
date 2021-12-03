@@ -25,7 +25,8 @@
 {% endblock %}
 
 {% block body_content %}
-<div class="systems-top">  <div class="usa-step-indicator__header">
+<div class="">
+  <div class="usa-step-indicator__header">
     <h4 class="usa-step-indicator__heading">
       <span class="usa-step-indicator__heading-counter">
         <span class="usa-step-indicator__current-step"></span>
@@ -34,8 +35,7 @@
       </span>
     </h4>
   </div>
-  </div>
-  <div id="tab-content" class="row margin-top-1 padding-top-4 border-top-2px border-blue">
+  <div class="row margin-top-1 padding-top-4 border-top-2px border-blue">
     <div class="col-md-3 padding-right-2">
       <h4 class="text-bold margin-bottom-2 margin-top-1">Controls</h4>
       <nav aria-label="Secondary navigation,">
@@ -81,7 +81,7 @@
             {% if c.implementation %}
               <p>{{ c.implementation|linebreaks }}</p>
             {% else %}
-              <p>No Implementation Standards provide.</p>
+              <p>No Implementation Standards provided.</p>
             {% endif %}
           {% endif %}
         {% endfor %}
