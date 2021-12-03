@@ -2048,32 +2048,28 @@ def get_narrative(statements, statement_id):
     Control statements for a given Control keyed by the Component name.
     :param int statement_id: The Statement ID for the narrative to display
     and edit.
-    :return dict narrative: Return a dict containing the values associate with
-    the Control narrative that is to be displayed/edited.
+    :return dict statements: Return a dict containing the values associate with
+    the Control narrative that is to be displayed/edited or return None.
     """
-    narrative = None
-    # Determine the next item in the dictionary
-    next = None
-    if statements and statement_id:
-        has_next = False
-        for k, s in statements.items():
-            if has_next:
-                next = k
-                has_next = False
-            if s['sid'] == int(statement_id):
-                narrative = s
-                has_next = True
-    elif statements:
-        k = list(statements.keys())[0]
-        if len(statements) > 1:
-            next = list(statements.keys())[1]
+    statements = list(statements.values())
 
-        narrative = statements[k]
+    # add a "next" key to statements linking them to the "sid" of the
+    # following statement
+    last_idx = len(statements) - 1
+    for idx, statement in enumerate(statements):
+        if idx < last_idx:
+            statement["next"] = statements[idx + 1]["sid"]
 
-    if next:
-        narrative['next'] = statements[next]['sid']
+    # if called with a statement_id, we're only interested in a subset
+    if statement_id:
+        statements = [s for s in statements if s["sid"] == int(statement_id)]
 
-    return narrative
+    # return the first statement, or None if there are no matching statements
+    if statements:
+        return statements[0]
+    else:
+        return None
+
 
 def get_editor_system(catalog_key, system_id):
     """
