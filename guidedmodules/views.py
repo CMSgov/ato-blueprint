@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+from collections import OrderedDict
 from datetime import datetime
 from pathlib import PurePath
 from zipfile import BadZipFile, ZipFile
@@ -839,7 +840,7 @@ def show_question(request, task, answered, context, q):
     # Create a "question" record for each question that is displayed by the template.
     # For module-set questions, create one record to start new entries and separate
     # records for each answered module.
-    from collections import OrderedDict
+
     questions = OrderedDict()
     can_start_any_apps = False
     # for item in root_task_answers.answertuples.items():
@@ -1089,7 +1090,6 @@ def task_finished(request, task, answered, context, *unused_args):
     # Create a "question" record for each question that is displayed by the template.
     # For module-set questions, create one record to start new entries and separate
     # records for each answered module.
-    from collections import OrderedDict
     questions = OrderedDict()
     can_start_any_apps = False
 
@@ -1400,8 +1400,6 @@ def authoring_tool_auth(f):
 @login_required
 @transaction.atomic
 def authoring_import_appsource(request):
-    from collections import OrderedDict
-
     from guidedmodules.models import AppSource
 
     appsource_zipfile = request.FILES.get("file")
@@ -1440,8 +1438,6 @@ def authoring_import_appsource(request):
 @login_required
 @transaction.atomic
 def authoring_create_q(request):
-    from collections import OrderedDict
-
     from guidedmodules.models import AppSource
 
     new_q_appsrc = AppSource.objects.get(slug="govready-q-files-stubs")
@@ -1770,7 +1766,6 @@ def authoring_edit_question(request, task):
         # Create the spec dict, starting with the standard fields.
         # Most fields are strings and need no extra processing but
         # some need to be parsed.
-        from collections import OrderedDict
         spec = OrderedDict()
         spec["id"] = request.POST['newid']
         for field in (
@@ -2201,25 +2196,28 @@ def export_ssp_csv(form_data, system):
 
 def csv_export_create_rows(controls, system, catalog_key):
     """
-    Concatenate control narratives from different components but for the same
-    control into one statement. All of the statements regarding AC-01 should
-    be in concatenated into one statement.
+    Concatenate control narratives from different components for
+    the same control into one statement. For example, all of the
+    statements regarding AC-01 should be concatenated into one
+    statement.
     """
     temp = {}
     for s in controls:
-        if s.sid not in temp:
-            temp[s.sid] = {
+        label = s.get_label(s.sid)
+        if label not in temp:
+            temp[label] = {
                 'system': system,
-                'id': s.get_label(s.sid),
+                'id': label,
                 'catalog': s.source,
                 'shared': '',
                 'private': s.body,
             }
         else:
-            temp[s.sid]['private'] = "\r\n".join([temp[s.sid]['private'], s.body])
+            temp[label]['private'] = "\r\n".join([temp[label]['private'], s.body])
 
     rows = []
-    for k, v in temp.items():
+    srt = OrderedDict(sorted(temp.items(), key=lambda t: t[0]))
+    for k, v in srt.items():
         rows.append(list(v.values()))
     return rows
 
