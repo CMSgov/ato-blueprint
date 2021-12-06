@@ -229,9 +229,9 @@ class Statement(auto_prefetch.Model):
         self.save()
         return True
 
-    def get_label(self, sid):
-        result = re.findall(r'[0-9]+', sid)
-        family = sid[:2]
+    def get_label(self, control_id):
+        result = re.findall(r'[0-9]+', control_id)
+        family = control_id[:2]
         if result[0]:
             ctrl = "{}-{}".format(family, f'{int(result[0]):02d}')
         if len(result) > 1:
