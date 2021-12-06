@@ -211,7 +211,6 @@ def controls_selected(request, system_id):
         security_sensitivity_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name)
         if len(security_sensitivity_smts) > 0:
             security_sensitivity = security_sensitivity_smts.first().body
-
         else:
             security_sensitivity = None
 
