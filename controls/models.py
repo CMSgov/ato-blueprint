@@ -1,27 +1,27 @@
-from pathlib import Path
-import os
 import json
+import os
+import uuid
+from copy import deepcopy
+from pathlib import Path
+
 import auto_prefetch
-from django.db import models
+import tools.diff_match_patch.python3 as dmp_module
+from django.db import models, transaction
 from django.db.models import Count
 from django.utils.functional import cached_property
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
-from simple_history.models import HistoricalRecords
 from jsonfield import JSONField
 from natsort import natsorted
-
-from controls.enums.components import ComponentTypeEnum, ComponentStateEnum
+from simple_history.models import HistoricalRecords
 from siteapp.model_mixins.tags import TagModelMixin
-from controls.enums.statements import StatementTypeEnum
+
+from controls.enums.components import ComponentStateEnum, ComponentTypeEnum
 from controls.enums.remotes import RemoteTypeEnum
+from controls.enums.statements import StatementTypeEnum
 from controls.oscal import Catalog, CatalogData
 from controls.utilities import *
-import uuid
-import tools.diff_match_patch.python3 as dmp_module
-from copy import deepcopy
-from django.db import transaction
 
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
 ORGPARAM_PATH = os.path.join(os.path.dirname(__file__),'data','org_defined_parameters')
@@ -228,6 +228,7 @@ class Statement(auto_prefetch.Model):
         self.change_log['change_log']['changes'].append(dictionary_copy)
         self.save()
         return True
+
 
 class StatementRemote(auto_prefetch.Model):
     statement = models.ForeignKey(Statement, related_name="remotes", unique=False, blank=True, null=True, on_delete=models.CASCADE,

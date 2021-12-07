@@ -95,8 +95,8 @@
                     <svg class="usa-icon position-relative usa-icon--size-3 top-1" aria-hidden="true" focusable="false" role="img"><use xlink:href="{% static "vendor/uswds-2.12.0/img/sprite.svg#file_download" %}"></use></svg></a>
                     <form id="cfacts-download" role="form" class="pull-left" method="POST">
                       {% csrf_token %}
-                      <input type="hidden" name="info_system" value="Information System"/>
-                      <input type="hidden" name="control_id" value="Control ID"/>
+                      <input type="hidden" name="info_system" value="Information System or Program Name"/>
+                      <input type="hidden" name="control_id" value="Control Number"/>
                       <input type="hidden" name="catalog" value="Control Set Version Number"/>
                       <input type="hidden" name="shared_imps" value="Shared Implementation Details"/>
                       <input type="hidden" name="private_imps" value="Private Implementation Details"/>
