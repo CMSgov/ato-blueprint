@@ -25,7 +25,7 @@ class OIDCAuth(OIDCAuthenticationBackend):
                 'first_name': claims[settings.OIDC_CLAIMS_MAP['first_name']],
                 'last_name': claims[settings.OIDC_CLAIMS_MAP['last_name']],
                 'username': claims[settings.OIDC_CLAIMS_MAP['username']],
-                'is_staff': self.is_admin(claims[settings.OIDC_CLAIMS_MAP['groups']])}
+                'is_staff': self.is_admin(claims.get(settings.OIDC_CLAIMS_MAP['groups'], []))}
 
         user = self.UserModel.objects.create_user(**data)
         portfolio = Portfolio.objects.create(title=user.email.split('@')[0], description="Personal Portfolio")
@@ -39,9 +39,13 @@ class OIDCAuth(OIDCAuthenticationBackend):
         user.first_name = claims[settings.OIDC_CLAIMS_MAP['first_name']]
         user.last_name = claims[settings.OIDC_CLAIMS_MAP['last_name']]
         user.username = claims[settings.OIDC_CLAIMS_MAP['username']]
-        groups = claims[settings.OIDC_CLAIMS_MAP['groups']]
+        groups = claims.get(settings.OIDC_CLAIMS_MAP['groups'], [])
         user.is_staff = self.is_admin(groups)
         user.is_superuser = user.is_staff
+
+        # TODO: there is some confusion about names in the User model;
+        #       workaround until resolved
+        user.name = user.first_name + ' ' + user.last_name
 
         new_values = [getattr(user, x.name) for x in user._meta.get_fields() if hasattr(user, x.name)]
         if new_values != original_values:

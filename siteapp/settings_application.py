@@ -19,27 +19,58 @@ INSTALLED_APPS += [
 
     'loadtesting',
 ]
-OKTA_CONFIG = environment.get("okta", {})
-# https://blog.theodo.com/2021/03/okta-sso-with-django-admin/ - example for login override
-if OKTA_CONFIG:
-    LOGIN_ENABLED = False
-    AUTHENTICATION_BACKENDS += ['siteapp.authentication.OIDCAuthentication.OIDCAuth', ]
+OIDC_CONFIG = environment.get("oidc", {})
 
-    OKTA_DOMAIN = OKTA_CONFIG['domain']
-    BASE_URL = environment['govready-url'].replace(':443', '')
+# default endpoint values for different OpenID Connect providers
+OIDC_PROFILES = {
+    'okta': {
+        "oidc_op_jwks_endpoint": "/oauth2/v1/keys",
+        "oidc_op_authorization_endpoint": "/oauth2/v1/authorize",
+        "oidc_op_token_endpoint": "/oauth2/v1/token",
+        "oidc_op_user_endpoint": "/oauth2/v1/userinfo",
+    },
+    'auth0': {
+        "oidc_op_jwks_endpoint": "/.well-known/jwks.json",
+        "oidc_op_authorization_endpoint": "/authorize",
+        "oidc_op_token_endpoint": "/oauth/token",
+        "oidc_op_user_endpoint": "/userinfo",
+    }
+}
+# https://blog.theodo.com/2021/03/okta-sso-with-django-admin/ - example for login override
+if OIDC_CONFIG:
+    LOGIN_ENABLED = False
+    AUTHENTICATION_BACKENDS += ['siteapp.authentication.OIDCAuthentication.OIDCAuth', ]   
+    OIDC_DOMAIN = OIDC_CONFIG['domain']
+    BASE_URL = environment['govready-url'].replace(':443', '')  
     # User information
     USER_CRM_ID = None
     USER_EMAIL = None
-
-    OKTA_ADMIN_DOMAIN = OKTA_DOMAIN
     OIDC_RP_SIGN_ALGO = "RS256"
-    OIDC_OP_JWKS_ENDPOINT = f"{OKTA_ADMIN_DOMAIN}/oauth2/v1/keys"
-    OIDC_OP_AUTHORIZATION_ENDPOINT = f"{OKTA_ADMIN_DOMAIN}/oauth2/v1/authorize"
-    OIDC_OP_TOKEN_ENDPOINT = f"{OKTA_ADMIN_DOMAIN}/oauth2/v1/token"
-    OIDC_OP_USER_ENDPOINT = f"{OKTA_ADMIN_DOMAIN}/oauth2/v1/userinfo"
-    OIDC_RP_SCOPES = "openid profile email groups"
-    OIDC_RP_CLIENT_ID = OKTA_CONFIG['client_id']
-    OIDC_RP_CLIENT_SECRET = OKTA_CONFIG['client_secret']
+
+    profile = OIDC_PROFILES[OIDC_CONFIG.get('profile', 'okta')]
+
+    def _endpoint(name: str) -> str:
+        """
+        Return an absolute endpoint URL.
+        Use the value in the provided config, if present.
+        Otherwise, use the default value from the profile.
+        """
+        default_endpoint = profile.get(name, None)
+        endpoint = OIDC_CONFIG.get(name, default_endpoint)
+        if not endpoint:
+            raise ValueError(f"Missing {name} endpoint")
+        if not endpoint.startswith("/"):
+            raise ValueError(f"OpenID Connect {name} endpoint {endpoint} must start with a '/'")
+        return OIDC_DOMAIN + endpoint
+    
+    OIDC_OP_JWKS_ENDPOINT = _endpoint("oidc_op_jwks_endpoint")
+    OIDC_OP_AUTHORIZATION_ENDPOINT = _endpoint("oidc_op_authorization_endpoint")
+    OIDC_OP_TOKEN_ENDPOINT = _endpoint("oidc_op_token_endpoint")
+    OIDC_OP_USER_ENDPOINT = _endpoint("oidc_op_user_endpoint")
+   
+    OIDC_RP_SCOPES = "openid email profile groups"
+    OIDC_RP_CLIENT_ID = OIDC_CONFIG['client_id']
+    OIDC_RP_CLIENT_SECRET = OIDC_CONFIG['client_secret']
     OIDC_VERIFY_SSL = True
     LOGIN_REDIRECT_URL = f"{BASE_URL}/"
     OIDC_REDIRECT_URL = f"{BASE_URL}/oidc/callback/"
@@ -55,8 +86,8 @@ if OKTA_CONFIG:
     MIDDLEWARE += ['siteapp.authentication.OIDCAuthentication.OIDCSessionRefresh', ]
 
     # Mapping functionality to support via config
-    OIDC_CLAIMS_MAP = OKTA_CONFIG['claims_map']
-    OIDC_ROLES_MAP = OKTA_CONFIG['roles_map']
+    OIDC_CLAIMS_MAP = OIDC_CONFIG['claims_map']
+    OIDC_ROLES_MAP = OIDC_CONFIG['roles_map']
     LOGGING['loggers'].update({
         'mozilla_django_oidc': {
             'handlers': ['console'],
