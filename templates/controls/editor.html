@@ -79,7 +79,14 @@
           {% if inheritance.name %}
           <b>Responsibility</b>: <span id="responsibility">{{ narrative.inheritance.name }}</span>
           {% else %}
-          <b>Responsibility</b>: <span id="responsibility">Fully Allocated</span>
+          <b>Responsibility</b>:
+          <span id="responsibility">
+            {% if narrative.inheritance.name %}
+              {{ narrative.inheritance.name }}
+            {% else %}
+              Fully Allocated
+            {% endif %}
+          </span>
           {% endif %}
         </li>
         <li><b>Control Description</b>: {{ catalog.control.description|linebreaks }}</li>
