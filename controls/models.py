@@ -222,7 +222,7 @@ class Statement(auto_prefetch.Model):
         # TODO: Test if entry is valid
         if not isinstance(change, dict):
             # change isn't a dictionary
-            messages.add_message(request, messages.ERROR, f"Statement {self.id} not update because change not in the form of a dctionary.")
+            messages.add_message(request, messages.ERROR, f"Statement {self.id} wasn't update because the proposed change was not properly formatted.")
             return False
         dictionary_copy = change.copy()
         self.change_log['change_log']['changes'].append(dictionary_copy)
