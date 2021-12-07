@@ -10,6 +10,7 @@ import fs
 import fs.errors
 from controls.enums.statements import StatementTypeEnum
 from controls.models import Element, ElementRole, Statement, System
+from controls.oscal import Catalog
 from controls.utilities import de_oscalize_control_id
 from discussion.models import Discussion
 from discussion.validators import validate_file_extension
@@ -2202,8 +2203,10 @@ def csv_export_create_rows(controls, system, catalog_key):
     statement.
     """
     temp = {}
+    cat = Catalog.GetInstance(catalog_key=catalog_key)
     for s in controls:
-        label = s.get_label(s.sid)
+        c = cat.get_control_by_id(s.sid)
+        label = cat.get_control_property_by_name(control=c, property_name='label')
         if label not in temp:
             temp[label] = {
                 'system': system,

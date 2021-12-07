@@ -229,14 +229,6 @@ class Statement(auto_prefetch.Model):
         self.save()
         return True
 
-    def get_label(self, control_id):
-        result = re.findall(r'[0-9]+', control_id)
-        family = control_id[:2]
-        if result[0]:
-            ctrl = "{}-{}".format(family, f'{int(result[0]):02d}')
-        if len(result) > 1:
-            ctrl = "{}({})".format(ctrl, f'{int(result[1]):02d}')
-        return ctrl.upper()
 
 class StatementRemote(auto_prefetch.Model):
     statement = models.ForeignKey(Statement, related_name="remotes", unique=False, blank=True, null=True, on_delete=models.CASCADE,
