@@ -1,14 +1,13 @@
-from django.contrib import admin
 from django import forms
+from django.contrib import admin
 from django.utils.html import escape as escape_html
 from django_json_widget.widgets import JSONEditorWidget
 from jsonfield import JSONField
 
+from .models import (AppInput, AppSource, AppVersion, InstrumentationEvent,
+                     Module, ModuleAsset, ModuleQuestion, Task, TaskAnswer,
+                     TaskAnswerHistory)
 
-from .models import \
-	AppSource, AppVersion, Module, ModuleQuestion, ModuleAsset, \
-	Task, TaskAnswer, TaskAnswerHistory, \
-	InstrumentationEvent, AppInput
 
 class AppSourceSpecWidget(forms.Widget):
     fields = [
@@ -66,7 +65,8 @@ class AppSourceSpecWidget(forms.Widget):
         # For some reason we get the JSON value as a string. Unless we override Form.clean(),
         # and then strangely we get a dict.
         if isinstance(value, (str, type(None))):
-            import json, collections
+            import collections
+            import json
             value = json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(value or "{}")
 
         # The 'url' key is represented by two different widgets
@@ -141,7 +141,10 @@ class AppSourceSpecWidget(forms.Widget):
     def value_from_datadict(self, data, files, name):
         # Override Django Forms widget method `value_from_datadict`
         # Start with the extra data.
-        import rtyaml, collections, json
+        import collections
+        import json
+
+        import rtyaml
         value = rtyaml.load(data[name + "__remaining_"]) or collections.OrderedDict()
 
         # Add other values.
@@ -220,8 +223,8 @@ class AppSourceAdmin(admin.ModelAdmin):
     def import_app_view(self, request, appsourceid, appname):
         # Import the given app into the database and mark it
         # as available in the catalog.
-        from django.shortcuts import get_object_or_404
         from django.http import HttpResponse, HttpResponseRedirect
+        from django.shortcuts import get_object_or_404
 
         # Load the app.
         appsource = get_object_or_404(AppSource, id=appsourceid)
