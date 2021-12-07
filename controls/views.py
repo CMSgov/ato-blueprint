@@ -250,7 +250,7 @@ def system_controls_add(request, system_id):
 
     # If the catalog key and control id combination returns a result than don't add to controls selected
     if controls.filter(Q(oscal_catalog_key=catalog_key)).filter(Q(oscal_ctl_id=control_id)):
-        messages.add_message(request, messages.WARNING, f"Control {control_id.upper()} in catalog {catalog_key} can't be added because it is already included in your system controls.")
+        messages.add_message(request, messages.WARNING, f'Control {control_id.upper()} in catalog {catalog_key} can\'t be added because it is already included in your system controls.')
         # Log result
         logger.warning(
                 event="change_system add_selected_control",
@@ -266,7 +266,7 @@ def system_controls_add(request, system_id):
         system.add_control(catalog_key, control_id)
 
         # Create message for user
-        messages.add_message(request, messages.INFO, f"Control {control_id.upper()} was added to selected controls.")
+        messages.add_message(request, messages.INFO, f'Control {control_id.upper()} was added to selected controls.')
 
     else:
         # User does not have permission
@@ -278,7 +278,7 @@ def system_controls_add(request, system_id):
                 )
 
         # Create message for user
-        messages.add_message(request, messages.INFO, f"You don't have permission to edit the system.")
+        messages.add_message(request, messages.INFO, f'You don\'t have permission to edit the system.')
 
     response = redirect(reverse('controls_selected', args=[system_id]))
     return response
@@ -298,7 +298,7 @@ def system_control_remove(request, system_id, element_control_id):
         # Delete the control implementation statements associated with this component
         system.remove_control(element_control_id)
         # result = element.statements_produced.filter(consumer_element=system.root_element).delete()
-        messages.add_message(request, messages.INFO, f"Control '{ec.oscal_ctl_id}' was removed.")
+        messages.add_message(request, messages.INFO, f'Control {ec.oscal_ctl_id} was removed.')
 
         # Log result
         logger.info(
@@ -317,7 +317,7 @@ def system_control_remove(request, system_id, element_control_id):
                 )
 
         # Create message for user
-        messages.add_message(request, messages.INFO, f"You don't have permission to edit the system.")
+        messages.add_message(request, messages.INFO, f'You don\'t have permission to edit the system.')
 
     response = redirect(reverse('controls_selected', args=[system_id]))
     return response
@@ -492,7 +492,7 @@ def compare_components(request):
     compare_list = list(checks.values())
     if len(compare_list) <= 1:
         # add messages
-        messages.add_message(request, messages.WARNING, f"You must select at least two components to compare.")
+        messages.add_message(request, messages.WARNING, f'You must select at least two components to compare.')
         return HttpResponseRedirect("/controls/components")
     else:
         ele_q = Element.objects.filter(pk__in=compare_list).exclude(element_type='system').distinct()
@@ -595,7 +595,7 @@ def import_record_delete(request, import_record_id):
     import_created = import_record.created
     import_record.delete()
 
-    messages.add_message(request, messages.INFO, f"{import_created} was deleted.")
+    messages.add_message(request, messages.INFO, f'{import_created} was deleted.')
 
     response = redirect('/controls/components')
     return response
@@ -961,10 +961,10 @@ class ComponentImporter(object):
             # Check a component uploaded to form
             if request and request.POST.get("json_content") is not None:
                 if stopinvalid:
-                    messages.add_message(request, messages.ERROR, f"{e.__context__} is an invalid JSON component. Import stopped.")
+                    messages.add_message(request, messages.ERROR, f'{e.__context__} is an invalid JSON component. Import stopped.')
                     return HttpResponse(e)
                 else:
-                    messages.add_message(request, messages.INFO, f"{e.__context__} is an invalid JSON component. Import continued with possible error(s). ")
+                    messages.add_message(request, messages.INFO, f'{e.__context__} is an invalid JSON component. Import continued with possible error(s).')
             else:
                 if stopinvalid:
                     print("\nNOTICE - ISSUES DURING COMPONENT IMPORT\n")
@@ -1321,7 +1321,7 @@ def system_element_remove(request, system_id, element_id):
                 )
 
         # Create message for user
-        messages.add_message(request, messages.INFO, f"Component '{element.name}' was removed.")
+        messages.add_message(request, messages.INFO, f'Component {element.name} was removed.')
 
     else:
         # User does not have permission
@@ -1333,7 +1333,7 @@ def system_element_remove(request, system_id, element_id):
                 )
 
         # Create message for user
-        messages.add_message(request, messages.INFO, f"You don't have permission to edit the system.")
+        messages.add_message(request, messages.INFO, f'You don\'t have permission to edit the system.')
 
     response = redirect(reverse('components_selected', args=[system_id]))
     return response
@@ -1467,7 +1467,7 @@ def component_library_component_copy(request, element_id):
 
     # Create message to display to user
     messages.add_message(request, messages.INFO,
-                         'Component "{}" was copied to "{}".'.format(element.name, e_copy.name))
+                         f'Component {element.name} was copied to {e_copy.name}')
 
     # # Redirect to the new page for the component
     return HttpResponseRedirect("/controls/components/{}".format(e_copy.id))
@@ -2231,7 +2231,7 @@ def save_smt(request):
                 statement.save()
                 statement_element_status = "ok"
                 statement_element_msg = "Control statement associated with Producer Element"
-                messages.add_message(request, messages.INFO, f"{statement_element_msg} {producer_element.id} was added.")
+                messages.add_message(request, messages.INFO, f'{statement_element_msg} {producer_element.id} was added.')
             except Exception as e:
                 statement_element_status = "error"
                 statement_element_msg = "Failed to associate statement with Producer Element {}".format(e)
@@ -2286,7 +2286,7 @@ def save_smt(request):
         if not new_statement:
             statement.save()
         statement_msg = "Statement saved."
-        messages.add_message(request, messages.INFO, f"Statement {smt_id}  was saved")
+        messages.add_message(request, messages.INFO, f'Statement {smt_id}  was saved.')
     except Exception as e:
         statement_status = "error"
         statement_msg = "Statement save failed. Error reported {}".format(e)
@@ -2469,7 +2469,7 @@ def add_system_component(request, system_id):
     # Component already added to system. Do not add the component (element) to the system again.
     if producer_element.id in elements_selected_ids:
         messages.add_message(request, messages.ERROR,
-                            f'Component "{producer_element.name}" can\'t be added because it is already included in your system components.')
+                            f'Component {producer_element.name} can\'t be added because it is already included in your system components.')
         # Redirect to selected element page
         return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
@@ -2480,7 +2480,7 @@ def add_system_component(request, system_id):
     if len(smts) == 0:
         # print(f"The component {producer_element.name} does not have any control implementation statements.")
         messages.add_message(request, messages.ERROR,
-                            f'"{producer_element.name}" can\'t be added because it does not have any control implementation statements to add.')
+                            f'{producer_element.name} can\'t be added because it does not have any control implementation statements to add.')
         # Redirect to selected element page
         return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
@@ -2495,10 +2495,10 @@ def add_system_component(request, system_id):
     smts_added_count = len(smts_added)
     if smts_added_count > 0:
         messages.add_message(request, messages.INFO,
-                         f'"{producer_element.name}"and its {smts_added_count} control implementation statements were added.')
+                         f'{producer_element.name} and its {smts_added_count} control implementation statements were added.')
     else:
         messages.add_message(request, messages.WARNING,
-                         f'"{producer_element.name}" wasn\'t added to the system because it has no controls.')
+                         f'{producer_element.name} wasn\'t added to the system because it has no controls.')
 
     # Redirect to selected element page
     return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
@@ -2745,7 +2745,7 @@ def assign_baseline(request, system_id, catalog_key, baseline_name):
     assign_results = system.root_element.assign_baseline_controls(request.user, catalog_key, baseline_name)
     if assign_results:
         messages.add_message(request, messages.INFO,
-                             'Control baseline "{} {}" assigned.'.format(catalog_key.replace("_", " "), baseline_name.title()))
+                             f'Control baseline {catalog_key.replace("_", " ")} {baseline_name.title()} assigned.')
         # Log start app / new project
         logger.info(
             event="assign_baseline",
@@ -2755,8 +2755,7 @@ def assign_baseline(request, system_id, catalog_key, baseline_name):
         )
     else:
         messages.add_message(request, messages.ERROR,
-                             'Control baseline "{} {}" assignment failed.'.format(catalog_key.replace("_", " "),
-                                                                          baseline_name.title()))
+                             f'Control baseline {catalog_key.replace("_", " ")} {baseline_name.title()} assignment failed.')
 
     return HttpResponseRedirect(f"/systems/{system_id}/controls/selected")
 
@@ -3255,7 +3254,7 @@ def project_import(request, project_id):
                 if import_record != None:
                     comps = add_selected_components(system, import_record)
                     comp_num = comp_num + len(comps)
-            messages.add_message(request, messages.INFO, f"{comp_num} components were created.")
+            messages.add_message(request, messages.INFO, f'{comp_num} components were created.')
 
             # Import Poams
         if loaded_imported_jsondata.get('poams') != None:
@@ -3289,7 +3288,7 @@ def project_import(request, project_id):
                     object={"object": "poam", "id": poam.poam_id, "controls": poam.poam_group},
                     user={"id": request.user.id, "username": request.user.username}
                 )
-            messages.add_message(request, messages.INFO, f"{poam_num} POA&Ms were created.")
+            messages.add_message(request, messages.INFO, f'{poam_num} POA&Ms were created.')
 
         return HttpResponseRedirect("/projects")
 
@@ -3409,14 +3408,14 @@ def manage_system_deployment(request, system_id, deployment_id=None):
             deployment = form.instance
             # Create message to display to user
             if di:
-                messages.add_message(request, messages.INFO, f'"{deployment.name}" deployment was edited.')
+                messages.add_message(request, messages.INFO, f'{deployment.name} deployment was edited.')
                 logger.info(
                     event="edit_deployment",
                     object={"object": "deployment", "id": deployment.id, "name":deployment.name},
                     user={"id": request.user.id, "username": request.user.username}
                 )
             else:
-                messages.add_message(request, messages.INFO, f'"{deployment.name}" deployment was created.')
+                messages.add_message(request, messages.INFO, f'{deployment.name} deployment was created.')
                 logger.info(
                     event="create_deployment",
                     object={"object": "deployment", "id": deployment.id, "name":deployment.name},
@@ -3578,14 +3577,14 @@ def manage_system_assessment_result(request, system_id, sar_id=None):
             sar = form.instance
             # Create message to display to user
             if sari:
-                messages.add_message(request, messages.INFO, f'System assessment result "{sar.name}" was edited.')
+                messages.add_message(request, messages.INFO, f'System assessment result {sar.name} was edited.')
                 logger.info(
                     event="edit_system_assessment_result",
                     object={"object": "system_assessment_result", "id": sar.id, "name":sar.name},
                     user={"id": request.user.id, "username": request.user.username}
                 )
             else:
-                messages.add_message(request, messages.INFO, f'System assessment result "{sar.name}" was created.')
+                messages.add_message(request, messages.INFO, f'System assessment result {sar.name} was created.')
                 logger.info(
                     event="create_system_assessment_result",
                     object={"object": "system_assessment_result", "id": sar.id, "name":sar.name},
@@ -3633,7 +3632,7 @@ def new_system_assessment_result_wazuh(request, system_id):
         for param in ["wazuhhost_val", "user_val", "passwd_val", "agents_val"]:
             if param not in request.POST or request.POST[param] == "":
                 valid = False
-                messages.add_message(request, messages.WARNING, f"Please complete the field {param.replace('_val','')}")
+                messages.add_message(request, messages.WARNING, f'Please complete the field {param.replace("_val","")}')
         if not valid:
             return HttpResponseRedirect(f"/systems/{system_id}/assessments")
 

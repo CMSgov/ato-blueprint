@@ -176,7 +176,7 @@ def account_settings(request):
                 object={"object": "user", "id": user.id, "username": user.username},
                 user={"id": request.user.id, "username": request.user.username}
             )
-            messages.add_message(request, messages.INFO, 'Account settings  were updated.')
+            messages.add_message(request, messages.INFO, 'Account settings were updated.')
         else:
             messages.add_message(request, messages.ERROR, 'Account settings weren\'t updated. Please try again.')
     else:

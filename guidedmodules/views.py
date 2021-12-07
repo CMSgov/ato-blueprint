@@ -1427,13 +1427,13 @@ def authoring_import_appsource(request):
             )
             return JsonResponse({ "status": "ok", "redirect": f"/admin/guidedmodules/appsource/{appsrc.id}/change" })
         except BadZipFile as err:
-            messages.add_message(request, messages.ERROR, f"The zip file {appsource_zipfile} failed. Please confirm that the file is valid and try again.")
+            messages.add_message(request, messages.ERROR, f'The zip file {appsource_zipfile} failed. Please confirm that the file is valid and try again.')
             return JsonResponse({ "status": "ok", "redirect": "/store" })
         except ValueError:
-            messages.add_message(request, messages.ERROR, f"There was a failure processing {ValueError}. Please confirm that all included files are valid and try again.")
+            messages.add_message(request, messages.ERROR, f'There was a failure processing {ValueError}. Please confirm that all included files are valid and try again.')
             return JsonResponse({ "status": "ok", "redirect": "/store" })
     else:
-        messages.add_message(request, messages.ERROR, f"The AppSource file is required.")
+        messages.add_message(request, messages.ERROR, f'The AppSource file is required.')
         return JsonResponse({ "status": "ok", "redirect": "/store" })
 
 @login_required
@@ -1472,7 +1472,7 @@ def authoring_create_q(request):
     except Exception as e:
         raise
 
-    messages.add_message(request, messages.INFO, 'New project "{}" added into the catalog.'.format(new_q["title"]))
+    messages.add_message(request, messages.INFO, f'New project {new_q["title"]} added into the catalog.')
 
     return JsonResponse({ "status": "ok", "redirect": "/store" })
 
