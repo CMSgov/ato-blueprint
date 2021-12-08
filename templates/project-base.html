@@ -20,20 +20,13 @@
       </a>
     </li>
     {% endfor %}
-    <li class="usa-breadcrumb__list-item usa-current" aria-current="{{project.title}}">
-      {% if is_project_page %}
-      <span>{{project.title}}</span>
-      {% else %}
-        <a href="{{project.get_absolute_url}}" class="usa-breadcrumb__link">
-          <span>{{project.title}}</span>
-        </a>
-      {% endif %}
-    </li>
     {% if element.name %}
       <li class="usa-breadcrumb__list-item usa-current" aria-current="{{project.title}}">
         <span>{{ element.name }}</span>
       </li>
     {% endif %}
+    {% block breadcrumbs_extension %}
+    {% endblock %}
   </ol>
 </nav>
 {% endblock %}

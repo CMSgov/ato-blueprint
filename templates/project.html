@@ -13,6 +13,12 @@
 {{block.super}}
 {% endblock %}
 
+{% block breadcrumbs_extension %}
+  <li class="usa-breadcrumb__list-item usa-current" aria-current="{{project.title}}">
+    <span>{{project.title}}</span>
+  </li>
+{% endblock %}
+
 {% block pagetitle %}
 <div id="project-title-info" class="row">
   <div class="col-sm-8">
