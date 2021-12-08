@@ -8,12 +8,15 @@ from zipfile import BadZipFile, ZipFile
 
 import fs
 import fs.errors
+
 from controls.enums.statements import StatementTypeEnum
 from controls.models import Element, Statement
 from controls.oscal import Catalog
 from controls.utilities import de_oscalize_control_id
+
 from discussion.models import Discussion
 from discussion.validators import validate_file_extension
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
@@ -23,12 +26,10 @@ from django.http import (Http404, HttpResponse, HttpResponseForbidden,
                          JsonResponse)
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
-
 from django.utils.text import slugify
+
 from siteapp.models import Invitation, Project
 from siteapp.views import project_navigation
-
-from .models import Module, ModuleQuestion, Task, TaskAnswer, TaskAnswerHistory, InstrumentationEvent
 
 import guidedmodules.answer_validation as answer_validation
 import guidedmodules.module_logic as module_logic

@@ -41,17 +41,10 @@
   </div>
 </div>
 
-{{ send_invitation|json_script:"send_invitation"}}
 {% endblock %}
 
 {% block scripts %}
-
-{% if authoring_tool_enabled %}
-<script src="{% static "js/authoring_tool.js" %}"></script>
-{% endif %}
-
 <script src="{% static "vendor/push.js" %}"> </script>
-
 {% load static %}
 <script src="{% static "js/tasks.dev.js" %}"></script>
 {% endblock %}
