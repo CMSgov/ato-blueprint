@@ -1234,6 +1234,17 @@ def task_finished(request, task, answered, context, *unused_args):
     project = task.project
     nav = project_navigation(request, project)
 
+    # Fetch statement defining Security Sensitivity level if set
+    security_sensitivity_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name)
+    if len(security_sensitivity_smts) > 0:
+        security_sensitivity = security_sensitivity_smts.first().body
+    else:
+        security_sensitivity = None
+
+    # Get component info about the project
+    components = [element for element in project.system.producer_elements if element.element_type != "system"]
+    num_components = len(components)
+
     context.update({
         "had_any_questions": len(set(answered.as_dict()) - answered.was_imputed) > 0,
         "top_of_page_output": top_of_page_output,
@@ -1254,9 +1265,13 @@ def task_finished(request, task, answered, context, *unused_args):
         "gr_pdf_generator": settings.GR_PDF_GENERATOR,
         "export_csv_form": ExportCSVTemplateSSPForm(),
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
+        "security_sensitivity": security_sensitivity,
+        "components": components,
+        "num_components": num_components,
         "nav": nav,
     })
-    return render(request, "task-finished.html", context)
+
+    return render(request, "task-finished-success.html", context)
 
 @task_view
 def download_answer_file(request, task, answered, context, q, history_id):
