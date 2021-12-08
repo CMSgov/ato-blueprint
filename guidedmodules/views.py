@@ -9,7 +9,7 @@ from zipfile import BadZipFile, ZipFile
 import fs
 import fs.errors
 from controls.enums.statements import StatementTypeEnum
-from controls.models import Element, ElementRole, Statement, System
+from controls.models import Element, ElementControl, Statement
 from controls.oscal import Catalog
 from controls.utilities import de_oscalize_control_id
 from discussion.models import Discussion
@@ -23,8 +23,10 @@ from django.http import (Http404, HttpResponse, HttpResponseForbidden,
                          JsonResponse)
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.db.models import Count
+
 from django.utils.text import slugify
-from siteapp.models import Invitation, Project, ProjectMembership, User
+from siteapp.models import Invitation, Project
 from siteapp.views import project_navigation
 
 import guidedmodules.answer_validation as answer_validation
@@ -1245,6 +1247,30 @@ def task_finished(request, task, answered, context, *unused_args):
     components = [element for element in project.system.producer_elements if element.element_type != "system"]
     num_components = len(components)
 
+    # Get a count of the Statuses for the controls; Assessed, Ready for Assessment, ...
+    stat = (ElementControl.objects
+        .filter(element_id=project.system.root_element)
+        .values("status")
+        .annotate(scount=Count("status"))
+        .order_by()
+    )
+
+    # Get the Status allowed values
+    es = ElementControl.Statuses.choices
+    st = dict(es)
+    statuses = {}
+
+    # Add the counts to a dictionary keyed by the Status label; {"Assessed": 1, "Ready for assessment": 3,...}
+    for els in stat:
+        statuses[st[els["status"]]] = els["scount"]
+
+    controls_addressed_count = 0
+    if "Assessed" in statuses:
+        controls_addressed_count +=  statuses["Assessed"]
+
+    if "Ready for assessment" in statuses:
+        controls_addressed_count +=  statuses["Ready for assessment"]
+
     context.update({
         "had_any_questions": len(set(answered.as_dict()) - answered.was_imputed) > 0,
         "top_of_page_output": top_of_page_output,
@@ -1268,6 +1294,7 @@ def task_finished(request, task, answered, context, *unused_args):
         "security_sensitivity": security_sensitivity,
         "components": components,
         "num_components": num_components,
+        "controls_addressed_count": controls_addressed_count,
         "nav": nav,
     })
 
