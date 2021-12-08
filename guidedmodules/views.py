@@ -9,7 +9,7 @@ from zipfile import BadZipFile, ZipFile
 import fs
 import fs.errors
 from controls.enums.statements import StatementTypeEnum
-from controls.models import Element, ElementControl, Statement
+from controls.models import Element, Statement
 from controls.oscal import Catalog
 from controls.utilities import de_oscalize_control_id
 from discussion.models import Discussion
@@ -23,11 +23,12 @@ from django.http import (Http404, HttpResponse, HttpResponseForbidden,
                          JsonResponse)
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
-from django.db.models import Count
 
 from django.utils.text import slugify
 from siteapp.models import Invitation, Project
 from siteapp.views import project_navigation
+
+from .models import Module, ModuleQuestion, Task, TaskAnswer, TaskAnswerHistory, InstrumentationEvent
 
 import guidedmodules.answer_validation as answer_validation
 import guidedmodules.module_logic as module_logic
@@ -35,6 +36,8 @@ from guidedmodules.forms import ExportCSVTemplateSSPForm
 
 from .models import (InstrumentationEvent, Module, ModuleQuestion, Task,
                      TaskAnswer, TaskAnswerHistory)
+
+import utils as utils
 
 logging.basicConfig()
 import csv
@@ -1236,40 +1239,9 @@ def task_finished(request, task, answered, context, *unused_args):
     project = task.project
     nav = project_navigation(request, project)
 
-    # Fetch statement defining Security Sensitivity level if set
-    security_sensitivity_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name)
-    if len(security_sensitivity_smts) > 0:
-        security_sensitivity = security_sensitivity_smts.first().body
-    else:
-        security_sensitivity = None
-
     # Get component info about the project
     components = [element for element in project.system.producer_elements if element.element_type != "system"]
     num_components = len(components)
-
-    # Get a count of the Statuses for the controls; Assessed, Ready for Assessment, ...
-    stat = (ElementControl.objects
-        .filter(element_id=project.system.root_element)
-        .values("status")
-        .annotate(scount=Count("status"))
-        .order_by()
-    )
-
-    # Get the Status allowed values
-    es = ElementControl.Statuses.choices
-    st = dict(es)
-    statuses = {}
-
-    # Add the counts to a dictionary keyed by the Status label; {"Assessed": 1, "Ready for assessment": 3,...}
-    for els in stat:
-        statuses[st[els["status"]]] = els["scount"]
-
-    controls_addressed_count = 0
-    if "Assessed" in statuses:
-        controls_addressed_count +=  statuses["Assessed"]
-
-    if "Ready for assessment" in statuses:
-        controls_addressed_count +=  statuses["Ready for assessment"]
 
     context.update({
         "had_any_questions": len(set(answered.as_dict()) - answered.was_imputed) > 0,
@@ -1291,10 +1263,10 @@ def task_finished(request, task, answered, context, *unused_args):
         "gr_pdf_generator": settings.GR_PDF_GENERATOR,
         "export_csv_form": ExportCSVTemplateSSPForm(),
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
-        "security_sensitivity": security_sensitivity,
+        "security_sensitivity": utils.get_security_sensitivity(project),
         "components": components,
         "num_components": num_components,
-        "controls_addressed_count": controls_addressed_count,
+        "controls_addressed_count": utils.get_controls_addressed_count(project),
         "nav": nav,
     })
 

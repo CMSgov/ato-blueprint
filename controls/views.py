@@ -15,6 +15,9 @@ import rtyaml
 import siteapp.views as project_nav
 import trestle.oscal.component as trestlecomponent
 import trestle.oscal.ssp as trestlessp
+
+import utils as utils
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -207,13 +210,6 @@ def controls_selected(request, system_id):
             if catalog.catalog_key not in internal_catalog_keys
         ]
 
-        # Fetch statement defining Security Sensitivity level if set
-        security_sensitivity_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name)
-        if len(security_sensitivity_smts) > 0:
-            security_sensitivity = security_sensitivity_smts.first().body
-        else:
-            security_sensitivity = None
-
         nav = project_nav.project_navigation(request, project)
 
         # Return the controls
@@ -226,7 +222,7 @@ def controls_selected(request, system_id):
             "impl_smts_cmpts_count": impl_smts_cmpts_count,
             "impl_smts_legacy_dict": impl_smts_legacy_dict,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "security_sensitivity": security_sensitivity,
+            "security_sensitivity": utils.get_security_sensitivity(project),
             "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
             "nav": nav,
         }

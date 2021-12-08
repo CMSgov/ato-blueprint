@@ -4,6 +4,8 @@ import random
 import sys
 from datetime import datetime
 
+import utils as utils
+
 from controls.enums.statements import StatementTypeEnum
 from controls.forms import ImportProjectForm
 from controls.models import (Deployment, Element, ElementControl, Poam,
@@ -12,6 +14,7 @@ from controls.views import add_selected_components
 from discussion.models import Discussion
 from django.conf import settings
 from django.contrib import messages
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Permission
 from django.core import serializers
@@ -1044,27 +1047,8 @@ def project(request, project):
 
     # Get total number of controls assigned to the Project (based on baseline).
     total_controls_count = ElementControl.objects.filter(element_id=project.system.root_element).count()
-    # Get a count of the Statuses for the controls; Assessed, Ready for Assessment, ...
-    stat = (ElementControl.objects
-        .filter(element_id=project.system.root_element)
-        .values("status")
-        .annotate(scount=Count("status"))
-        .order_by()
-    )
-    # Get the Status allowed values
-    es = ElementControl.Statuses.choices
-    st = dict(es)
-    statuses = {}
-    # Add the counts to a dictionary keyed by the Status label; {"Assessed": 1, "Ready for assessment": 3,...}
-    for els in stat:
-        statuses[st[els["status"]]] = els["scount"]
 
-    controls_addressed_count = 0
-    if "Assessed" in statuses:
-        controls_addressed_count +=  statuses["Assessed"]
-
-    if "Ready for assessment" in statuses:
-        controls_addressed_count +=  statuses["Ready for assessment"]
+    controls_addressed_count = utils.get_controls_addressed_count(project)
 
     # Calculate approximate compliance as decimal representation of percent
     percent_compliant = 0
@@ -1076,15 +1060,6 @@ def project(request, project):
     approx_compliance_degrees = 365 - (365 * percent_compliant)
     if approx_compliance_degrees > 358:
         approx_compliance_degrees = 358
-
-
-    # Fetch statement defining Security Sensitivity level if set
-    security_sensitivity_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name)
-    if len(security_sensitivity_smts) > 0:
-        security_sensitivity = security_sensitivity_smts.first().body
-
-    else:
-        security_sensitivity = None
 
     security_objective_smt = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.name)
     if security_objective_smt.exists():
@@ -1109,7 +1084,7 @@ def project(request, project):
     return render(request, "project.html", {
         "is_project_page": True,
         "project": project,
-        "security_sensitivity": security_sensitivity,
+        "security_sensitivity": utils.get_security_sensitivity(project),
         "confidentiality": confidentiality,
         "integrity": integrity,
         "availability": availability,
