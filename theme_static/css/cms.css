@@ -1,0 +1,122 @@
+@import "project.min.css";
+@import "home.min.css";
+@import "questions.min.css";
+@font-face {
+  font-family: Public Sans;
+  src: url(../vendor/uswds-2.12.0/fonts/public-sans/PublicSans-Regular.ttf);
+}
+body {
+  padding: 0;
+}
+
+h1 {
+  font-style: normal;
+  font-weight: bold;
+  font-size: 34px;
+  line-height: 38px;
+}
+h1 .mini {
+  font-size: 16px;
+  line-height: 22px;
+  color: rgba(51, 51, 51, 0.8);
+  padding: 0px 0px 0px 0px;
+  margin: 0px 0px 0px 0px;
+}
+
+h2 {
+  font-style: normal;
+  font-weight: bold;
+  font-size: 32px;
+  line-height: 38px;
+}
+
+h3 {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 22px;
+  line-height: 26px;
+}
+
+h4 {
+  font-size: 18px;
+  line-height: 26px;
+}
+
+.breadcrumb {
+  font-size: 1em;
+}
+.breadcrumb a {
+  color: blue !important;
+}
+
+/* navbar links and fontface */
+.navbar-inverse {
+  background-image: none !important;
+  /* removes gradient */
+  background-color: #192D4F !important;
+  border-color: #192D4F !important;
+}
+.navbar-inverse .navbar-brand img {
+  margin: -1px 20px;
+  width: 150px;
+}
+.navbar-inverse .navbar-brand li a {
+  text-shadow: none;
+  color: #efefef;
+}
+.navbar-inverse .navbar-nav li {
+  font-family: Public Sans, sans-serif;
+}
+.navbar-inverse .navbar-nav li a {
+  text-shadow: none;
+  color: #efefef;
+}
+.navbar-inverse .navbar-nav li a:focus {
+  color: #FFFFFF;
+}
+.navbar-inverse .navbar-nav li a:hover {
+  color: #FFFFFF;
+}
+.navbar-inverse .navbar-nav li ul.dropdown-menu > li > a {
+  color: #000000;
+}
+
+.usa-card__heading {
+  font-family: Public Sans;
+}
+
+.button-confidence {
+  background: #009900;
+  background-color: #009900;
+  border-radius: 3px;
+  display: inline-block;
+  cursor: pointer;
+  color: #ffffff;
+  font-family: Verdana;
+  font-size: 11px;
+  padding: 5px 10px;
+  text-decoration: none;
+  margin-right: 8px;
+}
+
+/* Autocomplete fix */
+.select2-container--default .select2-results > .select2-results__options {
+  overflow-y: visible !important;
+}
+
+.systems-control-catalog {
+  color: #000000;
+  border-color: #000000;
+}
+
+hidden {
+  display: none;
+}
+
+footer {
+  clear: both;
+}
+
+#focus-area-wrapper {
+  padding-top: 5px;
+}

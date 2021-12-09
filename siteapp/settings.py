@@ -15,6 +15,7 @@ from django.core.exceptions import ValidationError
 # What's the name of the app containing this file? That determines
 # the module for the main URLconf etc.
 primary_app = os.path.basename(os.path.dirname(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 # LOAD ENVIRONMENT SETTINGS #
 #############################
@@ -460,6 +461,9 @@ if environment.get("static"):
 	STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 # Check to make sure STATIC_ROOT is not `siteapp/static`
 siteapp_path = os.getcwd()
+STATICFILES_DIRS = [
+   os.path.join(BASE_DIR, "theme_static"),
+   ]
 if os.path.join(siteapp_path, STATIC_ROOT) == os.path.join(siteapp_path, "siteapp/static"):
 	raise ValidationError('STATIC_ROOT directory for collecting static files should never be set to source of uncollected static files (e.g. `siteapp/static`). Please fix environment `static` setting.')
 
