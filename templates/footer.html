@@ -1,7 +1,63 @@
-<div class="col-xs-12">
-  <div class="col-xs-3">&copy; GovReady PBC {% now "Y" %}</div>
-  <div class="col-xs-2 center-text"><a href={% url 'privacy_terms_love' 'privacy' %}>Privacy Policy</a></div>
-  <div class="col-xs-2 center-text"><a href={% url 'privacy_terms_love' 'terms-of-service' %}>Terms of Service</a></div>
-  <div class="col-xs-2 center-text" ><a href={% url 'privacy_terms_love' 'love-assessments' %}>Support</a></div>
-  <div class="col-xs-3 right-text">{{APP_VERSION_STRING}}</div>
+<div class="usa-footer__primary-section padding-1">
+  <nav class="usa-footer__nav" aria-label="Footer navigation">
+    <ul class="grid-row grid-gap">
+      <li
+        class="
+          mobile-lg:grid-col-4
+          desktop:grid-col
+          usa-footer__primary-content
+          padding-top-2px
+        "
+      >
+      </li>
+      <li
+        class="
+          mobile-lg:grid-col-4
+          desktop:grid-col-auto
+          usa-footer__primary-content
+          font-sans-3xs
+          padding-top-2px
+        "
+      >
+        &copy; GovReady PBC {% now "Y" %}
+      </li>
+      <li
+        class="
+          mobile-lg:grid-col-4
+          desktop:grid-col-auto
+          usa-footer__primary-content
+        "
+      >
+        <a href="https://cmsgov.github.io/rato-website/">About Rapid ATO</a>
+      </li>
+      <li
+        class="
+          mobile-lg:grid-col-4
+          desktop:grid-col-auto
+          usa-footer__primary-content
+        "
+      >
+        <a href={% url 'privacy_terms_love' 'love-assessments' %}>Blueprint Support</a>
+      </li>
+      <li
+        class="
+          mobile-lg:grid-col-4
+          desktop:grid-col-auto
+          usa-footer__primary-content
+          font-sans-3xs
+          padding-top-2px
+        "
+      >
+        {{APP_VERSION_STRING}}
+      </li>
+      <li
+        class="
+          mobile-lg:grid-col-4
+          desktop:grid-col
+          usa-footer__primary-content
+          padding-top-2px
+        "
+      >
+      </li>
+    </nav>
 </div>

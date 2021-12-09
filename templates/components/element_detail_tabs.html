@@ -171,7 +171,7 @@
           </div>
         </div>
         <div class="row statement-column-headings" style="">
-          <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">Control</div>
+          <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">Controlx</div>
           <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">Statement</div>
             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span class="pull-right">Action</span></div>
         </div>
@@ -234,6 +234,15 @@
                           <div class="form-group">
                             <label for="remarks_{{ forloop.counter }}">Remarks</label>
                             <textarea style="min-height:70px; overflow-y: scroll;" class="form-control" id="remarks_{{ forloop.counter }}" name="remarks" placeholder="Add remarks for team" cols="50">{{ smt.remarks }}</textarea>
+                          </div>
+                          <div class="form-group">
+                            <label for="inheritance_name_{{ forloop.counter }}" class="" for="status">Inheritance</label>
+                            <select class="form-control" id="inheritance_name_{{ forloop.counter }}" name="inheritance_name" style="width:180px;">
+                              <option value='' {% if '' == smt.inheritance.name %}selected="selected"{% endif %}>Select Inheritance</option>
+                              {% for inheritance in inheritances %}
+                                <option value='{{ inheritance.id }}' {% if inheritance.name == smt.inheritance.name %}selected="selected"{% endif %}>{{ inheritance.name }}</option>
+                              {% endfor %}
+                            </select>
                           </div>
                           <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
                           <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">

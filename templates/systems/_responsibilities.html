@@ -1,37 +1,46 @@
-{% load static %}
+<style>
+    div.responsibility-block { background-color: #E7F6F8; padding:24px; margin-bottom:24px; }
+    ul { margin:0; }
+    ul.responsibility { list-style: none; margin-left: 01em; padding-left: 1em; }
+    ul.responsibility > li:before { display: inline-block; content: "-"; width: 1em; margin-left: -1em; }
+    h4.media-heading { font-weight: bold; }
+</style>
 
-<div class="bg-accent-cool-lighter padding-2 margin-y-1">
-    <ul class="usa-icon-list">
-        <li class="usa-icon-list__item">
-        {% if narrative.inheritance.name == "Fully Inherited" %}
-            <div class="usa-icon-list__icon text-primary-vivid">
-                <svg class="usa-icon usa-icon-list--size--1" aria-hidden="true" focusable="false" role="img">
-                    <use xlink:href="{% static "vendor/uswds-2.12.0/img/sprite.svg#local_police" %}"></use>
-                </svg>
-            </div>
-        {% elif narrative.inheritance.name == "Shared" %}
-            <div class="usa-icon-list__icon text-secondary-dark">
-                <svg class="usa-icon usa-icon-list--size--1" aria-hidden="true" focusable="false" role="img">
-                    <use xlink:href="{% static "vendor/uswds-2.12.0/img/sprite.svg#settings" %}"></use>
-                </svg>
-            </div>
-        {% else %}
-            <div class="usa-icon-list__icon text-green">
-                <svg class="usa-icon usa-icon-list--size--1" aria-hidden="true" focusable="false" role="img">
-                    <use xlink:href="{% static "vendor/uswds-2.12.0/img/sprite.svg#api" %}"></use>
-                </svg>
-            </div>
-        {% endif %}
-            <div class="usa-icon-list__content">
-                <h3 class="usa-icon-list__title">Your responsibility:</h3>
-                <p>
-                {% if narrative.inheritance.responsibility %}
-                    {{ narrative.inheritance.responsibility|safe }}
-                {% else %}
-                    Write a <b>Control Narrative</b> to match your system and include all required information.
+    <div class="responsibility-block">
+        <div class="media">
+            {% for smt in impl_smts %}
+                {% if smt.sid == control.id %}
+                    <div class="media-left">
+                        {% if smt.inheritance.name == "Fully Inherited" %}
+                        <svg class="usa-icon text-primary-vivid" aria-hidden="true" focusable="false" role="img">
+                            <use xlink:href="/static/vendor/uswds-2.12.0/img/sprite.svg#local_police"></use>
+                        </svg>
+                        {% elif smt.inheritance.name == "Shared" %}
+                        <svg class="usa-icon text-secondary-dark" aria-hidden="true" focusable="false" role="img">
+                            <use xlink:href="/static/vendor/uswds-2.12.0/img/sprite.svg#settings"></use>
+                        </svg>
+                        {% else %}
+                        <svg class="usa-icon text-green" aria-hidden="true" focusable="false" role="img">
+                            <use xlink:href="/static/vendor/uswds-2.12.0/img/sprite.svg#api"></use>
+                        </svg>
+                        {% endif %}
+                    </div>
+                    {% if smt.inheritance.responsibility %}
+                        <div class="media-body">
+                            <h4 class="media-heading">Your responsibility:</h4>
+                            <ul class="responsibility">
+                                {{ smt.inheritance.responsibility|safe }}
+                            </ul>
+                        </div>
+                    {% else %}
+                        <div class="media-body">
+                            <h4 class="media-heading">Your responsibility:</h4>
+                            <ul class="responsibility">
+                                <li>Write a <b>Control Narrative</b> to match your system and include all required information.</li>
+                            </ul>
+                        </div>
+                    {% endif %}
                 {% endif %}
-                </p>
-            </div>
-        </li>
-    </ul>
-</div>
+            {% endfor %}
+        </div>
+    </div>

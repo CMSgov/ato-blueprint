@@ -1,7 +1,7 @@
 {% load guardian_tags %}
 {% load notification_helpers %}
 
-<table class="table" style="width: auto;">
+<table class="usa-table usa-table--borderless usa-table--striped">
   <thead>
     <tr>
       <th>Username</th>
@@ -18,10 +18,10 @@
     {% get_obj_perms user for project as "user_perms" %}
     {% if user_perms%}
     <tr>
-      <td>
+      <td class="font-sans-3xs">
         {{user.username}}
       </td>
-      <td>
+      <td class="font-sans-3xs">
         {{project}}
       </td>
       <td align="center">
