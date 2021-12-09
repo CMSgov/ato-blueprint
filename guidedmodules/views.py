@@ -2207,16 +2207,17 @@ def csv_export_create_rows(controls, system, catalog_key):
     for s in controls:
         c = cat.get_control_by_id(s.sid)
         label = cat.get_control_property_by_name(control=c, property_name='label')
-        if label not in temp:
-            temp[label] = {
-                'system': system,
-                'id': label,
-                'catalog': s.source,
-                'shared': '',
-                'private': s.body,
-            }
-        else:
-            temp[label]['private'] = "\r\n".join([temp[label]['private'], s.body])
+        if label:
+            if label not in temp:
+                temp[label] = {
+                    'system': system,
+                    'id': label,
+                    'catalog': s.source,
+                    'shared': '',
+                    'private': s.body,
+                }
+            else:
+                temp[label]['private'] = "\r\n".join([temp[label]['private'], s.body])
 
     rows = []
     srt = OrderedDict(sorted(temp.items(), key=lambda t: t[0]))
