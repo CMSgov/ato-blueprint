@@ -14,7 +14,6 @@ from controls.views import add_selected_components
 from discussion.models import Discussion
 from django.conf import settings
 from django.contrib import messages
-
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Permission
 from django.core import serializers
