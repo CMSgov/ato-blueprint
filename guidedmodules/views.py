@@ -8,12 +8,17 @@ from zipfile import BadZipFile, ZipFile
 
 import fs
 import fs.errors
+
+import utils as utils
+
 from controls.enums.statements import StatementTypeEnum
-from controls.models import Element, ElementRole, Statement, System
+from controls.models import Element, Statement
 from controls.oscal import Catalog
 from controls.utilities import de_oscalize_control_id
+
 from discussion.models import Discussion
 from discussion.validators import validate_file_extension
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
@@ -24,7 +29,8 @@ from django.http import (Http404, HttpResponse, HttpResponseForbidden,
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.text import slugify
-from siteapp.models import Invitation, Project, ProjectMembership, User
+
+from siteapp.models import Invitation, Project
 from siteapp.views import project_navigation
 
 import guidedmodules.answer_validation as answer_validation
@@ -1234,6 +1240,12 @@ def task_finished(request, task, answered, context, *unused_args):
     project = task.project
     nav = project_navigation(request, project)
 
+    # Get component info about the project
+    components = [element for element in project.system.producer_elements if element.element_type != "system"]
+    num_components = len(components)
+
+    security_sensitivity = utils.get_security_sensitivity(project)
+
     context.update({
         "had_any_questions": len(set(answered.as_dict()) - answered.was_imputed) > 0,
         "top_of_page_output": top_of_page_output,
@@ -1254,8 +1266,19 @@ def task_finished(request, task, answered, context, *unused_args):
         "gr_pdf_generator": settings.GR_PDF_GENERATOR,
         "export_csv_form": ExportCSVTemplateSSPForm(),
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
+        "security_sensitivity": security_sensitivity,
+        "components": components,
+        "num_components": num_components,
+        "controls_addressed_count": utils.get_controls_addressed_count(project),
         "nav": nav,
     })
+
+    if task.module.module_name == "system_basic_info":
+        if security_sensitivity:
+            return render(request, "task-finished-success.html", context)
+        else:
+            return render(request, "task-finished-fisma-needed.html", context)
+
     return render(request, "task-finished.html", context)
 
 @task_view
