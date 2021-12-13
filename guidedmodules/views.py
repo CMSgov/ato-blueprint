@@ -1244,6 +1244,8 @@ def task_finished(request, task, answered, context, *unused_args):
     components = [element for element in project.system.producer_elements if element.element_type != "system"]
     num_components = len(components)
 
+    security_sensitivity = utils.get_security_sensitivity(project)
+
     context.update({
         "had_any_questions": len(set(answered.as_dict()) - answered.was_imputed) > 0,
         "top_of_page_output": top_of_page_output,
@@ -1264,14 +1266,20 @@ def task_finished(request, task, answered, context, *unused_args):
         "gr_pdf_generator": settings.GR_PDF_GENERATOR,
         "export_csv_form": ExportCSVTemplateSSPForm(),
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
-        "security_sensitivity": utils.get_security_sensitivity(project),
+        "security_sensitivity": security_sensitivity,
         "components": components,
         "num_components": num_components,
         "controls_addressed_count": utils.get_controls_addressed_count(project),
         "nav": nav,
     })
 
-    return render(request, "task-finished-success.html", context)
+    if task.module.module_name == "system_basic_info":
+        if security_sensitivity:
+            return render(request, "task-finished-success.html", context)
+        else:
+            return render(request, "task-finished-fisma-needed.html", context)
+
+    return render(request, "task-finished.html", context)
 
 @task_view
 def download_answer_file(request, task, answered, context, q, history_id):
