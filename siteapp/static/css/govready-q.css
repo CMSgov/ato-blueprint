@@ -248,10 +248,8 @@ a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none;
 .project-settings-invite { margin: 1em 0; }
 .project-settings-table-head { width:200px; }
 
-.project-setup-confirmation p {
-  font-size: 20px;
-  margin-bottom: 20px;
-}
+.project-setup-confirmation p { font-size: 20px; margin-bottom: 20px; }
+.project-setup-confirmation ul { font-size: 20px; }
 
 .project-api-sample { max-height: 20em; overflow: auto; border: 1px solid #555; margin: 1.5em 0; }
 .project-api-text { font-size: 90%; font-weight: 400; }
