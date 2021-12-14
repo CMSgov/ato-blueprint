@@ -497,7 +497,7 @@ def save_answer(request, task, answered, context, __):
                         system.root_element.assign_baseline_controls(request.user, catalog, baseline)
                         catalog_display = catalog.replace("_", " ")
                         messages.add_message(request, messages.INFO,
-                                                     f'We\'ve set the control baseline to "{catalog_display} {baseline}."')
+                                                     f'Control baseline was set to {catalog_display} {baseline}.')
                         # Log setting baseline
                         logger.info(
                             event=f"system assign_baseline {baseline}",
@@ -509,7 +509,7 @@ def save_answer(request, task, answered, context, __):
                             security_sensitivity_level, smt = system.set_security_sensitivity_level(baseline)
                             if security_sensitivity_level == baseline.lower():
                                 messages.add_message(request, messages.INFO,
-                                                              f'We\'ve set the system FISMA impact level to "{security_sensitivity_level}.')
+                                                              f'System FISMA impact level was set to{security_sensitivity_level}.')
                                 # Log setting security_sensitivity_level
                                 logger.info(
                                     event=f"system assign_security_sensitivity_level {security_sensitivity_level}",
@@ -518,7 +518,7 @@ def save_answer(request, task, answered, context, __):
                                 )
                             else:
                                 messages.add_message(request, messages.ERROR,
-                                                              f'I failed to set the system FISMA impact level to "{baseline}."')
+                                                              f'The system FISMA Impact Level failed set to {baseline}. Please try again.')
 
 
                     # Update name of system and project
@@ -535,7 +535,7 @@ def save_answer(request, task, answered, context, __):
                         project.root_task.on_answer_changed()
 
                         messages.add_message(request, messages.INFO,
-                                                     f'We\'ve updated the system and project name.')
+                                                     f'System and project name were updated')
 
                 # Process element actions
                 # -----------------------------------
@@ -569,7 +569,7 @@ def save_answer(request, task, answered, context, __):
                             # Component already added to system. Do not add the component (element) to the system again.
                             if producer_element.id in elements_selected_ids:
                                 messages.add_message(request, messages.ERROR,
-                                                    f'Component "{producer_element.name}" already exists in selected components.')
+                                                    f'Component {producer_element.name} can\'t be added because it already exists in selected components.')
                                 # Go to next element
                                 continue
 
@@ -580,7 +580,7 @@ def save_answer(request, task, answered, context, __):
                             if len(smts) == 0:
                                 # print(f"The component {producer_element.name} does not have any control implementation statements.")
                                 messages.add_message(request, messages.ERROR,
-                                                    f'I couldn\'t add "{producer_element.name}" to the system because the component does not currently have any control implementation statements to add.')
+                                                    f'{producer_element.name} wasn\'t added because the component does not currently have any control implementation statements to add.')
                                 # Go to next element
                                 continue
 
@@ -596,7 +596,7 @@ def save_answer(request, task, answered, context, __):
                             # Prepare message
                             if not smts_added_count:
                                 messages.add_message(request, messages.WARNING,
-                                                 f'I tried adding "{producer_element.name}" to the system, but no control implementation statements were found.')
+                                                 f'{producer_element.name} can\'t be added because it has no control implementation statements.')
 
                     # Delete elements matching role from the selected components of a system
                     if a_verb == "del_role" and skipped_reason is None:
@@ -606,7 +606,7 @@ def save_answer(request, task, answered, context, __):
                             if smts_assigned_count > 0:
                                 Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name).delete()
                                 messages.add_message(request, messages.INFO,
-                                                     f'We\'ve deleted "{producer_element.name}" and its {smts_assigned_count} control implementation statements from the system.')
+                                                     f'{producer_element.name} and its {smts_assigned_count} control implementation statements were deleted.')
 
                 # Process project actions
                 # -----------------------------------
@@ -1450,13 +1450,13 @@ def authoring_import_appsource(request):
             )
             return JsonResponse({ "status": "ok", "redirect": f"/admin/guidedmodules/appsource/{appsrc.id}/change" })
         except BadZipFile as err:
-            messages.add_message(request, messages.ERROR, f"Bad zip file: {appsource_zipfile}")
+            messages.add_message(request, messages.ERROR, f'The zip file {appsource_zipfile} failed. Please confirm that the file is valid and try again.')
             return JsonResponse({ "status": "ok", "redirect": "/store" })
         except ValueError:
-            messages.add_message(request, messages.ERROR, f"Failure processing: {ValueError}")
+            messages.add_message(request, messages.ERROR, f'There was a failure processing {ValueError}. Please confirm that all included files are valid and try again.')
             return JsonResponse({ "status": "ok", "redirect": "/store" })
     else:
-        messages.add_message(request, messages.ERROR, f"AppSource file required.")
+        messages.add_message(request, messages.ERROR, f'The AppSource file is required.')
         return JsonResponse({ "status": "ok", "redirect": "/store" })
 
 @login_required
@@ -1495,7 +1495,7 @@ def authoring_create_q(request):
     except Exception as e:
         raise
 
-    messages.add_message(request, messages.INFO, 'New Project "{}" added into the catalog.'.format(new_q["title"]))
+    messages.add_message(request, messages.INFO, f'New project {new_q["title"]} added into the catalog.')
 
     return JsonResponse({ "status": "ok", "redirect": "/store" })
 

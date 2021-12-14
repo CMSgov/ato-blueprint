@@ -178,9 +178,9 @@ def account_settings(request):
                 object={"object": "user", "id": user.id, "username": user.username},
                 user={"id": request.user.id, "username": request.user.username}
             )
-            messages.add_message(request, messages.INFO, 'Account settings updated.')
+            messages.add_message(request, messages.INFO, 'Account settings were updated.')
         else:
-            messages.add_message(request, messages.ERROR, 'Account settings not updated.')
+            messages.add_message(request, messages.ERROR, 'Account settings weren\'t updated. Please try again.')
     else:
         form = AccountSettingsForm(instance=user)
     return render(request, "account_settings.html", {
@@ -1635,7 +1635,7 @@ def upgrade_project(request, project):
                     "version_number": new_app.version_number},
             user={"id": request.user.id, "username": request.user.username}
         )
-        message = "Project {} upgraded successfully to {}".format(project, new_app.version_number)
+        message = f'Project {project} was upgraded successfully to {new_app.version_number}'
         messages.add_message(request, messages.INFO, message)
         redirect = project.get_absolute_url()
         return JsonResponse({"status": "ok", "redirect": redirect})
@@ -1898,7 +1898,7 @@ def delete_portfolio(request, pk):
                 detail={"message": "USER IS SUPER USER"}
             )
             messages.add_message(request, messages.ERROR,
-                                 f"You do not have permission to delete portfolio '{portfolio.title}.'")
+                                 f'You do not have permission to delete portfolio {portfolio.title}.')
             return redirect("list_portfolios")
 
         # Only delete a portfolio with no projects
@@ -1910,7 +1910,7 @@ def delete_portfolio(request, pk):
                 detail={"message": "Portfolio not empty"}
             )
             messages.add_message(request, messages.ERROR,
-                                 f"Failed to delete portfolio '{portfolio.title}.' The portfolio is not empty.")
+                                 f"You can't delete {portfolio.title} because it includes files. Only empty portfolios can be deleted.")
             return redirect("list_portfolios")
         # TODO: It will delete everything related to the portfolio as well with a summary of the deletion
         # Delete portfolio
@@ -1921,7 +1921,7 @@ def delete_portfolio(request, pk):
                 object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
                 user={"id": request.user.id, "username": request.user.username}
             )
-            messages.add_message(request, messages.INFO, f"The portfolio '{portfolio.title}' has been deleted.")
+            messages.add_message(request, messages.INFO, f"Portfolio {portfolio.title} has been deleted.")
             return redirect("list_portfolios")
         except:
             logger.info(
@@ -1950,7 +1950,7 @@ def edit_portfolio(request, pk):
                 detail={"message": "USER IS SUPER USER"}
             )
             messages.add_message(request, messages.ERROR,
-                                 f"You do not have permission to delete portfolio '{portfolio.title}.'")
+                                 f'You do not have permission to delete portfolio {portfolio.title}.')
             return redirect("list_portfolios")
 
         if form.is_valid():
@@ -1975,11 +1975,11 @@ def edit_portfolio(request, pk):
             if form.is_valid():
                 form.save()
                 # Log portfolio update
-                messages.add_message(request, messages.INFO, f"The portfolio '{portfolio.title}' has been updated.")
+                messages.add_message(request, messages.INFO, f'Portfolio {portfolio.title} has been updated.')
                 return redirect("list_portfolios")
         except IntegrityError:
             messages.add_message(request, messages.ERROR,
-                                 "Portfolio name {} not available.".format(request.POST['title']))
+                                 f'Portfolio {request.POST["title"]} not available.')
 
     return render(request, 'portfolios/edit_form.html', {
         'form': form,
@@ -2099,7 +2099,7 @@ def send_invitation(request):
                     user={"id": request.user.id, "username": request.user.username}
                 )
                 messages.add_message(request, messages.INFO,
-                                     "{} granted edit permission to project.".format(to_user.username))
+                                     f'{to_user.username} granted permission to edit project.')
 
         # Authorization for adding invitee to the project team.
         if not from_project:
@@ -2244,7 +2244,7 @@ def accept_invitation_do_accept(request, inv):
     # Can't accept if this object has expired. Warn the user but
     # send them to the homepage.
     if inv.is_expired():
-        messages.add_message(request, messages.ERROR, 'The invitation you wanted to accept has expired.')
+        messages.add_message(request, messages.ERROR, 'This invitation has expired.')
         return HttpResponseRedirect("/")
 
     # See if the user is ready to accept the invitation.
@@ -2456,19 +2456,19 @@ def organization_settings_save(request):
             user=user
         ).delete()
         messages.add_message(request, messages.INFO,
-                             '%s has been removed from the list of organization administrator.' % user)
+                             f'{user} was removed as an organization administrator.')
         return JsonResponse({"status": "ok"})
 
     if request.POST.get("action") == "remove-from-help-squad":
         user = get_object_or_404(User, id=request.POST.get("user"))
         organization.help_squad.remove(user)
-        messages.add_message(request, messages.INFO, '%s has been removed from the help squad.' % user)
+        messages.add_message(request, messages.INFO, f'{user} was removed from the help squad.')
         return JsonResponse({"status": "ok"})
 
     if request.POST.get("action") == "remove-from-reviewers":
         user = get_object_or_404(User, id=request.POST.get("user"))
         organization.reviewers.remove(user)
-        messages.add_message(request, messages.INFO, '%s has been removed from the reviewers.' % user)
+        messages.add_message(request, messages.INFO, f'{user} has been removed as a reviewers.')
         return JsonResponse({"status": "ok"})
 
     if request.POST.get("action") == "add-to-org-admins":
@@ -2479,19 +2479,19 @@ def organization_settings_save(request):
         )
         mbr.is_admin = True
         mbr.save()
-        messages.add_message(request, messages.INFO, '%s has been made an organization administrator.' % user)
+        messages.add_message(request, messages.INFO, f'{user} is now an organization administrator.')
         return JsonResponse({"status": "ok"})
 
     if request.POST.get("action") == "add-to-help-squad":
         user = get_object_or_404(User, id=request.POST.get("user"))
         organization.help_squad.add(user)
-        messages.add_message(request, messages.INFO, '%s has been added to the help squad.' % user)
+        messages.add_message(request, messages.INFO, f'{user} was added to the help squad.')
         return JsonResponse({"status": "ok"})
 
     if request.POST.get("action") == "add-to-reviewers":
         user = get_object_or_404(User, id=request.POST.get("user"))
         organization.reviewers.add(user)
-        messages.add_message(request, messages.INFO, '%s has been added to the reviewers.' % user)
+        messages.add_message(request, messages.INFO, f'{user} was added as a reviewer.')
         return JsonResponse({"status": "ok"})
 
     if request.POST.get("action") == "search-users":

@@ -1,12 +1,15 @@
+import django.contrib.auth.admin as contribauthadmin
 from django.contrib import admin
 from django.contrib.auth.models import Permission
-from guardian.admin import GuardedModelAdmin
 from django_json_widget.widgets import JSONEditorWidget
-import django.contrib.auth.admin as contribauthadmin
+from guardian.admin import GuardedModelAdmin
 from jsonfield import JSONField
-from .models import User, Organization, OrganizationalSetting, Folder, Project, ProjectMembership, Portfolio, Support, \
-    Tag, Asset, ProjectAsset
 from notifications.models import Notification
+
+from .models import (Asset, Folder, Organization, OrganizationalSetting,
+                     Portfolio, Project, ProjectAsset, ProjectMembership,
+                     Support, Tag, User)
+
 
 def all_user_fields_still_exist(fieldlist):
     for f in fieldlist:
@@ -60,9 +63,9 @@ class OrganizationAdmin(admin.ModelAdmin):
 
             from django.contrib import messages
             if isnew or not mb.is_admin:
-                messages.add_message(request, messages.INFO, 'You are now an admin of %s.' % org)
+                messages.add_message(request, messages.INFO, f'You are now an admin of {org}.')
             else:
-                messages.add_message(request, messages.INFO, 'You were already an admin of %s.' % org)
+                messages.add_message(request, messages.INFO, f'You are already an admin of {org}.')
 
             mb.is_admin = True
             mb.save()
@@ -95,7 +98,7 @@ class OrganizationAdmin(admin.ModelAdmin):
                     if is_new:
                         user.set_password(pw)
                         user.save()
-                        messages.add_message(request, messages.INFO, 'Create user %s with password %s.' % (user.username, pw))
+                        messages.add_message(request, messages.INFO, f'Created user {user.username}.')
 
                 # Add user as an admin to the organization.
                 mb, isnew = ProjectMembership.objects.get_or_create(
@@ -103,7 +106,7 @@ class OrganizationAdmin(admin.ModelAdmin):
                     project=org.get_organization_project(),
                     )
                 if isnew or not mb.is_admin:
-                    messages.add_message(request, messages.INFO, '%s was added as an administrator to %s.' % (user, org))
+                    messages.add_message(request, messages.INFO, f'{user} was added as an administrator to {org}.')
                 mb.is_admin = True
                 mb.save()
 
