@@ -514,7 +514,7 @@ jsonschema==3.2.0 \
     #   -r requirements.in
     #   openapi-schema-validator
     #   openapi-spec-validator
-lxml==4.6.3 \
+lxml==4.6.5 \
     --hash=sha256:079f3ae844f38982d156efce585bc540c16a926d4436712cf4baee0cce487a3d \
     --hash=sha256:0fbcf5565ac01dff87cbfc0ff323515c823081c5777a9fc7703ff58388c258c3 \
     --hash=sha256:122fba10466c7bd4178b07dba427aa516286b846b2cbd6f6169141917283aae2 \
