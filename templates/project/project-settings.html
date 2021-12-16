@@ -1,0 +1,217 @@
+{% extends "project-base.html" %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{ project.name }} - {{ title }}
+{% endblock %}
+
+{% block pagetitle %}
+<a href="{{project.get_absolute_url}}">{{ project }} ({{ acronym|safe }})</a>
+{% endblock %}
+
+{% block pageheader %}
+<h2 class="usa-prose-h2">Project Settings</h2>
+{% endblock %}
+
+{% block breadcrumbs_extension %}
+  <li class="usa-breadcrumb__list-item">
+    <a href="{{project.get_absolute_url}}" class="usa-breadcrumb__link">
+      <span>{{project.title}}</span>
+    </a>
+  </li>
+  <li class="usa-breadcrumb__list-item usa-current" aria-current="Project Settings">
+    <span>Project Settings</span>
+  </li>
+{% endblock %}
+
+{% block body_content %}
+
+  <section class="margin-bottom-4">
+    <p class="usa-intro">
+      Need to update your system information? Review your answers here to suggest System Components
+    </p>
+    {% for question, answer, value_html in system_info %}
+      <p class="margin-top-1"><b>{{ question.spec.prompt }}</b>
+      <br>{{ value_html|safe }}</p>
+    {% endfor %}
+    <a href="{{ system_info_edit }}" class="usa-button margin-top-1">Edit answers</a>
+  </section>
+
+  <section class="margin-bottom-4">
+    <p class="usa-intro">
+      Update your FISMA Impact Level in CFACTS
+    </p>
+    <a href="https://cfacts3.cms.cmsnet/" target="_blank" rel="noopener noreferrer" class="usa-button margin-top-1">Go to CFACTS</a>
+  </section>
+
+  <section class="margin-bottom-4">
+    <p class="usa-intro">
+      Collaborate with your team
+    </p>
+    <a href="#" class="usa-button margin-top-1">View team members</a>
+  </section>
+
+  {% if project.is_deletable and is_admin %}
+    <section class="margin-bottom-4">
+      <p class="usa-intro">
+        Delete project?
+      </p>
+      <button class="usa-button usa-button--secondary" onclick="return delete_project();">Delete Project</button>
+    </section>
+  {% endif %}
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+var project_invitation_info = {{send_invitation|json}};
+
+$(function() {
+  set_state_from_url_fragment();
+  $(window).on('hashchange', set_state_from_url_fragment);
+  $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    var tabid = e.target.getAttribute('href').substring(1); // old IE might return absolute URL here?
+    window.location.hash = "#tab=" + encodeURIComponent(tabid);
+  })
+
+  {% if layout_mode == "grid" %}
+  // Resize questions so they all have the same height, to the max height of any.
+  var max_height = 0;
+  $('.question').each(function() {
+    var h = $(this).outerHeight();
+    if (h > max_height) max_height = h;
+  });
+  $('.question').css({ height: max_height });
+  {% endif %}
+})
+
+function invite_user_into_project() {
+  var info = project_invitation_info;
+  show_invite_modal(
+    'Invite To Project Team (' + info.model_title + ')',
+    'Invite a colleague to join this project team.',
+    info,
+    'Please join the project team for ' + info.model_title + '.',
+    {
+      project: info.model_id,
+      add_to_team: "1"
+    },
+    function() { window.location.reload() }
+  );
+
+  return false;
+}
+
+function invite_user_to_start_module(module_title, question_id) {
+  var info = project_invitation_info;
+  show_invite_modal(
+    'Start a Module (' + info.model_title + ')',
+    'Invite a colleague to answer the module ' + module_title + '.',
+    info,
+    'Can you give me a hand completing the module ' + module_title + ' for ' + info.model_title + '?',
+    {
+      project: info.model_id,
+      into_new_task_question_id: question_id
+    },
+    function() { window.location.reload() }
+  );
+
+  return false;
+}
+
+function set_state_from_url_fragment() {
+  var fragment = window.location.hash.substring(1); // chop off the "#"
+
+  // The GovReady Dashboard React app appends a random code like `?_k=h9zm95` to the
+  // fragment, so we need to strip that out.
+  fragment = fragment.split('?').shift();
+
+  var fragment = parse_qs(fragment);
+
+  // Highlight the question.
+  if (fragment.q && fragment.t) {
+    $('.question').each(function() {
+      if (this.id == "question-" + fragment.q && this.getAttribute("data-task-id") == fragment.t) {
+        var elem = $(this);
+        elem.css({ backgroundColor: "#FFA" });
+        smooth_scroll_to(elem);
+        setTimeout(function() { elem.css({ backgroundColor: "#FFF" }); }, 2000);
+      }
+    });
+  }
+}
+
+
+function upgrade_project(version_number) {
+  show_modal_confirm(
+    "Upgrade Project",
+    "Are you sure you want to upgrade this project to version version_number?".replace("version_number", version_number),
+    "Upgrade",
+    function() {
+      ajax_with_indicator({
+       url: '{% url "upgrade_project" project.id %}',
+       method: "POST",
+       data: {
+        version_number: version_number
+       },
+       success: function(res) {
+         // redirect to main project page after successful upgrade
+         window.location = res.redirect;
+       }
+      });
+    }
+  )
+}
+
+function delete_project() {
+  show_modal_confirm(
+    "Delete Project",
+    "Are you sure you want to delete this project? All information will be permanently deleted.",
+    "Delete",
+    function() {
+      ajax_with_indicator({
+       url: '{% url "delete_project" project.id %}',
+       method: "POST",
+       success: function(res) {
+         // redirect to home to see other projects
+         window.location = res.redirect;
+       }
+      });
+    }
+  )
+}
+
+function make_admin(is_admin, user_id, user_name) {
+  show_modal_confirm(
+    (is_admin ? "Make Project Administrator" : "Revoke Administrator Privilege"),
+    "Do you want to "
+		+ (is_admin ? "make" : "revoke the administrator privilege from")
+		+ " "
+		+ user_name
+		+ (is_admin ? " an administrator" : "")
+		+ " for this project?",
+    (is_admin ? "Make Admin" : "Revoke Privilege"),
+    function() {
+      ajax_with_indicator({
+       url: '{% url "make_revoke_project_admin" project.id %}',
+       method: "POST",
+       data: {
+       	 user: user_id,
+       	 is_admin: is_admin ? "true" : false
+       },
+       success: function(res) {
+         // reload page to show changes in UI
+         window.location.reload();
+       }
+      });
+    }
+  )
+  return false;
+}
+</script>
+
+{% endblock %}

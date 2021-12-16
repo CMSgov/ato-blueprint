@@ -33,41 +33,45 @@
     <![endif]-->
   </head>
   <body>
-    <div class="default-container">
+    <div class="grid-container">
       <!--[if lt IE 8]><p>Internet Explorer version 8 or any modern web browser is required to use this website, sorry.<![endif]-->
       <!--[if gt IE 7]><!-->
 
       {% include "navbar.html" %}
 
-      {% block contextbar %}
-        {% block breadcrumbs %}
-        {% endblock %}
-      {% endblock %}
+      <div class="grid-row margin-bottom-3">
+        <div class="tablet:grid-col-8">
+          {% block contextbar %}
+            {% block breadcrumbs %}
+            {% endblock %}
+          {% endblock %}
 
-      {% if messages %}
-        {% for message in messages %}
-        <div class="usa-alert usa-alert--{{ message.level_tag }} margin-1">
-          <div class="usa-alert__body">
-            {{ message }}
-          </div>
-        </div>
-        {% endfor %}
-      {% endif %}
-
-      {% block body-wide %}
-      <div id="main-content" class="main-content">
-        <div class="margin-left-5">
-          {% block pagetitle %}
+          <h1 class="usa-prose-h1 margin-top-2 margin-bottom-2">
+            {% block pagetitle %}
+            {% endblock %}
+          </h1>
+          {% block pageheader %}
           {% endblock %}
         </div>
+        <div class="tablet:grid-col-4">
+          {% if messages %}
+            {% for message in messages %}
+            <div class="usa-alert usa-alert--{{ message.level_tag }} margin-1">
+              <div class="usa-alert__body">
+                {{ message }}
+              </div>
+            </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
 
+      {% block body-wide %}
         {% block body %}
         {% endblock %}
 
         {% block content %}
-          {# allauth uses this block #}
         {% endblock %}
-      </div>
       {% endblock %}
 
       {% include "bootstrap-helpers.html" %}

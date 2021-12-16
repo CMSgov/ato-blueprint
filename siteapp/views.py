@@ -4,8 +4,6 @@ import random
 import sys
 from datetime import datetime
 
-import utils as utils
-
 from controls.enums.statements import StatementTypeEnum
 from controls.forms import ImportProjectForm
 from controls.models import (Deployment, Element, ElementControl, Poam,
@@ -38,6 +36,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from system_settings.models import Classification, Sitename, SystemSettings
 
+import utils as utils
 from siteapp.serializers import ProjectSerializer, UserSerializer
 
 from .forms import AccountSettingsForm, EditProjectForm, PortfolioForm
@@ -1198,62 +1197,28 @@ def project_security_objs_edit(request, project_id):
 @project_read_required
 def project_settings(request, project):
     """Display settings for project"""
-
-    # Assign questions to the main area or to the "action buttons" panel on the side of the page.
-    main_area_questions = []
-    action_buttons = []
-
-    other_open_invitations = []
-    for inv in Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None,
-                                         revoked_at=None).order_by('-created'):
-        if inv.is_expired():
-            continue
-        if inv.target == project:
-            into_new_task_question_id = inv.target_info.get("into_new_task_question_id")
-            if into_new_task_question_id:
-                if into_new_task_question_id in questions:  # should always be True
-                    questions[into_new_task_question_id]["invitations"].append(inv)
-                    continue
-
-        # If the invitation didn't get put elsewhere, display in the
-        # other list.
-        other_open_invitations.append(inv)
-
-    # Gather version upgrade information
-    available_versions = []
-    avs = project.available_root_task_versions_for_upgrade
-    for av in avs:
-        av_info = {
-            "appname": av.appname,
-            "version_number": av.version_number
-        }
-        # print("project.is_safe_upgrade(av)", project.is_safe_upgrade(av))
-        if project.is_safe_upgrade(av) == True:
-            av_info["is_safe_upgrade"] = True
-            av_info["reason"] = "Compatible"
-        else:
-            av_info["is_safe_upgrade"] = "Incompatible"
-            av_info["reason"] = project.is_safe_upgrade(av)
-        available_versions.append(av_info)
-
     nav = project_navigation(request, project)
+    task = Task.objects.filter(project=project.id)
+    system_info = {}
+    acronym = None
+    for i in task:
+        if i.module.module_name == 'system_basic_info':
+            s = i.get_answers().with_extended_info()
+            acronym = s.as_dict().get('system_acronym')
+            system_info = s.render_answers(show_imputed=False)
+            system_info_edit = i.get_absolute_url()
 
     # Render.
-    return render(request, "project_settings.html", {
-        "is_project_page": True,
-        "project": project,
-        "is_admin": request.user in project.get_admins(),
-        "can_upgrade_app": project.root_task.module.app.has_upgrade_priv(request.user),
-        "available_versions": available_versions,
-        "title": project.title,
-        "open_invitations": other_open_invitations,
-        "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
-        "action_buttons": action_buttons,
-        "projects": Project.objects.all(),
-        "portfolios": Portfolio.objects.all(),
-        "users": User.objects.all(),
-        "import_project_form": ImportProjectForm(),
-        "nav": nav,
+    return render(request, 'project/project-settings.html', {
+        'project': project,
+        'is_admin': request.user in project.get_admins(),
+        'title': project.title,
+        'send_invitation': Invitation.form_context_dict(request.user, project, [request.user]),
+        'users': User.objects.all(),
+        'nav': nav,
+        'system_info': system_info,
+        'system_info_edit': system_info_edit,
+        'acronym': acronym,
     })
 
 
