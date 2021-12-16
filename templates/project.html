@@ -20,7 +20,7 @@
 {% endblock %}
 
 {% block pagetitle %}
-<div id="project-title-info" class="row">
+<div id="project-title-info" class="row project-homepage">
   <div class="col-sm-8">
     {% if project.organization %}
       <h2 id="project-title">{{ project.title }}
@@ -29,8 +29,8 @@
       </h2>
 
       {% if title != project.root_task.module.spec.title %}
-        <div class="text-bold">
-          {{project.root_task.module.spec.title}} {% if security_sensitivity %}[{{ security_sensitivity|lower }}]{% else %} [Moderate]{% endif %}
+        <div class="fisma-impact-level">
+          FISMA Impact Level: {% if security_sensitivity %}{{project.root_task.module.spec.title}} {{ security_sensitivity|lower }}{% else %} Undetermined{% endif %}
         </div>
       {% endif %}
     {% endif %}
@@ -60,158 +60,126 @@
     <div class="grid-col-fill">
       <h3 class="site-preview-heading margin-top-3">
         <a href="{% url 'controls_selected' system_id=project.system.id %}">
-          {{ elements|length }} System Component{{ elements|length|pluralize }}
+          <b>
+            {% if controls_addressed_count == 0%}
+              {{ controls_addressed_count }} Controls Implemented
+            {% else %}
+              {{ controls_addressed_count }} of {{ total_controls_count }} Controls Implemented
+            {% endif %}
+          </b>
         </a>
       </h3>
       <a href="{% url 'controls_selected' system_id=project.system.id %}">
-        {{ controls_addressed_count }} of {{ total_controls_count }} Controls Addressed
+        {{ elements|length }} System Component{{ elements|length|pluralize }}
       </a>
     </div>
   </div>
 </div>
-<div class="col-sm-8" class="project-row-style">
-  <h2 class="status-section-header">System Information</h2>
-  {% if project.root_task.module.spec.is_app_stub %}
-    {# This project is tied to an app that has not yet been imported. #}
-    <h2>Activate App</h2>
-    <p>This app must be activated by an administrator of your organization. Send them <a href="javascript:invite_user_into_project()">an invitation</a> to join this project. When they get here, they&rsquo;ll be able to activate the app.</p>
-  {% endif %}
-</div>
 
-{% for column in columns %}
-<div class="col-md-9">
-  <div class="question-column">
-  {% for group in column.groups %}
-    {% if group.title %}
-      <a class="group-title" id="{{group.title}}"></a>
-    {% endif %}
-    <ul class="usa-card-group question">
-      {% for q in group.questions %}
-        {% if q.question.key != "ssp_intro" %}
-          <li class="col-sm-12 usa-card">
-            <div class="usa-card__container">
-              <header class="usa-card__header">
-                <h2 class="usa-card__heading">
-                  {% if not q.can_start_new_task and q.question.spec.app_overrides_name_and_icon is None %}
-                    {% if q.question.key == "system_basic_info" %}
-                      {{ project.title }} {{ q.task.title }}
-                    {% else %}
-                      {{ q.task.title }}
-                    {% endif %}
-                  {% else %}
-                    {{q.question.spec.title}}
-                  {% endif %}
-                </h2>
-              </header>
-              <div class="usa-card__body">
-              </div>
-              <div class="usa-card__footer">
-                {% with task=q.task %}
-                {% if layout_mode == "rows" %}
-                  {% if not q.question.spec.protocol %}
-                    <form class="start-task" method="post" action="/tasks/start"
-                      onclick="$(this).submit();" style="cursor: pointer">
-                      {% csrf_token %}
-                      <input type="hidden" name="project" value="{{project.id}}"/>
-                      <input type="hidden" name="question" value="{{q.question.key}}"/>
-                      <input type="hidden" name="previous" value="project"/>
-                      {% if task.is_finished %}
-                        <button class="usa-button pull-left margin-right-1" onclick="window.location='{{ q.task.get_absolute_url }}';">Completed</button>
-                        <button class="usa-button pull-left usa-button--outline" onclick="window.location='{{ q.task.get_absolute_url }}';">Edit</button>
-                      {% elif task.is_started %}
-                        <button class="usa-button pull-left">In progress</button>
-                      {% else %}
-                        <button class="usa-button pull-left">Start section</button>
-                      {% endif %}
-                    </form>
-                  {% else %}
-                    <form method="get" action="{% url 'store' %}" onclick="$(this).submit();" style="cursor: pointer">
-                      <input type="hidden" name="portfolio" id="id_portfolio" value="{{ project.portfolio.id }}">
-                      <input type="hidden" name="q" value="{{project.root_task.id}}/{{q.question.key}}">
-                      {% if task.is_finished %}
-                        <button class="usa-button pull-left margin-right-1" onclick="window.location='{{ q.task.get_absolute_url }}';">Completed</button>
-                        <button class="usa-button pull-left usa-button--outline" onclick="window.location='{{ q.task.get_absolute_url }}';">Edit</button>
-                      {% elif task.is_started %}
-                        <button class="usa-button pull-left">In progress</button>
-                      {% else %}
-                        <button class="usa-button pull-left">Start section</button>
-                      {% endif %}
-                    </form>
-                  {% endif %}
-                {% endif %}
-                {% endwith %}
-              </div>
-              <div class="question-body">
-                {# Show open invitations related to this question. #}
-                {% for inv in q.invitations %}
-                <p class="invitation" data-invitation-id="{{inv.id}}">
-                  You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
-                  (<a href="#" onclick="return cancel_invitation(this);">cancel</a>)
-                </p>
-                {% endfor %}
-
-                {# If the user is a guest participant in a discussion inside this question, link to this discussion. They can't view the task directly. (?) #}
-                {% if q.discussions %}
-                  <div>
-                    <div class="text-bold">Discussions:</div>
-                    {% for d in q.discussions %}
-                    <a class="display-block" href="{{d.get_absolute_url}}">{{d.attached_to.question.spec.title}}</a>
-                    {% endfor %}
-                  </div>
-                {% endif %}
-              </div> <!-- /.question-body -->
-            </div>
-          </li> <!-- /#question-__.question -->
+{% comment %} If there's no FISMA level set, then display the FISMA box containing link to system questions.
+  Note that the questions currently pick up wherever the user left off answering them,
+  so when all the questions exist on one page, this function can get pared down significantly (TODO) {% endcomment %}
+{% if security_sensitivity == None %}
+  {% for column in columns %}
+    <div class="col-md-9">
+      <div class="question-column">
+      {% for group in column.groups %}
+        {% if group.title %}
+          <a class="group-title" id="{{group.title}}"></a>
         {% endif %}
-      {% endfor %} {# question #}
-    </ul> <!-- /question-group -->
-  {% endfor %} {# group #}
-  </div> <!-- /question-column -->
+        <ul class="usa-card-group question">
+          {% for q in group.questions %}
+            {% if q.question.key == "system_basic_info" %}
+              <li class="col-sm-12 usa-card">
+                <div class="usa-card__container border-width-1px radius-md border-secondary">
+                  <header class="usa-card__header">
+                    <h2 class="usa-card__heading">
+                      {% if not q.can_start_new_task and q.question.spec.app_overrides_name_and_icon is None %}
+                        Enter your FISMA Impact Level
+                      {% endif %}
+                    </h2>
+                  </header>
+                  <div class="usa-card__body">
+                    This enables Blueprint set your control baseline and add Components. If you don’t know it, work with your ISSO to categorize your system in CFACTS.
+                    <br>
+                    <b>You can’t complete your SSP until this is done.</b>
+                  </div>
+                  <div class="usa-card__footer">
+                    {% with task=q.task %}
+                    {% if layout_mode == "rows" %}
+                      {% if not q.question.spec.protocol %}
+                        <form class="start-task" method="post" action="/tasks/start"
+                          onclick="$(this).submit();" style="cursor: pointer">
+                          {% csrf_token %}
+                          <input type="hidden" name="project" value="{{project.id}}"/>
+                          <input type="hidden" name="question" value="{{q.question.key}}"/>
+                          <input type="hidden" name="previous" value="project"/>
+                          <button class="usa-button usa-button--secondary" onclick="window.location='{{ q.task.get_absolute_url }}';">Enter</button>
+                        </form>
+                      {% endif %}
+                    {% endif %}
+                    {% endwith %}
+                  </div>
+                </div>
+              </li> <!-- /#question-__.question -->
+            {% endif %}
+          {% endfor %} {# question #}
+        </ul> <!-- /question-group -->
+      {% endfor %} {# group #}
+    </div> <!-- /question-column -->
+  </div> <!-- /col -->
+  {% endfor %}
+{% endif %}
 
+<div class="col-md-8">
   <div class="col-md-12" class="project-row-style" style="border:0px solid green;">
     <h2 class="status-section-header">System Components</h2>
   </div>
-  <div class="col-md-12">
-    <ul class="usa-card-group">
-      {% for e in elements %}
-      <li class="col-sm-12 usa-card">
-        {% with element_smts_done_count=producer_elements_control_impl_smts_status_dict|get_item:e|get_item:'Implemented' element_smts_count=producer_elements_control_impl_smts_dict|get_item:e|length %}
-        <div class="usa-card__container">
-          <header class="usa-card__header">
-            <h2 class="usa-card__heading">{{ e.name }}</h2>
-          </header>
-          <div class="usa-card__body">
-            {% if e.description != e.name %}
-              <p class="text-bold">{{ e.description }}</p>
-            {% endif %}
-            <p>{% if element_smts_done_count %}{{element_smts_done_count}}{% else %}0{% endif %} of {{ element_smts_count }} controls addressed</p>
-            <div class="progress" style="width:40%; height:8px;">
-              {% with progress_fraction=element_smts_done_count|divide:element_smts_count %}
-              <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: {{ progress_fraction|multiply:100 }}%;">
-                <span class="sr-only">{{ progress_fraction|multiply:100 }}% Complete</span>
+  {% if elements|length > 0 %}
+    <div class="col-md-12">
+      <ul class="usa-card-group">
+        {% for e in elements %}
+        <li class="col-sm-12 usa-card">
+          {% with element_smts_done_count=producer_elements_control_impl_smts_status_dict|get_item:e|get_item:'Implemented' element_smts_count=producer_elements_control_impl_smts_dict|get_item:e|length %}
+          <div class="usa-card__container">
+            <header class="usa-card__header">
+              <h2 class="usa-card__heading">{{ e.name }}</h2>
+            </header>
+            <div class="usa-card__body">
+              {% if e.description != e.name %}
+                <p class="text-bold">{{ e.description }}</p>
+              {% endif %}
+              <p>{% if element_smts_done_count %}{{element_smts_done_count}}{% else %}0{% endif %} of {{ element_smts_count }} controls addressed</p>
+              <div class="progress" style="width:40%; height:8px;">
+                {% with progress_fraction=element_smts_done_count|divide:element_smts_count %}
+                <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: {{ progress_fraction|multiply:100 }}%;">
+                  <span class="sr-only">{{ progress_fraction|multiply:100 }}% Complete</span>
+                </div>
+                {% endwith %}
               </div>
-              {% endwith %}
+            </div>
+            <div class="usa-card__footer">
+              {% if element_smts_done_count > 0 and element_smts_done_count < element_smts_count %}
+                <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button pull-left">In progress</a>
+              {% elif element_smts_done_count == element_smts_count or element_smts_done_count > element_smts_count %}
+                <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button pull-left margin-right-1">Complete</a>
+                <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button pull-left usa-button--outline">Edit</a>
+              {% else %}
+                <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button pull-left">Start</a>
+              {% endif %}
             </div>
           </div>
-          <div class="usa-card__footer">
-            {% if element_smts_done_count > 0 and element_smts_done_count < element_smts_count %}
-              <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button pull-left">In progress</a>
-            {% elif element_smts_done_count == element_smts_count or element_smts_done_count > element_smts_count %}
-              <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button pull-left margin-right-1">Complete</a>
-              <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button pull-left usa-button--outline">Edit</a>
-            {% else %}
-              <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button pull-left">Start</a>
-            {% endif %}
-          </div>
-        </div>
-        {% endwith %}
-      </li>
-      {% endfor %}
-    </ul>
-  </div>
-</div> <!-- /col -->
-{% endfor %} {# column #}
-
+          {% endwith %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% else %}
+    <div class="col-md-12">
+      Blueprint adds initial Components based on your FISMA Impact Level and environment. View System Information to determine your FISMA Impact Level and Blueprint can begin suggesting components.
+    </div>
+  {% endif %}
+</div>
 {% endblock %}
 
 {% block modals %}

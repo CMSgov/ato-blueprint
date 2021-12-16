@@ -1121,35 +1121,20 @@ def project_navigation(request, project):
     purl = project.get_absolute_url()
     task = project.root_task.get_or_create_subtask(request.user, "ssp_intro")
     nav = {
-        "home": {
-            "url": purl,
-            "title": "Project Home",
-            "id": "project-home",
-        },
-        "settings": {
-            "url": purl + "/settings",
-            "title": "Project Settings",
-            "id": "project-settings",
-        },
-        "invite": {
-            "url": "#",
-            "title": "Invite",
-            "id": "project-invite",
-        },
-        "ssp": {
-            "url": task.get_absolute_url(),
-            "title": "System Security Plan",
-            "id": "project-ssp"
-        },
         "controls": {
             "url": "/systems/" + str(project.system.id) + "/controls/selected",
-            "title": "System Controls",
+            "title": "Review Controls",
             "id": "project-controls",
         },
         "components": {
             "url": "/systems/" + str(project.system.id) + "/components/selected",
             "title": "Manage Components",
             "id": "project-components",
+        },
+        "ssp": {
+            "url": task.get_absolute_url(),
+            "title": "Export System Security Plan",
+            "id": "project-ssp"
         },
     }
     return nav
