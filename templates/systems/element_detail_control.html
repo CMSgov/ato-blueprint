@@ -3,28 +3,37 @@
 {% load static %}
 
 {% block title %}
-  Component Detail
+  {{ project }} | {{ element.name }}
 {% endblock %}
 
-{% block head %}
-{{block.super}}
+{% block breadcrumbs_extension %}
+  <li class="usa-breadcrumb__list-item">
+    <a href="{{project.get_absolute_url}}" class="usa-breadcrumb__link">
+      <span>{{project.title}}</span>
+    </a>
+  </li>
+  <li class="usa-breadcrumb__list-item usa-current" aria-current="{{ element.name }}">
+    <span>{{ element.name }}</span>
+  </li>
 {% endblock %}
 
 {% block pagetitle %}
-  <div id="above-tab-content" class="row">
-    <div>
-      <h2 class="margin-bottom-1">System Component: {{ element.name }}</h2>
-      <ul class="usa-list usa-list--unstyled margin-bottom-2">
-        <li><b>Description:</b> {{ element.description }}</li>
-        <li><b>State:</b> {{ element.component_state|title }}</li>
-        <li><b>Type:</b> {{ element.component_type|title }}</li>
-        <li><b>Version:</b> {{ element.oscal_version }}</li>
-      </ul>
-    </div>
-  </div>
+<a href="{{project.get_absolute_url}}">{{ project }}{% if acronym %} ({{ acronym|safe }}){% endif %}</a>
+{% endblock %}
+
+{% block pageheader %}
+  <h2 class="margin-bottom-1">System Component: {{ element.name }}</h2>
 {% endblock %}
 
 {% block body_content %}
+<div class="systems-top">
+    <ul class="usa-list usa-list--unstyled margin-bottom-2">
+      <li><b>Description:</b> {{ element.description }}</li>
+      <li><b>State:</b> {{ element.component_state|title }}</li>
+      <li><b>Type:</b> {{ element.component_type|title }}</li>
+      <li><b>Version:</b> {{ element.oscal_version }}</li>
+    </ul>
+</div>
 <div class="">
   <div class="usa-step-indicator__header">
     <h4 class="usa-step-indicator__heading">

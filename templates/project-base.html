@@ -3,28 +3,16 @@
 {% load q %}
 
 {% block breadcrumbs %}
-<nav class="usa-breadcrumb margin-left-2" aria-label="Breadcrumbs,,">
+<nav class="usa-breadcrumb" aria-label="Breadcrumbs,,">
   <ol class="usa-breadcrumb__list">
     <li class="usa-breadcrumb__list-item">
       <a href="/" class="usa-breadcrumb__link"><span>Home</span></a>
     </li>
     <li class="usa-breadcrumb__list-item">
-      <a class="usa-breadcrumb__link" href="{{project.portfolio.get_absolute_url}}">
-        <span>{{project.portfolio.title}}</span>
+      <a class="usa-breadcrumb__link" href="/projects">
+        <span>Projects</span>
       </a>
     </li>
-    {% for parent_project in project.get_parent_projects %}
-    <li class="usa-breadcrumb__list-item">
-      <a href="{{parent_project.get_absolute_url}}" class="usa-breadcrumb__link">
-        <span>{{parent_project.title}}</span>
-      </a>
-    </li>
-    {% endfor %}
-    {% if element.name %}
-      <li class="usa-breadcrumb__list-item usa-current" aria-current="{{project.title}}">
-        <span>{{ element.name }}</span>
-      </li>
-    {% endif %}
     {% block breadcrumbs_extension %}
     {% endblock %}
   </ol>
@@ -33,55 +21,31 @@
 
 {% block body %}
 {{block.super}}
-<div class="col" style="margin: auto;">
-  <div class="col-md-9 order-12">
-    <div id="focus-area-wrapper">
-      {% block above_title %}
-      {% if authoring_tool_enabled %}
-        <div class="authoring-tool-hidden authoring-tool-box centered text-info">
-          You are in author mode. Authoring tools have been enabled for this module.
-        </div>
-        <div class="authoring-tool-hidden authoring-tool-box centered text-info">
-          <a href="#" onclick="show_authoring_tool_module_editor(); return false;" class="authoring-tool-style">
-            <span class="glyphicon glyphicon-pencil"></span>
-            Edit App
-          </a>
-          <a href="#" onclick="authoring_tool_new_question({{ project.root_task.id }}, true); return false;" class="authoring-tool-style">
-            <span class="glyphicon glyphicon-plus"></span>
-            Add Question
-          </a>
-          <a href="#" onclick="authoring_tool_download_app_project({{ project.root_task.id }}, true); return false;" class="authoring-tool-style">
-            <span class="glyphicon glyphicon-download"></span>
-            Download Source
-          </a>
-        </div>
-      {% endif %}
-      {% endblock %}
-
-      {% if is_project_page %}
-        {% if project.lifecycle_stage %}
-          {% with nstages=project.lifecycle_stage.0.stages|length %}
-          <div class="progress" style="cursor: default;">
-            {% for stage in project.lifecycle_stage.0.stages %}
-            <div class="progress-bar progress-bar-success" style="{% if stage.complete %}width: {{ 100|div:nstages|floatformat:0|add:-1 }}%;{% else %}display: none;{% endif %}">
-              {{ stage.label }}
-            </div>
-            {% endfor %}
+<div class="grid-row">
+  <div class="tablet:grid-col-9 padding-right-2">
+    {% if is_project_page %}
+      {% if project.lifecycle_stage %}
+        {% with nstages=project.lifecycle_stage.0.stages|length %}
+        <div class="progress" style="cursor: default;">
+          {% for stage in project.lifecycle_stage.0.stages %}
+          <div class="progress-bar progress-bar-success" style="{% if stage.complete %}width: {{ 100|div:nstages|floatformat:0|add:-1 }}%;{% else %}display: none;{% endif %}">
+            {{ stage.label }}
           </div>
-          {% endwith %}
-        {% endif %}
+          {% endfor %}
+        </div>
+        {% endwith %}
       {% endif %}
+    {% endif %}
 
-      <div class="project-body-block">
-        {% block body_content %}
-        {% endblock %}
-      </div>
-    </div> <!-- /focus-area-wrapper -->
-  </div><!-- /col -->
-  <div class="col-md-3 pull-right order-1">
+    <div class="project-body-block">
+      {% block body_content %}
+      {% endblock %}
+    </div>
+  </div>
+  <div class="tablet:grid-col-3 padding-left-2">
     {% include "project/project-menu.html" %}
-  </div><!-- /col -->
-</div> <!-- /row -->
+  </div>
+</div>
 {{ send_invitation|json_script:"send_invitation"}}
 
 {% include "edit-project-modal.html" %}

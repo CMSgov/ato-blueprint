@@ -9,9 +9,28 @@
   Components Selected
 {% endblock %}
 
+{% block breadcrumbs_extension %}
+  <li class="usa-breadcrumb__list-item">
+    <a href="{{project.get_absolute_url}}" class="usa-breadcrumb__link">
+      <span>{{project.title}}</span>
+    </a>
+  </li>
+  <li class="usa-breadcrumb__list-item usa-current" aria-current="Manage Components">
+    <span>Manage Components</span>
+  </li>
+{% endblock %}
+
 {% block head %}
 {{block.super}}
 {% include "controls/_style-controls.html" %}
+{% endblock %}
+
+{% block pagetitle %}
+<a href="{{project.get_absolute_url}}">{{ project }}{% if acronym %} ({{ acronym|safe }}){% endif %}</a>
+{% endblock %}
+
+{% block pageheader %}
+<h2 class="usa-prose-h2">System Components<h2>
 {% endblock %}
 
 <!-- action buttons included from project-base.html -->
