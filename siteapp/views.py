@@ -880,6 +880,14 @@ def project_read_required(f):
 
 @project_read_required
 def project(request, project):
+    # Get project acronym
+    task = Task.objects.filter(project=project.id)
+    acronym = None
+    for i in task:
+        if i.module.module_name == 'system_basic_info':
+            s = i.get_answers().with_extended_info()
+            acronym = s.as_dict().get('system_acronym')
+
     # TODO: Lifecycles is part of the kanban style version of presenting projects that hasn't been optimized & fully implemented
     # Get this project's lifecycle stage, which is shown below the project title.
     # assign_project_lifecycle_stage([project])
@@ -1069,8 +1077,6 @@ def project(request, project):
         confidentiality, integrity, availability = None, None, None
 
     # Retrieve components
-    model = Element
-    ordering = ['name']
     elements = [element for element in project.system.producer_elements if element.element_type != "system"]
 
     # Retrieve statements, smt statuses associated with system elements
@@ -1078,10 +1084,12 @@ def project(request, project):
     producer_elements_control_impl_smts_status_dict = project.system.producer_elements_control_impl_smts_status_dict
 
     nav = project_navigation(request, project)
+
     # Render.
     return render(request, "project.html", {
         "is_project_page": True,
         "project": project,
+        "acronym": acronym,
         "security_sensitivity": utils.get_security_sensitivity(project),
         "confidentiality": confidentiality,
         "integrity": integrity,

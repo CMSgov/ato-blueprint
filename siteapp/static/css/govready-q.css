@@ -259,7 +259,7 @@ a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none;
 .project-top { margin-top: 15px; }
 .project-image { width: 20px; float: left; margin: 4px 0 5px 8px; }
 
-.project-homepage .fisma-impact-level { font-size: 22px }
+.project-subtitle-text { font-size: 22px; font-weight: 300; }
 
 .project-list-text { font-size: 90%; font-weight: 400; margin: 2em 0 .5em -2px; }
 .project-list-text-item { color: #666; }
