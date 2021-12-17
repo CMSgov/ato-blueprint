@@ -9,12 +9,11 @@ from zipfile import BadZipFile, ZipFile
 import fs
 import fs.errors
 
-import utils as utils
-
 from controls.enums.statements import StatementTypeEnum
 from controls.models import Element, Statement
 from controls.oscal import Catalog
 from controls.utilities import de_oscalize_control_id
+import controls.utils as utils
 
 from discussion.models import Discussion
 from discussion.validators import validate_file_extension

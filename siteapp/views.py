@@ -9,6 +9,8 @@ from controls.forms import ImportProjectForm
 from controls.models import (Deployment, Element, ElementControl, Poam,
                              Statement, System)
 from controls.views import add_selected_components
+import controls.utils as utils
+
 from discussion.models import Discussion
 from django.conf import settings
 from django.contrib import messages
@@ -36,7 +38,6 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from system_settings.models import Classification, Sitename, SystemSettings
 
-import utils as utils
 from siteapp.serializers import ProjectSerializer, UserSerializer
 
 from .forms import AccountSettingsForm, EditProjectForm, PortfolioForm

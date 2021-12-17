@@ -16,7 +16,6 @@ import siteapp.views as project_nav
 import trestle.oscal.component as trestlecomponent
 import trestle.oscal.ssp as trestlessp
 
-import utils as utils
 
 from django.conf import settings
 from django.contrib import messages
@@ -39,6 +38,7 @@ from siteapp.settings import GOVREADY_URL
 from system_settings.models import SystemSettings
 
 from controls.oscal import Catalogs
+import controls.utils as utils
 
 from .forms import (DeploymentForm, ElementEditForm, ElementForm,
                     ImportOSCALComponentForm, PoamForm, StatementPoamForm,
