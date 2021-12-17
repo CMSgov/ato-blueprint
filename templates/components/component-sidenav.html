@@ -1,0 +1,14 @@
+{% load static %}
+<nav aria-label="Secondary navigation,">
+    <ul class="usa-sidenav">
+        {% for k, smt in page_data.items %}
+        <li class="usa-sidenav__item">
+            <a href="{% url "system_element_control" system.id element.id catalog_key smt.sid %}" data-sid="{{ smt.sid }}" class="{% if forloop.first %}usa-current{% endif %}" data-status="{% if smt.status == "Implemented" %}implemented{% endif %}">{{ smt.label|upper }}
+            {% if smt.status == "Implemented" %}
+                <svg class="usa-icon position-relative usa-icon--size-1 float-right margin-top-05 text-green" aria-hidden="true" focusable="false" role="img"><use xlink:href="{% static "vendor/uswds-2.12.0/img/sprite.svg#check_circle" %}"></use></svg>
+            {% endif %}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</nav>

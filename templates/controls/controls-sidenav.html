@@ -1,0 +1,14 @@
+{% load static %}
+<nav aria-label="Secondary navigation,">
+    <ul class="usa-sidenav">
+        {% for k, smt in statements.items %}
+        <li class="usa-sidenav__item">
+            <a href="{{ smt.href }}" data-stid="{{ smt.id }}" class="{% if smt.active %}usa-current{% endif %}">{{ k }}
+            {% if smt.status == "Implemented" %}
+                <svg class="usa-icon position-relative usa-icon--size-1 float-right margin-top-05 text-green" aria-hidden="true" focusable="false" role="img"><use xlink:href="{% static "vendor/uswds-2.12.0/img/sprite.svg#check_circle" %}"></use></svg>
+            {% endif %}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</nav>

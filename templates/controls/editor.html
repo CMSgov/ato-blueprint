@@ -5,139 +5,113 @@
 {% load q %}
 
 {% block title %}
-  Control
+  {{ catalog.control.label }} {{ catalog.control.title }}
 {% endblock %}
 
-{% block breadcrumbs %}
-<nav class="usa-breadcrumb margin-left-2" aria-label="Breadcrumbs,,">
-  <ol class="usa-breadcrumb__list">
-    <li class="usa-breadcrumb__list-item">
-      <a href="/" class="usa-breadcrumb__link">
-        <span>Home</span>
-      </a>
-    </li>
-    <li class="usa-breadcrumb__list-item">
-      <a href="/projects" class="usa-breadcrumb__link">
-        <span>Projects</span>
-      </a>
-    </li>
-    <li class="usa-breadcrumb__list-item">
-      <a href="{{project.get_absolute_url}}" class="usa-breadcrumb__link">
-        <span>{{project.title}}</span>
-      </a>
-    </li>
-    <li class="usa-breadcrumb__list-item">
-      <a href="{% url 'controls_selected' system.id %}" class="usa-breadcrumb__link">
-        <span>Controls</span>
-      </a>
-    </li>
-    <li class="usa-breadcrumb__list-item">
-      <span>{{ catalog.control.label }} {{ catalog.control.title }}</span>
-    </li>
-  </ol>
-</nav>
+{% block breadcrumbs_extension %}
+  <li class="usa-breadcrumb__list-item">
+    <a href="{{project.get_absolute_url}}" class="usa-breadcrumb__link">
+      <span>{{project.title}}</span>
+    </a>
+  </li>
+  <li class="usa-breadcrumb__list-item">
+    <a href="{% url 'controls_selected' system.id %}" class="usa-breadcrumb__link">
+      <span>Controls</span>
+    </a>
+  </li>
+  <li class="usa-breadcrumb__list-item">
+    <span>{{ catalog.control.label }} {{ catalog.control.title }}</span>
+  </li>
 {% endblock %}
 
 {% block pagetitle %}
-  <div id="above-tab-content" class="row">
-    <div>
-      <h2 class="margin-bottom-1">
-        {{ catalog.control.family_title }}: {{ catalog.control.label }} {{ catalog.control.title }}
-      </h2>
-      <p><b>Version:</b> {{ catalog.catalog_display }}</p>
-    </div>
-  </div>
+<a href="{{project.get_absolute_url}}">{{ project }}{% if acronym %} ({{ acronym|safe }}){% endif %}</a>
+{% endblock %}
+
+{% block pageheader %}
+  <h2 class="margin-bottom-1">
+    {{ catalog.control.family_title }}: {{ catalog.control.label }} {{ catalog.control.title }}
+  </h2>
+  <p><b>Version:</b> {{ catalog.catalog_display }}</p>
 {% endblock %}
 
 {% block body_content %}
-<div class="row margin-bottom-4">
-  <div class="margin-top-1 padding-top-4 border-top-2px border-blue">
-    <div class="col-md-3 padding-right-2">
-      <h4 class="text-bold margin-bottom-2 margin-top-1">Components</h4>
-      <nav aria-label="Secondary navigation,">
-        <ul class="usa-sidenav">
-          {% for k, smt in statements.items %}
-            <li class="usa-sidenav__item">
-              <a href="{{ smt.href }}" data-stid="{{ smt.id }}" class="{% if smt.active %}usa-current{% endif %}">{{ k }}
-              {% if smt.status == "Implemented" %}
-                <svg class="usa-icon position-relative usa-icon--size-1 float-right margin-top-05 text-green" aria-hidden="true" focusable="false" role="img"><use xlink:href="{% static "vendor/uswds-2.12.0/img/sprite.svg#check_circle" %}"></use></svg>
-              {% endif %}
-              </a>
-            </li>
-          {% endfor %}
-        </ul>
-      </nav>
+<div class="grid-container padding-x-0">
+    <div class="grid-row">
+        <div class="grid-col-3 padding-right-2">
+            <h4 class="text-bold margin-bottom-2 margin-top-1">Components</h4>
+            {% include 'controls/controls-sidenav.html' %}
+        </div>
+        <div class="grid-col-fill">
+            <div class="margin-bottom-1">
+                <h3 id="component-name" class="text-bold margin-bottom-2">{{ narrative.producer_element_name }}</h3>
+                <ul class="usa-list usa-list--unstyled">
+                    <li>
+                        {% if inheritance.name %}
+                            <b>Responsibility</b>: <span id="responsibility">{{ narrative.inheritance.name }}</span>
+                        {% else %}
+                            <b>Responsibility</b>:
+                            <span id="responsibility">
+                                {% if narrative.inheritance.name %}
+                                    {{ narrative.inheritance.name }}
+                                {% else %}
+                                    Fully Allocated
+                                {% endif %}
+                            </span>
+                        {% endif %}
+                    </li>
+                    <li>
+                        <b>Control Description</b>: {{ catalog.control.description|linebreaks }}
+                    </li>
+                </ul>
+                {% include 'systems/_responsibilities.html' %}
+                <div class="usa-accordion usa-accordion--bordered" aria-multiselectable="true">
+                    <h4 class="usa-accordion__heading">
+                        <button
+                          class="usa-accordion__button"
+                          aria-expanded="false"
+                          aria-controls="b-a1"
+                        >CMS Implementation Standard</button>
+                    </h4>
+                    <div id="b-a1" class="usa-accordion__content usa-prose">
+                        {% if catalog.implementation %}
+                            <p>{{ catalog.implementation|linebreaks }}</p>
+                        {% else %}
+                            <p>No Implementation Standards provided.</p>
+                        {% endif %}
+                    </div>
+                    <h4 class="usa-accordion__heading">
+                        <button
+                          class="usa-accordion__button"
+                          aria-expanded="false"
+                          aria-controls="b-a2"
+                        >Guidance</button>
+                    </h4>
+                    <div id="b-a2" class="usa-accordion__content usa-prose">
+                        {% if catalog.guidance %}
+                            <p>{{ catalog.guidance|linebreaks }}</p>
+                        {% else %}
+                            <p>No Guidance provided.</p>
+                        {% endif %}
+                    </div>
+                    <h4 class="usa-accordion__heading">
+                        <button
+                          class="usa-accordion__button"
+                          aria-expanded="true"
+                          aria-controls="b-a3"
+                        >Control Narrative</button>
+                    </h4>
+                    <div id="b-a3" class="usa-accordion__content usa-prose padding-0">
+                        {% if narrative %}
+                            {% include 'controls/statement_edit_form.html' %}
+                        {% else %}
+                            <p class="margin-1 padding-top-2">There are no Components that address this Control.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="col-md-9">
-      {% for k, smt in statements.items %}
-        {% if forloop.first %}
-          <h3 id="component-name" class="text-bold margin-bottom-2">{{ k }}</h3>
-        {% endif %}
-      {% endfor %}
-      <ul class="usa-list usa-list--unstyled">
-        <li>
-          {% if inheritance.name %}
-          <b>Responsibility</b>: <span id="responsibility">{{ narrative.inheritance.name }}</span>
-          {% else %}
-          <b>Responsibility</b>:
-          <span id="responsibility">
-            {% if narrative.inheritance.name %}
-              {{ narrative.inheritance.name }}
-            {% else %}
-              Fully Allocated
-            {% endif %}
-          </span>
-          {% endif %}
-        </li>
-        <li><b>Control Description</b>: {{ catalog.control.description|linebreaks }}</li>
-      </ul>
-      {% include 'systems/_responsibilities.html' %}
-      <div class="usa-accordion usa-accordion--bordered" aria-multiselectable="true">
-        <h4 class="usa-accordion__heading">
-          <button
-            class="usa-accordion__button"
-            aria-expanded="false"
-            aria-controls="b-a1"
-          >CMS Implementation Standard</button>
-        </h4>
-        <div id="b-a1" class="usa-accordion__content usa-prose">
-          {% if catalog.implementation %}
-            <p>{{ catalog.implementation|linebreaks }}</p>
-          {% else %}
-            <p>No Implementation Standards provided.</p>
-          {% endif %}
-        </div>
-        <h4 class="usa-accordion__heading">
-          <button
-            class="usa-accordion__button"
-            aria-expanded="false"
-            aria-controls="b-a2"
-          >Guidance</button>
-        </h4>
-        <div id="b-a2" class="usa-accordion__content usa-prose">
-          {% if catalog.guidance %}
-            <p>{{ catalog.guidance|linebreaks }}</p>
-          {% else %}
-            <p>No Guidance provided.</p>
-          {% endif %}
-        </div>
-        <h4 class="usa-accordion__heading">
-          <button
-            class="usa-accordion__button"
-            aria-expanded="true"
-            aria-controls="b-a3"
-          >Control Narrative</button>
-        </h4>
-        <div id="b-a3" class="usa-accordion__content usa-prose padding-0">
-          {% if narrative %}
-            {% include 'controls/statement_edit_form.html' %}
-          {% else %}
-            <p class="margin-1 padding-top-2">There are no Components that address this Control.</p>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 
 {% endblock %}

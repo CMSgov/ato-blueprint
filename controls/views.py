@@ -1134,7 +1134,7 @@ def add_selected_components(system, import_record):
         return imported_components
 
 @login_required
-def system_element(request, system_id, element_id):
+def project_component_editor(request, system_id, element_id, catalog_key=None, control_id=None):
     """Display System's selected element detail view"""
 
     # Retrieve identified System
@@ -1166,18 +1166,10 @@ def system_element(request, system_id, element_id):
         ctl_id = list(page_data.keys())[0]
         control = next((ctl for ctl in catalog_controls if ctl['id'] == oscalize_control_id(page_data[ctl_id]["sid"])), None)
 
-        # Build OSCAL and OpenControl
-        oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
-        opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
-        states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
-        types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
-
         nav = project_nav.project_navigation(request, project)
 
         # Return the system's element information
         context = {
-            "states": states,
-            "types": types,
             "system": system,
             "project": project,
             "element": element,
@@ -1185,14 +1177,14 @@ def system_element(request, system_id, element_id):
             "catalog_controls": catalog_controls,
             "catalog_key": catalog_key,
             "control": control,
-            "oscal": oscal_string,
-            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "opencontrol": opencontrol_string,
             "page_data": page_data,
             "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
             "nav": nav,
         }
         return render(request, "systems/element_detail_tabs.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
 
 @login_required
 def system_element_control(request, system_id, element_id, catalog_key, control_id):
@@ -1965,7 +1957,7 @@ def controls_selected_export_xacta_xslx(request, system_id):
         raise Http404
 
 @login_required
-def control_editor(request, system_id, catalog_key, cl_id, statement_id=None):
+def project_control_editor(request, system_id, catalog_key, cl_id, statement_id=None):
     """System Control detail view"""
 
     catalog_key, system = get_editor_system(catalog_key, system_id)
@@ -1973,7 +1965,6 @@ def control_editor(request, system_id, catalog_key, cl_id, statement_id=None):
     # Retrieve related statements if user has permission on system
     if request.user.has_perm('view_system', system):
         project = system.projects.first()
-        parameter_values = project.get_parameter_values(catalog_key)
         catalog = Catalog.GetInstance(catalog_key=catalog_key)
         cg_flat = catalog.get_flattened_controls_all_as_dict()
         # If control id does not exist in catalog
@@ -2018,7 +2009,7 @@ def get_catalog_data_by_control(catalog_key, control_id):
     return catalog_data
 
 
-def get_statements_by_component(system, control_id, catalog_key, statement_id):
+def get_statements_by_component(system, control_id, catalog_key, statement_id, key='component'):
     """
     Given a system element, a control ID and a catalog key, return the associated
     statements.
