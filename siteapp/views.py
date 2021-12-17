@@ -1118,7 +1118,6 @@ def project(request, project):
 
 
 def project_navigation(request, project):
-    purl = project.get_absolute_url()
     task = project.root_task.get_or_create_subtask(request.user, "ssp_intro")
     nav = {
         "controls": {
