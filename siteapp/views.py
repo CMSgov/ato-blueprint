@@ -9,6 +9,8 @@ from controls.forms import ImportProjectForm
 from controls.models import (Deployment, Element, ElementControl, Poam,
                              Statement, System)
 from controls.views import add_selected_components
+import controls.utils as utils
+
 from discussion.models import Discussion
 from django.conf import settings
 from django.contrib import messages
@@ -36,7 +38,6 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from system_settings.models import Classification, Sitename, SystemSettings
 
-import utils as utils
 from siteapp.serializers import ProjectSerializer, UserSerializer
 
 from .forms import AccountSettingsForm, EditProjectForm, PortfolioForm
@@ -880,6 +881,14 @@ def project_read_required(f):
 
 @project_read_required
 def project(request, project):
+    # Get project acronym
+    task = Task.objects.filter(project=project.id)
+    acronym = None
+    for i in task:
+        if i.module.module_name == 'system_basic_info':
+            s = i.get_answers().with_extended_info()
+            acronym = s.as_dict().get('system_acronym')
+
     # TODO: Lifecycles is part of the kanban style version of presenting projects that hasn't been optimized & fully implemented
     # Get this project's lifecycle stage, which is shown below the project title.
     # assign_project_lifecycle_stage([project])
@@ -1069,8 +1078,6 @@ def project(request, project):
         confidentiality, integrity, availability = None, None, None
 
     # Retrieve components
-    model = Element
-    ordering = ['name']
     elements = [element for element in project.system.producer_elements if element.element_type != "system"]
 
     # Retrieve statements, smt statuses associated with system elements
@@ -1078,10 +1085,12 @@ def project(request, project):
     producer_elements_control_impl_smts_status_dict = project.system.producer_elements_control_impl_smts_status_dict
 
     nav = project_navigation(request, project)
+
     # Render.
     return render(request, "project.html", {
         "is_project_page": True,
         "project": project,
+        "acronym": acronym,
         "security_sensitivity": utils.get_security_sensitivity(project),
         "confidentiality": confidentiality,
         "integrity": integrity,
@@ -1118,38 +1127,22 @@ def project(request, project):
 
 
 def project_navigation(request, project):
-    purl = project.get_absolute_url()
     task = project.root_task.get_or_create_subtask(request.user, "ssp_intro")
     nav = {
-        "home": {
-            "url": purl,
-            "title": "Project Home",
-            "id": "project-home",
-        },
-        "settings": {
-            "url": purl + "/settings",
-            "title": "Project Settings",
-            "id": "project-settings",
-        },
-        "invite": {
-            "url": "#",
-            "title": "Invite",
-            "id": "project-invite",
-        },
-        "ssp": {
-            "url": task.get_absolute_url(),
-            "title": "System Security Plan",
-            "id": "project-ssp"
-        },
         "controls": {
             "url": "/systems/" + str(project.system.id) + "/controls/selected",
-            "title": "System Controls",
+            "title": "Review Controls",
             "id": "project-controls",
         },
         "components": {
             "url": "/systems/" + str(project.system.id) + "/components/selected",
             "title": "Manage Components",
             "id": "project-components",
+        },
+        "ssp": {
+            "url": task.get_absolute_url(),
+            "title": "Export System Security Plan",
+            "id": "project-ssp"
         },
     }
     return nav

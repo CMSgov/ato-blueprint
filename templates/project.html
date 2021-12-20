@@ -20,26 +20,28 @@
 {% endblock %}
 
 {% block pagetitle %}
-<div id="project-title-info" class="row">
-  <div class="col-sm-8">
-    {% if project.organization %}
-      <h2 id="project-title">{{ project.title }}
-        {% block title_suffix_text %}
-        {% endblock %}
-      </h2>
+  <a href="{{project.get_absolute_url}}">{{ project }} ({{ acronym|safe }})</a>
+{% endblock %}
 
-      {% if title != project.root_task.module.spec.title %}
-        <div class="text-bold">
-          {{project.root_task.module.spec.title}} {% if security_sensitivity %}[{{ security_sensitivity|lower }}]{% else %} [Moderate]{% endif %}
-        </div>
-      {% endif %}
-    {% endif %}
+{% block pagesubtitle %}
+  <div class="display-flex flex-row">
+    <div class="padding-right-1 padding-top-1">
+      FISMA Impact Level: {% if security_sensitivity %}{{project.root_task.module.spec.title}} {{ security_sensitivity|lower }}{% else %} Undetermined{% endif %}
+    </div>
+    <a href="{{project.get_absolute_url}}/settings" class="display-flex flex-align-center" aria-label="project settings">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M17.1401 10.94C17.1801 10.64 17.2001 10.33 17.2001 10C17.2001 9.68003 17.1801 9.36002 17.1301 9.06002L19.1601 7.48002C19.3401 7.34002 19.3901 7.07002 19.2801 6.87002L17.3601 3.55002C17.2401 3.33002 16.9901 3.26002 16.7701 3.33002L14.3801 4.29002C13.8801 3.91002 13.3501 3.59002 12.7601 3.35002L12.4001 0.810024C12.3601 0.570024 12.1601 0.400024 11.9201 0.400024H8.08011C7.84011 0.400024 7.65011 0.570024 7.61011 0.810024L7.25011 3.35002C6.66011 3.59002 6.12011 3.92002 5.63011 4.29002L3.24011 3.33002C3.02011 3.25002 2.77011 3.33002 2.65011 3.55002L0.74011 6.87002C0.62011 7.08002 0.66011 7.34002 0.86011 7.48002L2.89011 9.06002C2.84011 9.36002 2.80011 9.69002 2.80011 10C2.80011 10.31 2.82011 10.64 2.87011 10.94L0.84011 12.52C0.66011 12.66 0.61011 12.93 0.72011 13.13L2.64011 16.45C2.76011 16.67 3.01011 16.74 3.23011 16.67L5.62011 15.71C6.12011 16.09 6.65011 16.41 7.24011 16.65L7.60011 19.19C7.65011 19.43 7.84011 19.6 8.08011 19.6H11.9201C12.1601 19.6 12.3601 19.43 12.3901 19.19L12.7501 16.65C13.3401 16.41 13.8801 16.09 14.3701 15.71L16.7601 16.67C16.9801 16.75 17.2301 16.67 17.3501 16.45L19.2701 13.13C19.3901 12.91 19.3401 12.66 19.1501 12.52L17.1401 10.94ZM10.0001 13.6C8.02011 13.6 6.40011 11.98 6.40011 10C6.40011 8.02002 8.02011 6.40002 10.0001 6.40002C11.9801 6.40002 13.6001 8.02002 13.6001 10C13.6001 11.98 11.9801 13.6 10.0001 13.6Z" fill="#979797"/>
+      </svg>
+    </a>
   </div>
-</div><!-- /project-title-info -->
+{% endblock %}
+
+{% block sidebar_content %}
+  {% include "instructional-list.html" %}
 {% endblock %}
 
 {% block body_content %}
-<div class="grid-container margin-left-neg-5">
+<div class="grid-container margin-left-neg-5 margin-bottom-4">
   <div class="grid-row">
     <div class="grid-col-2">
       <svg viewBox="0 0 36 36" class="circular-chart">
@@ -60,158 +62,120 @@
     <div class="grid-col-fill">
       <h3 class="site-preview-heading margin-top-3">
         <a href="{% url 'controls_selected' system_id=project.system.id %}">
-          {{ elements|length }} System Component{{ elements|length|pluralize }}
+          <b>
+            {% if controls_addressed_count == 0%}
+              {{ controls_addressed_count }} Controls Implemented
+            {% else %}
+              {{ controls_addressed_count }} of {{ total_controls_count }} Controls Implemented
+            {% endif %}
+          </b>
         </a>
       </h3>
       <a href="{% url 'controls_selected' system_id=project.system.id %}">
-        {{ controls_addressed_count }} of {{ total_controls_count }} Controls Addressed
+        {{ elements|length }} System Component{{ elements|length|pluralize }}
       </a>
     </div>
   </div>
 </div>
-<div class="col-sm-8" class="project-row-style">
-  <h2 class="status-section-header">System Information</h2>
-  {% if project.root_task.module.spec.is_app_stub %}
-    {# This project is tied to an app that has not yet been imported. #}
-    <h2>Activate App</h2>
-    <p>This app must be activated by an administrator of your organization. Send them <a href="javascript:invite_user_into_project()">an invitation</a> to join this project. When they get here, they&rsquo;ll be able to activate the app.</p>
-  {% endif %}
-</div>
 
-{% for column in columns %}
-<div class="col-md-9">
-  <div class="question-column">
-  {% for group in column.groups %}
-    {% if group.title %}
-      <a class="group-title" id="{{group.title}}"></a>
-    {% endif %}
-    <ul class="usa-card-group question">
-      {% for q in group.questions %}
-        {% if q.question.key != "ssp_intro" %}
-          <li class="col-sm-12 usa-card">
-            <div class="usa-card__container">
-              <header class="usa-card__header">
-                <h2 class="usa-card__heading">
-                  {% if not q.can_start_new_task and q.question.spec.app_overrides_name_and_icon is None %}
-                    {% if q.question.key == "system_basic_info" %}
-                      {{ project.title }} {{ q.task.title }}
-                    {% else %}
-                      {{ q.task.title }}
-                    {% endif %}
-                  {% else %}
-                    {{q.question.spec.title}}
-                  {% endif %}
-                </h2>
-              </header>
-              <div class="usa-card__body">
-              </div>
-              <div class="usa-card__footer">
-                {% with task=q.task %}
-                {% if layout_mode == "rows" %}
-                  {% if not q.question.spec.protocol %}
-                    <form class="start-task" method="post" action="/tasks/start"
-                      onclick="$(this).submit();" style="cursor: pointer">
-                      {% csrf_token %}
-                      <input type="hidden" name="project" value="{{project.id}}"/>
-                      <input type="hidden" name="question" value="{{q.question.key}}"/>
-                      <input type="hidden" name="previous" value="project"/>
-                      {% if task.is_finished %}
-                        <button class="usa-button pull-left margin-right-1" onclick="window.location='{{ q.task.get_absolute_url }}';">Completed</button>
-                        <button class="usa-button pull-left usa-button--outline" onclick="window.location='{{ q.task.get_absolute_url }}';">Edit</button>
-                      {% elif task.is_started %}
-                        <button class="usa-button pull-left">In progress</button>
-                      {% else %}
-                        <button class="usa-button pull-left">Start section</button>
+<div>
+  {% comment %} If there's no FISMA level set, then display the FISMA box containing link to system questions.
+  Note that the questions currently pick up wherever the user left off answering them,
+  so when all the questions exist on one page, this function can get pared down significantly (TODO) {% endcomment %}
+  {% if security_sensitivity == None %}
+    {% for column in columns %}
+        <div class="question-column">
+        {% for group in column.groups %}
+          {% if group.title %}
+            <a class="group-title" id="{{group.title}}"></a>
+          {% endif %}
+          <ul class="usa-card-group">
+            {% for q in group.questions %}
+              {% if q.question.key == "system_basic_info" %}
+                <li class="usa-card grid-col-12">
+                  <div class="usa-card__container border-width-1px radius-md border-secondary">
+                    <header class="usa-card__header">
+                      <h2 class="usa-card__heading">
+                        {% if not q.can_start_new_task and q.question.spec.app_overrides_name_and_icon is None %}
+                          Enter your FISMA Impact Level
+                        {% endif %}
+                      </h2>
+                    </header>
+                    <div class="usa-card__body">
+                      This enables Blueprint set your control baseline and add Components. If you don’t know it, work with your ISSO to categorize your system in CFACTS.
+                      <br>
+                      <b>You can’t complete your SSP until this is done.</b>
+                    </div>
+                    <div class="usa-card__footer">
+                      {% with task=q.task %}
+                      {% if layout_mode == "rows" %}
+                        {% if not q.question.spec.protocol %}
+                          <form class="start-task" method="post" action="/tasks/start"
+                            onclick="$(this).submit();" style="cursor: pointer">
+                            {% csrf_token %}
+                            <input type="hidden" name="project" value="{{project.id}}"/>
+                            <input type="hidden" name="question" value="{{q.question.key}}"/>
+                            <input type="hidden" name="previous" value="project"/>
+                            <button class="usa-button usa-button--secondary" onclick="window.location='{{ q.task.get_absolute_url }}';">Enter</button>
+                          </form>
+                        {% endif %}
                       {% endif %}
-                    </form>
-                  {% else %}
-                    <form method="get" action="{% url 'store' %}" onclick="$(this).submit();" style="cursor: pointer">
-                      <input type="hidden" name="portfolio" id="id_portfolio" value="{{ project.portfolio.id }}">
-                      <input type="hidden" name="q" value="{{project.root_task.id}}/{{q.question.key}}">
-                      {% if task.is_finished %}
-                        <button class="usa-button pull-left margin-right-1" onclick="window.location='{{ q.task.get_absolute_url }}';">Completed</button>
-                        <button class="usa-button pull-left usa-button--outline" onclick="window.location='{{ q.task.get_absolute_url }}';">Edit</button>
-                      {% elif task.is_started %}
-                        <button class="usa-button pull-left">In progress</button>
-                      {% else %}
-                        <button class="usa-button pull-left">Start section</button>
-                      {% endif %}
-                    </form>
-                  {% endif %}
-                {% endif %}
+                      {% endwith %}
+                    </div>
+                  </div>
+                </li> <!-- /#question-__.question -->
+              {% endif %}
+            {% endfor %} {# question #}
+          </ul> <!-- /question-group -->
+        {% endfor %} {# group #}
+      </div> <!-- /question-column -->
+    {% endfor %}
+  {% endif %}
+
+  <h2 class="status-section-header">System Components</h2>
+  {% if elements|length > 0 %}
+      <ul class="usa-card-group">
+        {% for e in elements %}
+        <li class="usa-card grid-col-12">
+          {% with element_smts_done_count=producer_elements_control_impl_smts_status_dict|get_item:e|get_item:'Implemented' element_smts_count=producer_elements_control_impl_smts_dict|get_item:e|length %}
+          <div class="usa-card__container border-width-1px radius-md shadow-2">
+            <header class="usa-card__header">
+              <h2 class="usa-card__heading">{{ e.name }}</h2>
+            </header>
+            <div class="usa-card__body">
+              {% if e.description != e.name %}
+                <p class="text-bold">{{ e.description }}</p>
+              {% endif %}
+              <p>{% if element_smts_done_count %}{{element_smts_done_count}}{% else %}0{% endif %} of {{ element_smts_count }} controls addressed</p>
+              <div class="progress" style="width:40%; height:8px;">
+                {% with progress_fraction=element_smts_done_count|divide:element_smts_count %}
+                <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: {{ progress_fraction|multiply:100 }}%;">
+                  <span class="sr-only">{{ progress_fraction|multiply:100 }}% Complete</span>
+                </div>
                 {% endwith %}
               </div>
-              <div class="question-body">
-                {# Show open invitations related to this question. #}
-                {% for inv in q.invitations %}
-                <p class="invitation" data-invitation-id="{{inv.id}}">
-                  You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
-                  (<a href="#" onclick="return cancel_invitation(this);">cancel</a>)
-                </p>
-                {% endfor %}
-
-                {# If the user is a guest participant in a discussion inside this question, link to this discussion. They can't view the task directly. (?) #}
-                {% if q.discussions %}
-                  <div>
-                    <div class="text-bold">Discussions:</div>
-                    {% for d in q.discussions %}
-                    <a class="display-block" href="{{d.get_absolute_url}}">{{d.attached_to.question.spec.title}}</a>
-                    {% endfor %}
-                  </div>
-                {% endif %}
-              </div> <!-- /.question-body -->
             </div>
-          </li> <!-- /#question-__.question -->
-        {% endif %}
-      {% endfor %} {# question #}
-    </ul> <!-- /question-group -->
-  {% endfor %} {# group #}
-  </div> <!-- /question-column -->
-
-  <div class="col-md-12" class="project-row-style" style="border:0px solid green;">
-    <h2 class="status-section-header">System Components</h2>
-  </div>
-  <div class="col-md-12">
-    <ul class="usa-card-group">
-      {% for e in elements %}
-      <li class="col-sm-12 usa-card">
-        {% with element_smts_done_count=producer_elements_control_impl_smts_status_dict|get_item:e|get_item:'Implemented' element_smts_count=producer_elements_control_impl_smts_dict|get_item:e|length %}
-        <div class="usa-card__container">
-          <header class="usa-card__header">
-            <h2 class="usa-card__heading">{{ e.name }}</h2>
-          </header>
-          <div class="usa-card__body">
-            {% if e.description != e.name %}
-              <p class="text-bold">{{ e.description }}</p>
-            {% endif %}
-            <p>{% if element_smts_done_count %}{{element_smts_done_count}}{% else %}0{% endif %} of {{ element_smts_count }} controls addressed</p>
-            <div class="progress" style="width:40%; height:8px;">
-              {% with progress_fraction=element_smts_done_count|divide:element_smts_count %}
-              <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: {{ progress_fraction|multiply:100 }}%;">
-                <span class="sr-only">{{ progress_fraction|multiply:100 }}% Complete</span>
-              </div>
-              {% endwith %}
+            <div class="usa-card__footer">
+              {% if element_smts_done_count > 0 and element_smts_done_count < element_smts_count %}
+                <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button pull-left">In progress</a>
+              {% elif element_smts_done_count == element_smts_count or element_smts_done_count > element_smts_count %}
+                <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button pull-left margin-right-1">Complete</a>
+                <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button pull-left usa-button--outline">Edit</a>
+              {% else %}
+                <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button pull-left">Start</a>
+              {% endif %}
             </div>
           </div>
-          <div class="usa-card__footer">
-            {% if element_smts_done_count > 0 and element_smts_done_count < element_smts_count %}
-              <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button pull-left">In progress</a>
-            {% elif element_smts_done_count == element_smts_count or element_smts_done_count > element_smts_count %}
-              <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button pull-left margin-right-1">Complete</a>
-              <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button pull-left usa-button--outline">Edit</a>
-            {% else %}
-              <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button pull-left">Start</a>
-            {% endif %}
-          </div>
-        </div>
-        {% endwith %}
-      </li>
-      {% endfor %}
-    </ul>
-  </div>
-</div> <!-- /col -->
-{% endfor %} {# column #}
-
+          {% endwith %}
+        </li>
+        {% endfor %}
+      </ul>
+  {% else %}
+    <div class="measure-4">
+      Blueprint adds initial Components based on your FISMA Impact Level and environment. View System Information to determine your FISMA Impact Level and Blueprint can begin suggesting components.
+    </div>
+  {% endif %}
+</div>
 {% endblock %}
 
 {% block modals %}
@@ -221,160 +185,4 @@
 {% include "authoring-tool-modal.html" %}
 {% endif %}
 
-{% endblock %}
-
-{% block scripts %}
-<script>
-$(function() {
-  set_state_from_url_fragment();
-  $(window).on('hashchange', set_state_from_url_fragment);
-  $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-    var tabid = e.target.getAttribute('href').substring(1); // old IE might return absolute URL here?
-    window.location.hash = "#tab=" + encodeURIComponent(tabid);
-  })
-
-  {% if layout_mode == "grid" %}
-  // Resize questions so they all have the same height, to the max height of any.
-  var max_height = 0;
-  $('.question').each(function() {
-    var h = $(this).outerHeight();
-    if (h > max_height) max_height = h;
-  });
-  $('.question').css({ height: max_height });
-  {% endif %}
-})
-
-function move_project() {
-  show_move_project_modal((selectedPortfolioId)=>{
-    ajax_with_indicator({
-      url: '{% url "move_project" project.id %}',
-      method: "POST",
-      data: {new_portfolio: selectedPortfolioId},
-      keep_indicator_forever: true,
-      success: function() {
-        window.location.reload();
-      }
-    });
-  });
-  return false;
-}
-
-function invite_user_to_start_module(module_title, question_id) {
-  var info = project_invitation_info;
-  show_invite_modal(
-    'Start a Module (' + info.model_title + ')',
-    'Invite a colleague to answer the module ' + module_title + '.',
-    info,
-    'Can you give me a hand completing the module ' + module_title + ' for ' + info.model_title + '?',
-    {
-      project: info.model_id,
-      into_new_task_question_id: question_id
-    },
-    function() { window.location.reload() }
-  );
-
-  return false;
-}
-
-function set_state_from_url_fragment() {
-  var fragment = window.location.hash.substring(1); // chop off the "#"
-
-  // The GovReady Dashboard React app appends a random code like `?_k=h9zm95` to the
-  // fragment, so we need to strip that out.
-  fragment = fragment.split('?').shift();
-
-  var fragment = parse_qs(fragment);
-
-  // Highlight the question.
-  if (fragment.q && fragment.t) {
-    $('.question').each(function() {
-      if (this.id == "question-" + fragment.q && this.getAttribute("data-task-id") == fragment.t) {
-        var elem = $(this);
-        elem.css({ backgroundColor: "#FFA" });
-        smooth_scroll_to(elem);
-        setTimeout(function() { elem.css({ backgroundColor: "#FFF" }); }, 2000);
-      }
-    });
-  }
-}
-
-function delete_project() {
-  show_modal_confirm(
-    "Delete Project",
-    "Are you sure you want to delete this project? All information will be permanently deleted.",
-    "Delete",
-    function() {
-      ajax_with_indicator({
-       url: '{% url "delete_project" project.id %}',
-       method: "POST",
-       success: function(res) {
-         // redirect to home to see other projects
-         window.location = res.redirect;
-       }
-      });
-    }
-  )
-}
-
-function make_admin(is_admin, user_id, user_name) {
-  show_modal_confirm(
-    (is_admin ? "Make Project Administrator" : "Revoke Administrator Privilege"),
-    "Do you want to "
-		+ (is_admin ? "make" : "revoke the administrator privilege from")
-		+ " "
-		+ user_name
-		+ (is_admin ? " an administrator" : "")
-		+ " for this project?",
-    (is_admin ? "Make Admin" : "Revoke Privilege"),
-    function() {
-      ajax_with_indicator({
-       url: '{% url "make_revoke_project_admin" project.id %}',
-       method: "POST",
-       data: {
-       	 user: user_id,
-       	 is_admin: is_admin ? "true" : false
-       },
-       success: function(res) {
-         // reload page to show changes in UI
-         window.location.reload();
-       }
-      });
-    }
-  )
-  return false;
-}
-</script>
-
-{% if authoring_tool_enabled %}
-<script src="{% static "vendor/js-yaml.min.js" %}"></script>
-<script src="{% static "js/authoring_tool.js" %}"></script>
-<style>.dropdown-menu.textcomplete-dropdown { z-index: 99999 !important; }</style> {# show over modal #}
-<script>
-$(function() {
-  $('.authoring-tool-edit-question').click(function(e) {
-    e.stopPropagation();
-    show_question_authoring_tool($(this).data('key'));
-  })
-  init_authoring_tool({
-    task: {{project.root_task.id}},
-    module: {{project.root_task.module.spec|json}},
-    module_yaml: "{{project.root_task.module.spec_yaml|escapejs}}",
-    catalog_yaml: "{{project.root_task.module.app.catalog_metadata_yaml|escapejs}}",
-    questions: {
-      {% for q in project.root_task.module.questions.all %}
-      {{q.key}}: {
-        spec: {{q.spec|json}},
-        choices: "{{q.choices_as_csv|escapejs}}",
-        answer_type_module_id: {% if q.answer_type_module %}{{q.answer_type_module.id}}{% else %}null{% endif %}
-      }{% if not forloop.last %},{% endif %}
-      {% endfor %}
-    },
-    answer_type_modules: [{% for m in project.root_task.module.get_referenceable_modules %}
-      { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.module_name}})" }{% if not forloop.last %},{% endif %}
-      {% endfor %}],
-    autocomplete_questions: { }
-  });
-});
-</script>
-{% endif %}
 {% endblock %}
