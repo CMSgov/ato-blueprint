@@ -1134,7 +1134,7 @@ def add_selected_components(system, import_record):
         return imported_components
 
 @login_required
-def project_component_editor(request, system_id, element_id, catalog_key=None, control_id=None):
+def project_component_editor(request, system_id, element_id, catalog_key=None, control_id=None, statement_id=None):
     """Display System's selected element detail view"""
 
     # Retrieve identified System
@@ -1262,6 +1262,7 @@ def get_component_page_data(catalog, statements):
             "narrative": c.body,
             "sid": c.sid,
             "status": c.status,
+            'statement_id': c.id,
         }
     sorted_data = {}
     for i in sorted(page_data.items()):
