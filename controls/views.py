@@ -15,8 +15,6 @@ import rtyaml
 import siteapp.views as project_nav
 import trestle.oscal.component as trestlecomponent
 import trestle.oscal.ssp as trestlessp
-
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -37,8 +35,8 @@ from siteapp.models import Invitation, Organization, Project, Tag
 from siteapp.settings import GOVREADY_URL
 from system_settings.models import SystemSettings
 
-from controls.oscal import Catalogs
 import controls.utils as utils
+from controls.oscal import Catalogs
 
 from .forms import (DeploymentForm, ElementEditForm, ElementForm,
                     ImportOSCALComponentForm, PoamForm, StatementPoamForm,
@@ -430,24 +428,30 @@ class SelectedComponentsList(ListView):
 def component_library(request):
     """Display the library of components"""
 
-    query = request.GET.get('search')
-    if query:
-        try:
-            element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)
-                                                  | Q(pk__in=set(Statement.objects.filter(body__search=query).values_list('producer_element', flat=True)))
-                                                 ).exclude(element_type='system').distinct()
-        except:
-            logger.info(f"Ah, you are not using Postgres for your Database!")
-            element_list = Element.objects.filter(Q(name__icontains=query) | Q(tags__label__icontains=query)).exclude(element_type='system').distinct()
-    else:
-        element_list = Element.objects.all().exclude(element_type='system').distinct()
+    query = Q()
+    keyword = request.GET.get('search')
+    if keyword:
+        query = Q(name__icontains=keyword)
+        query |= Q(description__icontains=keyword)
+        query |= Q(pk__in=set(Statement.objects.filter(body__search=keyword).values_list('producer_element', flat=True)))
+
+    types = request.GET.get('type')
+    if types:
+        t = types.split(',')
+        query &= Q(component_type__in=t)
+
+
+    try:
+        element_list = Element.objects.filter(query).exclude(element_type='system').distinct()
+    except:
+        print('error')
 
     # Natural sorting on name
     element_list = natsorted(element_list, key=lambda x: x.name)
 
     # Pagination
     ele_paginator = Paginator(element_list, 15)
-    page_number = request.GET.get('page')
+    page_number = request.GET.get('page', 1)
 
     try:
         page_obj = ele_paginator.page(page_number)
@@ -456,13 +460,29 @@ def component_library(request):
     except EmptyPage:
         page_obj = ele_paginator.page(ele_paginator.num_pages)
 
+    filters = {}
+    types = Element.objects.all().values('component_type')\
+        .filter(query)\
+        .filter(component_type__isnull=False)\
+        .exclude(element_type='system')\
+        .order_by('component_type')\
+        .annotate(Count('component_type'))
+    filters['type'] = []
+    for t in types:
+        filters['type'].append({
+            'name': t.get('component_type'),
+            'count': t.get('component_type__count'),
+        })
+
     context = {
         "page_obj": page_obj,
         "import_form": ImportOSCALComponentForm(),
         "total_comps": Element.objects.exclude(element_type='system').count(),
+        'filters': filters,
     }
 
     return render(request, "components/component_library.html", context)
+
 
 def diff_components_prettyHtml(smt1, smt2):
     """Generate a diff of two statements of type `control_implementation`"""

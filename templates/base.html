@@ -13,11 +13,8 @@
     <link rel="shortcut icon" href='{% static "img/brand/favicon.ico" %}' type="image/x-icon">
     <link rel="icon" href='{% static "img/brand/favicon.ico" %}' type="image/x-icon">
     <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap.min.css" %}">
-    {# Do not include USWDS on element_detail_tab bc conflicts with select2 box for control selection #}
-    {% if not '/controls/components/' in request.path %}
     <link rel="stylesheet" href="{% static 'vendor/uswds-2.12.0/css/uswds.min.css' %}">
     <script src="{% static "vendor/uswds-2.12.0/js/uswds-init.min.js" %}"></script>
-    {% endif %}
     <link rel="stylesheet" href="{% static "css/google-fonts.css" %}">
     <link rel="stylesheet" href="{% static "css/govready-q.css" %}">
     <link rel="stylesheet" href="{% static "css/cms.css" %}">
