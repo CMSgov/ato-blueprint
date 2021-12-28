@@ -173,7 +173,7 @@ def controls_selected(request, system_id):
 
         paginator = Paginator(controls, 25)
         page_number = request.GET.get('page', 1)
-        ctrls = paginator.get_page(page_number)
+        list_items = paginator.get_page(page_number)
         pager = paginator.get_elided_page_range(number=page_number, on_each_side=1, on_ends=1)
 
         # Determine if a legacy statement exists for the control
@@ -214,7 +214,7 @@ def controls_selected(request, system_id):
         context = {
             "system": system,
             "project": project,
-            "controls": ctrls,
+            "list_items": list_items,
             "pager": pager,
             "external_catalogs": external_catalogs,
             "impl_smts_cmpts_count": impl_smts_cmpts_count,
@@ -431,34 +431,35 @@ def component_library(request):
     query = Q()
     keyword = request.GET.get('search')
     if keyword:
-        query = Q(name__icontains=keyword)
+        query &= Q(name__icontains=keyword)
         query |= Q(description__icontains=keyword)
-        query |= Q(pk__in=set(Statement.objects.filter(body__search=keyword).values_list('producer_element', flat=True)))
-
     types = request.GET.get('type')
     if types:
         t = types.split(',')
         query &= Q(component_type__in=t)
 
-
     try:
         element_list = Element.objects.filter(query).exclude(element_type='system').distinct()
-    except:
-        print('error')
+    except DatabaseError:
+        logger.error(f'A database error occured: {e}')
 
     # Natural sorting on name
     element_list = natsorted(element_list, key=lambda x: x.name)
 
     # Pagination
-    ele_paginator = Paginator(element_list, 15)
+    paginator = Paginator(element_list, 10)
     page_number = request.GET.get('page', 1)
+    pager = None
 
     try:
-        page_obj = ele_paginator.page(page_number)
+        list_items = paginator.page(page_number)
     except PageNotAnInteger:
-        page_obj = ele_paginator.page(1)
+        list_items = paginator.page(1)
     except EmptyPage:
-        page_obj = ele_paginator.page(ele_paginator.num_pages)
+        list_items = paginator.page(paginator.num_pages)
+
+    if list_items.paginator.num_pages > 0:
+        pager = paginator.get_elided_page_range(number=page_number, on_each_side=1, on_ends=1)
 
     filters = {}
     types = Element.objects.all().values('component_type')\
@@ -467,21 +468,23 @@ def component_library(request):
         .exclude(element_type='system')\
         .order_by('component_type')\
         .annotate(Count('component_type'))
-    filters['type'] = []
-    for t in types:
-        filters['type'].append({
-            'name': t.get('component_type'),
-            'count': t.get('component_type__count'),
-        })
+    if types:
+        filters['type'] = []
+        for t in types:
+            filters['type'].append({
+                'name': t.get('component_type'),
+                'count': t.get('component_type__count'),
+            })
 
     context = {
-        "page_obj": page_obj,
-        "import_form": ImportOSCALComponentForm(),
-        "total_comps": Element.objects.exclude(element_type='system').count(),
+        'list_items': list_items,
+        'pager': pager,
+        'import_form': ImportOSCALComponentForm(),
+        'total_comps': Element.objects.exclude(element_type='system').count(),
         'filters': filters,
     }
 
-    return render(request, "components/component_library.html", context)
+    return render(request, 'components/component_library.html', context)
 
 
 def diff_components_prettyHtml(smt1, smt2):

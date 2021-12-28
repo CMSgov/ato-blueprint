@@ -2,10 +2,10 @@
 
 <nav aria-label="Pagination" class="usa-pagination padding-top-2">
   <ul class="usa-pagination__list">
-    {% if controls.has_previous %}
+    {% if list_items.has_previous %}
       <li class="usa-pagination__item usa-pagination__arrow">
         <a
-          href="?page={{ controls.previous_page_number }}"
+          href="?page={{ list_items.previous_page_number }}"
           class="usa-pagination__link usa-pagination__previous-page"
           aria-label="Previous page"
         >
@@ -16,8 +16,8 @@
         </a>
       </li>
     {% endif %}
-    {% for i in pager|default_if_none:controls.paginator.get_elided_page_range %}
-        {% if i == controls.paginator.ELLIPSIS %}
+    {% for i in pager|default_if_none:list_items.paginator.get_elided_page_range %}
+        {% if i == list_items.paginator.ELLIPSIS %}
           <li
             class="usa-pagination__item usa-pagination__overflow"
             role="presentation"
@@ -28,16 +28,16 @@
           <li class="usa-pagination__item usa-pagination__page-no">
             <a
               href="?page={{ i }}"
-              class="usa-pagination__button {% if controls.number == i %}usa-current{% endif %}"
+              class="usa-pagination__button {% if list_items.number == i %}usa-current{% endif %}"
               aria-label="Page {{ i }}"
             >{{ i }}</a>
           </li>
         {% endif %}
     {% endfor %}
-    {% if controls.has_next %}
+    {% if list_items.has_next %}
       <li class="usa-pagination__item usa-pagination__arrow">
         <a
-          href="?page={{ controls.next_page_number }}"
+          href="?page={{ list_items.next_page_number }}"
           class="usa-pagination__link usa-pagination__next-page"
           aria-label="Next page"
         >
