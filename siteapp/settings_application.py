@@ -2,6 +2,11 @@ import re
 import sys
 
 from .settings import *
+from .oidc import get_profile
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 INSTALLED_APPS += [
     'debug_toolbar',
@@ -19,63 +24,45 @@ INSTALLED_APPS += [
 
     'loadtesting',
 ]
+# load the OpenID Connect configuration; but not if disabled!
 OIDC_CONFIG = environment.get("oidc", {})
+if OIDC_CONFIG.get("disabled", False):
+    OIDC_CONFIG = {}
 
-# default endpoint values for different OpenID Connect providers
-OIDC_PROFILES = {
-    'okta': {
-        "oidc_op_jwks_endpoint": "/oauth2/v1/keys",
-        "oidc_op_authorization_endpoint": "/oauth2/v1/authorize",
-        "oidc_op_token_endpoint": "/oauth2/v1/token",
-        "oidc_op_user_endpoint": "/oauth2/v1/userinfo",
-    },
-    'auth0': {
-        "oidc_op_jwks_endpoint": "/.well-known/jwks.json",
-        "oidc_op_authorization_endpoint": "/authorize",
-        "oidc_op_token_endpoint": "/oauth/token",
-        "oidc_op_user_endpoint": "/userinfo",
-    }
-}
 # https://blog.theodo.com/2021/03/okta-sso-with-django-admin/ - example for login override
 if OIDC_CONFIG:
+    logger.info("OpenID Connect configuration found and enabled")
+    profile = get_profile(OIDC_CONFIG)
+    OIDC_PROFILE = profile
+    logger.debug("OIDC using profile %r", profile)
     LOGIN_ENABLED = False
     AUTHENTICATION_BACKENDS += ['siteapp.authentication.OIDCAuthentication.OIDCAuth', ]   
-    OIDC_DOMAIN = OIDC_CONFIG['domain']
-    BASE_URL = environment['govready-url'].replace(':443', '')  
+    OIDC_DOMAIN = profile.domain
+    BASE_URL = environment['govready-url'].replace(':443', '')
+    logger.debug("OIDC BASE_URL = %s", BASE_URL)
+    logger.debug("OIDC DOMAIN = %s", OIDC_DOMAIN)
     # User information
     USER_CRM_ID = None
     USER_EMAIL = None
     OIDC_RP_SIGN_ALGO = "RS256"
-
-    profile = OIDC_PROFILES[OIDC_CONFIG.get('profile', 'okta')]
-
-    def _endpoint(name: str) -> str:
-        """
-        Return an absolute endpoint URL.
-        Use the value in the provided config, if present.
-        Otherwise, use the default value from the profile.
-        """
-        default_endpoint = profile.get(name, None)
-        endpoint = OIDC_CONFIG.get(name, default_endpoint)
-        if not endpoint:
-            raise ValueError(f"Missing {name} endpoint")
-        if not endpoint.startswith("/"):
-            raise ValueError(f"OpenID Connect {name} endpoint {endpoint} must start with a '/'")
-        return OIDC_DOMAIN + endpoint
     
-    OIDC_OP_JWKS_ENDPOINT = _endpoint("oidc_op_jwks_endpoint")
-    OIDC_OP_AUTHORIZATION_ENDPOINT = _endpoint("oidc_op_authorization_endpoint")
-    OIDC_OP_TOKEN_ENDPOINT = _endpoint("oidc_op_token_endpoint")
-    OIDC_OP_USER_ENDPOINT = _endpoint("oidc_op_user_endpoint")
+    OIDC_OP_JWKS_ENDPOINT = profile.get_endpoint("oidc_op_jwks_endpoint")
+    OIDC_OP_AUTHORIZATION_ENDPOINT = profile.get_endpoint("oidc_op_authorization_endpoint")
+    OIDC_OP_TOKEN_ENDPOINT = profile.get_endpoint("oidc_op_token_endpoint")
+    OIDC_OP_USER_ENDPOINT = profile.get_endpoint("oidc_op_user_endpoint")
    
-    OIDC_RP_SCOPES = "openid email profile groups"
-    OIDC_RP_CLIENT_ID = OIDC_CONFIG['client_id']
-    OIDC_RP_CLIENT_SECRET = OIDC_CONFIG['client_secret']
+    OIDC_RP_SCOPES = profile.scopes
+    OIDC_RP_CLIENT_ID = profile.client_id
+    OIDC_RP_CLIENT_SECRET = profile.client_secret
     OIDC_VERIFY_SSL = True
     LOGIN_REDIRECT_URL = f"{BASE_URL}/"
-    OIDC_REDIRECT_URL = f"{BASE_URL}/oidc/callback/"
-    OIDC_AUTH_REQUEST_EXTRA_PARAMS = {"redirect_uri": OIDC_REDIRECT_URL}
+    # OIDC_REDIRECT_URL = f"{BASE_URL}/oidc/callback/"
+    # OIDC_AUTH_REQUEST_EXTRA_PARAMS = {"redirect_uri": OIDC_REDIRECT_URL}
+    # OIDC_AUTHENTICATION_CALLBACK_URL = f"{BASE_URL}/oidc/callback/"
     LOGOUT_REDIRECT_URL = f"{BASE_URL}/logged-out"
+
+    logger.debug("OIDC AUTHORIZATION ENDPOINT = %s", OIDC_OP_AUTHORIZATION_ENDPOINT)
+    logger.debug("OIDC LOGIN REDIRECT URL = %s", LOGIN_REDIRECT_URL)
 
     INSTALLED_APPS += ['mozilla_django_oidc']
     # The mozilla_django_oidc.middleware.SessionRefresh middleware will check to see if the user’s id token has expired
@@ -88,12 +75,7 @@ if OIDC_CONFIG:
     # Mapping functionality to support via config
     OIDC_CLAIMS_MAP = OIDC_CONFIG['claims_map']
     OIDC_ROLES_MAP = OIDC_CONFIG['roles_map']
-    LOGGING['loggers'].update({
-        'mozilla_django_oidc': {
-            'handlers': ['console'],
-            'level': 'DEBUG'
-        }
-    })
+   
 if environment.get("trust-user-authentication-headers"):
     # When this is set, the 'username' and 'email' keys hold HTTP header
     # names which control user authentication. Standard authentication
@@ -111,9 +93,9 @@ if environment.get("trust-user-authentication-headers"):
     AUTHENTICATION_BACKENDS.remove('allauth.account.auth_backends.AuthenticationBackend')
     AUTHENTICATION_BACKENDS.append('siteapp.middleware.ProxyHeaderUserAuthenticationBackend') # add backend for this method
     PROXY_HEADER_AUTHENTICATION_HEADERS = environment["trust-user-authentication-headers"]
-    print("Trusting authentication headers:", PROXY_HEADER_AUTHENTICATION_HEADERS)
+    logger.info("Trusting authentication headers: %r", PROXY_HEADER_AUTHENTICATION_HEADERS)
     LOGOUT_REDIRECT_URL = "/sso-logout"
-    print("Setting LOGOUT_REDIRECT_URL to", LOGOUT_REDIRECT_URL)
+    logger.info("Setting LOGOUT_REDIRECT_URL to %s", LOGOUT_REDIRECT_URL)
 
 # PDF Generation settings
 GR_PDF_GENERATOR = environment.get("gr-pdf-generator", None)
@@ -121,11 +103,11 @@ GR_PDF_GENERATOR = environment.get("gr-pdf-generator", None)
 GR_PDF_GENERATOR_SUPPORTED = ["off", "wkhtmltopdf"]
 if GR_PDF_GENERATOR not in GR_PDF_GENERATOR_SUPPORTED:
     # Log error
-    print("WARNING: Specified PDF generator is not supported. Setting generator to 'off'.")
+    logger.warning("Specified PDF generator is not supported. Setting generator to 'off'.")
     # Set pdf generator to None
     GR_PDF_GENERATOR = "off"
 else:
-    print("INFO: GR_PDF_GENERATOR set to {}".format(GR_PDF_GENERATOR))
+    logger.info("GR_PDF_GENERATOR set to %s", GR_PDF_GENERATOR)
 
 # PDF Generation settings
 GR_IMG_GENERATOR = environment.get("gr-img-generator", None)
@@ -133,11 +115,11 @@ GR_IMG_GENERATOR = environment.get("gr-img-generator", None)
 GR_IMG_GENERATOR_SUPPORTED = ["off", "wkhtmltopdf"]
 if GR_IMG_GENERATOR not in GR_IMG_GENERATOR_SUPPORTED:
     # Log error
-    print("WARNING: Specified IMG generator is not supported. Setting generator to 'off'.")
+    logger.warning("Specified IMG generator is not supported. Setting generator to 'off'.")
     # Set img generator to None
     GR_IMG_GENERATOR = "off"
 else:
-    print("INFO: GR_IMG_GENERATOR set to {}".format(GR_IMG_GENERATOR))
+    logger.info("GR_IMG_GENERATOR set to %s", GR_IMG_GENERATOR)
 
 MIDDLEWARE += [
     'debug_toolbar.middleware.DebugToolbarMiddleware',

@@ -70,6 +70,7 @@ DEBUG = bool(environment.get("debug"))
 # ADMINS = environment.get("admins") or []
 # Do you want to use django debug toolbar
 ENABLE_TOOLBAR = bool(environment.get("enable_tool_bar"))
+LOGLEVEL = environment.get("loglevel", "DEBUG")
 
 # Set GOVREADY_URL if 'govready-url' set in environment.json.
 from urllib.parse import urlparse
@@ -93,7 +94,6 @@ if "allowed_hosts" in environment:
 if DEBUG and 'localhost' in ALLOWED_HOSTS:
 	ALLOWED_HOSTS.extend(['*'])
 
-print("INFO: ALLOWED_HOSTS", ALLOWED_HOSTS)
 
 # allauth requires the use of the sites framework.
 SITE_ID = 1
@@ -309,6 +309,9 @@ if environment.get('memcached'):
 from django.utils.log import DEFAULT_LOGGING
 
 LOGGING = DEFAULT_LOGGING
+# we want to see debug logs
+LOGGING['handlers']['console']['level'] = 'DEBUG'
+
 if not DEBUG:
 	LOGGING['handlers']['console']['filters'].remove('require_debug_true')
 	LOGGING['handlers']['console']['level'] = 'WARNING'
@@ -400,6 +403,11 @@ if (GOVREADY_URL.scheme == "https") or (GOVREADY_URL.scheme == "" and "https" in
 	CSRF_COOKIE_SECURE = True
 	SECURE_HSTS_SECONDS = 31536000
 	SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+	# twood
+	USE_X_FORWARDED_HOST = True
+	SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+	
 	if environment.get("secure_ssl_redirect", False):
 		# Force Django to redirect non-secure SSL connections to secure SSL connections
 		# NOTE: Setting to True while simultaneously using a http proxy like NGINX
@@ -469,10 +477,8 @@ if os.path.join(siteapp_path, STATIC_ROOT) == os.path.join(siteapp_path, "siteap
 SITE_ROOT_URL = None
 if (GOVREADY_URL.hostname and GOVREADY_URL.hostname != ""):
 	SITE_ROOT_URL = "{}://{}".format(GOVREADY_URL.scheme, GOVREADY_URL.netloc)
-	print("INFO: 'SITE_ROOT_URL' set to {} ".format(SITE_ROOT_URL))
 elif "host" in environment and "https" in environment:
 	SITE_ROOT_URL = "%s://%s" % (("http" if not environment["https"] else "https"), environment["host"])
-	print("INFO: 'SITE_ROOT_URL' set to {} ".format(SITE_ROOT_URL))
 else:
 	print("CRITICAL: No parameters set to determine SITE_ROOT_URL.")
 
@@ -496,9 +502,19 @@ else:
 	SELENIUM_BROWSER = environment.get("test_browser", "chrome")
 
 DOS = True if system() == "Windows" or 'Microsoft' in uname().release else False
-# Load all additional settings from settings_application.py.
-from .settings_application import *
+
 # Load logging configuration from settings_logging.py.
 from .settings_logging import *
+# Load all additional settings from settings_application.py.
+from .settings_application import *
 # Profiling.
 from .settings_profiling import *
+
+# at this point, logging is configured so we can log some of this lovely
+# configuration ...
+
+logger = logging.getLogger(__name__)
+
+logger.info("GOVREADY_URL = %r", GOVREADY_URL)
+logger.info("SITE_ROOT_URL = %r", SITE_ROOT_URL)
+logger.info("ALLOWED_HOSTS = %r", ALLOWED_HOSTS)

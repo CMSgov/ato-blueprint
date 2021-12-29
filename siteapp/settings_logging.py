@@ -1,11 +1,10 @@
 import logging.config
 import os
 from django.utils.log import DEFAULT_LOGGING
+from .settings import LOGLEVEL
 
 # Disable Django's logging setup
 LOGGING_CONFIG = None
-
-LOGLEVEL = os.environ.get('LOGLEVEL', 'info').upper()
 
 logging.config.dictConfig({
     'version': 1,
@@ -13,7 +12,7 @@ logging.config.dictConfig({
     'formatters': {
         'console': {
             # exact format is not important, this is the minimum information
-            'format': '%(asctime)s %(name)s level %(levelname)s %(message)s',
+            'format': '%(asctime)s %(name)s %(levelname)s %(message)s',
         },
         'django.server': DEFAULT_LOGGING['formatters']['django.server'],
     },
@@ -38,6 +37,10 @@ logging.config.dictConfig({
             # Avoid double logging because of root logger
             'propagate': False,
         },
+        'mozilla_django_oidc': {
+            'handlers': ['console'],
+            'level': LOGLEVEL,
+        },
         'nplusone': {
             'handlers': ['console'],
             'level': 'WARN',
@@ -53,3 +56,4 @@ logging.config.dictConfig({
         # 'django.server': DEFAULT_LOGGING['loggers']['django.server'],
     },
 })
+

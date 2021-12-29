@@ -35,7 +35,7 @@ logger = get_logger()
 
 class User(AbstractUser):
     # Additional user profile data.
-    name = models.CharField(max_length=200, blank=True, null=True, unique=True,
+    name = models.CharField(max_length=200, blank=True, null=True, unique=False,
                                   help_text="Full name to display.")
     title = models.CharField(max_length=200, blank=True, null=True, unique=False,
                                   help_text="Position title.")
