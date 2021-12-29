@@ -40,7 +40,7 @@
             <a id="component-import-oscal" class="btn btn-success" onclick="show_import_component_modal(); return false;" href="#">Import OSCAL Component</a>
             <a id="import_records_link" href="{% url 'import_records' %}" class="btn btn-success">Manage Import Records</a> {% endcomment %}
             <section aria-label="Default search component">
-                <form action="{% url 'component_library' %}" method="GET" class="usa-search" role="search">
+                <form action="{% url 'component_library' %}" id="library-search" method="GET" class="usa-search" role="search">
                     <label class="usa-sr-only" for="search-field-search-field"> Search </label>
                     <input
                         id="searchbox"
@@ -66,7 +66,7 @@
     </div>
     <div class="grid-row">
         <div class="tablet:grid-col-2">
-            {% include 'components/search-filters.html' %}
+            {% include 'components/library-filters.html' %}
         </div>
         <div class="tablet:grid-col-fill">
             <div class="usa-table-container">
@@ -114,3 +114,6 @@
 {{ block.super }}
 {% endblock %}
 
+{% block scripts %}
+<script src="{% static "js/component_library.dev.js" %}"></script>
+{% endblock %}

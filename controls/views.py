@@ -447,7 +447,7 @@ def component_library(request):
     element_list = natsorted(element_list, key=lambda x: x.name)
 
     # Pagination
-    paginator = Paginator(element_list, 10)
+    paginator = Paginator(element_list, 15)
     page_number = request.GET.get('page', 1)
     pager = None
 
@@ -463,7 +463,6 @@ def component_library(request):
 
     filters = {}
     types = Element.objects.all().values('component_type')\
-        .filter(query)\
         .filter(component_type__isnull=False)\
         .exclude(element_type='system')\
         .order_by('component_type')\
