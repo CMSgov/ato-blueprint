@@ -1,0 +1,25 @@
+<form id="library-filters" class="usa-form" method="GET">
+    <input type="hidden" id="keyword" name="search" value="">
+    {% for k, f in filters.items %}
+    <h3 class="site-preview-heading">{{ k|title }}</h3>
+        <fieldset class="usa-fieldset">
+        {% for filter in f %}
+            <div class="usa-checkbox">
+                <input
+                    class="usa-checkbox__input"
+                    id="{{ k }}-{{ filter.name }}"
+                    type="checkbox"
+                    name="{{ k }}"
+                    value="{{ filter.name }}"
+                    {% if filter.name in request.GET.type %}
+                        checked
+                    {% endif %}
+                />
+                <label class="usa-checkbox__label" for="{{ k }}-{{ filter.name }}">
+                    {{ filter.name|title }} ({{ filter.count }})
+                </label>
+            </div>
+        {% endfor %}
+        </fieldset>
+    {% endfor %}
+</form>

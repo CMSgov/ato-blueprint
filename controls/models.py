@@ -444,32 +444,6 @@ class ElementControl(auto_prefetch.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for this ElementControl.")
     status = models.IntegerField(default=Statuses.NEEDSWORK, choices=Statuses.choices)
 
-    # Notes
-    # from controls.oscal import *;from controls.models import *;
-    #     e = Element.objects.get(id=8);
-    #     e.name;
-    #     ecq = ElementControl.objects.filter(element=e);
-    #     ec = ecq[0]
-    #     ec.oscal_catalog_key
-    #     cg = Catalog(ec.oscal_catalog_key)
-    #     print(cg.get_flattened_control_as_dict(cg.get_control_by_id(ec.oscal_ctl_id)))
-    #
-    #     # Get the flattened oscal control information
-    #     ec.get_flattened_oscal_control_as_dict()
-    #     # Get Implementation statement if it exists
-    #     ec.get_flattened_impl_smt_as_dict()
-    #
-    #     # Get an element/system by it's element id
-    #     e = Element.objects.get(id=8);
-    #     e.name;
-    #     # Get all ElementControls for the Element
-    #     ec_list = ElementControl.objects.filter(element=e);
-    #     for ec in ec_list:
-    #       print("OSCAL CONTROL")
-    #       print(ec.get_flattened_oscal_control_as_dict())
-    #       print("Implementation Statement")
-    #       print(ec.get_flattened_impl_smt_as_dict())
-
     class Meta:
         unique_together = [('element', 'oscal_ctl_id', 'oscal_catalog_key')]
 
@@ -480,33 +454,9 @@ class ElementControl(auto_prefetch.Model):
         # For debugging.
         return "'%s id=%d'" % (self.oscal_ctl_id, self.id)
 
-    # Commenting out get_controls_by_element in 0.9.1.53+ because it does
-    # not appear to be used in the code base.
-    # def get_controls_by_element(self, element):
-
-    #     # TODO: Is this method being used? Can it be deleted?
-    #     query_set = self.objects.filter(element=element)
-    #     selected_controls = {}
-    #     for cl in query_set:
-    #         selected_controls[cl['oscal_ctl_id']] = {'oscal_ctl_id': cl['oscal_ctl_id'],
-    #                                                  'oscal_catalog_key': cl['oscal_catalog_key'],
-    #                                                  'uuid': cl['uuid']
-    #                                                  }
-    #     # Sort
-    #     selected_controls = natsorted(selected_controls, key=lambda x: x.oscal_ctl_id.casefold)
-
-    #     return selected_controls
-
     def get_flattened_oscal_control_as_dict(self):
         cg = Catalog.GetInstance(catalog_key=self.oscal_catalog_key)
         return cg.get_flattened_control_as_dict(cg.get_control_by_id(self.oscal_ctl_id))
-
-    # def get_flattened_impl_smt_as_dict(self):
-    #     """Return the implementation statement for this ElementControl combination"""
-    #     # For development let's hardcode what we return
-    #     impl_smt = {"sid": "impl_smt sid", "body": "This is the statement itself"}
-    #     # Error checking
-    #     return impl_smt
 
     def get_status(self):
         return self.Statuses(self.status).label

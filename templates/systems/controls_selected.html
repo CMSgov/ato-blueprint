@@ -29,7 +29,7 @@
 {% endblock %}
 
 {% block body_content %}
-{% if controls|length < 1 %}
+{% if list_items|length < 1 %}
   <div id="tab-content" class="row row-control">
     <div id="" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
       <p>No controls are currently selected for your system.</p>
@@ -72,7 +72,7 @@
           </tr>
         </thead>
         <tbody>
-        {% for control in controls %}
+        {% for control in list_items %}
           <tr>
             <td class="bg-accent-cool-lighter" data-sort-value="{{ control.get_flattened_oscal_control_as_dict.id_display|upper }}">
               <a href="{% url 'control_editor' system_id=system.id catalog_key=control.oscal_catalog_key cl_id=control.oscal_ctl_id %}">{{ control.get_flattened_oscal_control_as_dict.id_display|upper }} </a>
@@ -87,8 +87,8 @@
           {% endfor %}
         </tbody>
       </table>
-      {% if controls.paginator.num_pages > 1 %}
-        {% include "controls/controls_pagination.html" %}
+      {% if list_items.paginator.num_pages > 1 %}
+        {% include "common/pagination.html" %}
       {% endif %}
     </div>
   </div>
