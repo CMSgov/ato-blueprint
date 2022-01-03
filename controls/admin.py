@@ -1,13 +1,30 @@
 import csv
+
 from django.contrib import admin
-from django.http import HttpResponse
-from .models import ImportRecord, Statement, StatementRemote, Inheritance, Element, ElementControl, ElementRole, System, CommonControlProvider, CommonControl, ElementCommonControl, Poam, Deployment, SystemAssessmentResult
-from .oscal import CatalogData
-from guardian.admin import GuardedModelAdmin
-from simple_history.admin import SimpleHistoryAdmin
-from django_json_widget.widgets import JSONEditorWidget
-from jsonfield import JSONField
 from django.db import models
+from django.http import HttpResponse
+from django_json_widget.widgets import JSONEditorWidget
+from guardian.admin import GuardedModelAdmin
+from jsonfield import JSONField
+from simple_history.admin import SimpleHistoryAdmin
+
+from .models import (
+    CommonControl,
+    CommonControlProvider,
+    Deployment,
+    Element,
+    ElementCommonControl,
+    ElementControl,
+    ElementRole,
+    ImportRecord,
+    Inheritance,
+    Poam,
+    Statement,
+    StatementRemote,
+    System,
+    SystemAssessmentResult,
+)
+from .oscal import CatalogData
 
 
 class ExportCsvMixin:

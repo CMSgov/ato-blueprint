@@ -8,33 +8,32 @@
 #   docker exec -it govready-q-dev python3 manage.py makecmmcstatements --importname "batch import" --component_ids 1 2 4 5 35
 #   docker exec -it govready-q-dev python3 manage.py makecmmcstatements --component_ids 1 2 4 5 35 --importname "batch import"
 
-import sys
+import logging
 import os.path
-
+import sys
 from collections import defaultdict
+from pathlib import Path, PurePath
+
+import fs
+import fs.errors
+from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction, models
+from django.db import models, transaction
 from django.db.utils import OperationalError
-from django.conf import settings
-from pathlib import Path
-from pathlib import PurePath
 from django.utils.text import slugify
 
-from controls.models import Element, Statement, StatementRemote, ImportRecord
-from controls.enums.statements import StatementTypeEnum
 from controls.enums.remotes import RemoteTypeEnum
+from controls.enums.statements import StatementTypeEnum
+from controls.models import Element, ImportRecord, Statement, StatementRemote
 from controls.oscal import *
+from controls.views import ComponentImporter, OSCALComponentSerializer
 
-from controls.views import OSCALComponentSerializer, ComponentImporter
-
-import fs, fs.errors
-
-import logging
 logging.basicConfig()
 import structlog
 from structlog import get_logger
 from structlog.stdlib import LoggerFactory
+
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
@@ -125,4 +124,3 @@ class Command(BaseCommand):
                     new_smt.save()
                     # Create remote record
                     smt_r = StatementRemote.objects.create(statement=new_smt, remote_statement=smt, remote_type=RemoteTypeEnum.ORIGIN.name)
-

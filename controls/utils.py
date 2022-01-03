@@ -1,6 +1,8 @@
+from django.db.models import Count
+
 from controls.enums.statements import StatementTypeEnum
 from controls.models import ElementControl
-from django.db.models import Count
+
 
 # Get a count of the Statuses for the controls; Assessed, Ready for Assessment, ...
 def get_controls_addressed_count(project):

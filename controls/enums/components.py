@@ -1,5 +1,6 @@
 from siteapp.enums.base import BaseEnum
 
+
 class ComponentTypeEnum(BaseEnum):
     HARDWARE = "hardware"
     SOFTWARE = "software"

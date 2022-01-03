@@ -1,21 +1,21 @@
-import sys
 import os.path
+import sys
+from pathlib import Path, PurePath
 
+import fs
+import fs.errors
+from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction, models
+from django.db import models, transaction
 from django.db.utils import OperationalError
-from django.conf import settings
-from pathlib import Path
-from pathlib import PurePath
 from django.utils.text import slugify
 
 # from siteapp.models import User, Organization, Portfolio
 from controls.models import Element, Statement
-# from controls.views import system_element_download_oscal_json
-from controls.views import OSCALComponentSerializer, ComponentImporter
 
-import fs, fs.errors
+# from controls.views import system_element_download_oscal_json
+from controls.views import ComponentImporter, OSCALComponentSerializer
 
 
 class Command(BaseCommand):
@@ -65,4 +65,3 @@ class Command(BaseCommand):
 
         # Done
         print(f"Imported {counter} components in {FORMAT} from folder `{IMPORT_PATH}`.")
-

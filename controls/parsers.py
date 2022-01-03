@@ -1,9 +1,10 @@
 # Parsers
-import re
 import json
+import re
+
+from .models import CommonControl, CommonControlProvider, Element, Statement
 from .utilities import *
 
-from .models import Statement, Element, CommonControlProvider, CommonControl
 
 class CliControlImporter(object):
     """Command Line Importer into Controls from an .xlsx file"""
@@ -115,7 +116,7 @@ class StatementParser_TaggedTextWithElementsInBrackets(object):
     #    by the [LMO team].
     #
     #
-    #    (b) The [LMO Team] and the [ISSO] coordinates the security audit function with other organizational entities 
+    #    (b) The [LMO Team] and the [ISSO] coordinates the security audit function with other organizational entities
     #    requiring audit-related information to enhance mutual support and to help guide the selection of auditable events;
     #
     # Notes:
@@ -163,12 +164,14 @@ class StatementParser_TaggedTextWithElementsInBrackets(object):
 
     def all_terms_in_brackets(self):
         import re
+
         # Non-gready pattern match for bracket items
         bracketed_terms = re.findall(r'\[(.*?)\]', self.text)
         return bracketed_terms
 
     def all_terms_in_brackets_distinct(self):
         import re
+
         # Non-gready pattern match for bracket items
         bracketed_terms = set(re.findall(r'\[(.*?)\]', self.text))
         return bracketed_terms
@@ -207,6 +210,7 @@ class StatementParser_TaggedTextWithElementsInBrackets(object):
 
         sd = {"sid": sid, "statement": statement, "elements": [], "element_counts": {}}
         import re
+
         # Count matches of bracketed terms
         for t in self.all_terms_in_brackets_distinct():
             t_found = re.findall(r'{}'.format(t), statement)
@@ -214,4 +218,3 @@ class StatementParser_TaggedTextWithElementsInBrackets(object):
                 sd['elements'].append(t)
                 sd['element_counts'][t] = len(t_found)
         return sd
-
