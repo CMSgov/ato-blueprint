@@ -6,7 +6,7 @@ body {
   overflow-y: scroll;
   overflow-wrap: break-word;
   word-wrap: break-word;
-  font-family: 'Hind', sans-serif;
+  font-family: Public Sans, sans-serif;
 }
 
 body, blockquote {
@@ -36,7 +36,7 @@ body, blockquote {
 .glyphicon-globe { color: #888; }
 
 h1, h2 {
-  font-family: 'Lato', sans-serif;
+  font-family: Public Sans, sans-serif;
   font-weight: bold;
 }
 
@@ -129,7 +129,7 @@ div.question-answer[data-reviewed] a { text-decoration: underline; }
 .task-progress-project-title { color: black; font-size: 1.0em; text-align: left; }
 .task-progress-project-truncate-link { color: black; }
 
-.task-question-debug-links { color: #999; font-size: 80%; margin-top: 20px; border:1px; solid black;}
+.task-question-debug-links { color: #999; font-size: 80%; margin-top: 20px; border:1px solid black;}
 
 .question-source-invitation { margin-bottom: 2em; }
 .question-source-invitation-show { text-align: right; margin-bottom: -1.5em; }
@@ -365,8 +365,8 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
 .systems-element-form-remarks { min-height:70px; overflow-y: scroll; }
 .systems-element-modal-footer { display: inline; margin-right: 20px; color: gray; }
 .systems-element-button { color: white; }
-.systems-element-oscal { font-family: monospace; font-size:12px; white-space: pre; }
-.systems-element-opencontrol { font-family: monospace; font-size:12px; white-space: pre; }
+.systems-element-oscal { font-family: Public Sans; font-size:12px; white-space: pre; }
+.systems-element-opencontrol { font-family: Public Sans; font-size:12px; white-space: pre; }
 
 .systems-element-name { font-size: 14pt; font-weight: bold;}
 .systems-poam { margin-top: 4px; }
@@ -556,7 +556,7 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
 
 /* custom unordered list styled similarly to USWDS's ordered process-list component*/
 .custom-list{
-  font-family:Source Sans Pro Web, Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
+  font-family: Public Sans, Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
   font-size:1.06rem;
   line-height:1.5;
   margin-bottom:0;
