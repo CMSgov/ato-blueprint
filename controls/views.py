@@ -1144,130 +1144,44 @@ def project_component_editor(request, system_id, element_id, catalog_key=None, c
         # Retrieve primary system Project
         # Temporarily assume only one project and get first project
         project = system.projects.all()[0]
+        name = Element.objects.values_list('name', flat=True).filter(pk=element_id)
+        parameters = project.root_task.module.app.catalog_metadata['parameters']
+        catalog_key = [p for p in parameters if p['id'] == 'catalog_key'][0]['value']
+        catalog = Catalog.GetInstance(catalog_key=catalog_key)
 
-        # Retrieve element
-        element = Element.objects.get(id=element_id)
+        statements = get_statements_by_control(system, element_id, catalog_key, statement_id)
+        narrative = get_narrative(statements, statement_id)
+        if narrative.get('next'):
+            save = f'Save & next'
+            url = reverse('system_element_control',
+                args=[system.id, narrative.get('producer_element_id'), narrative.get('control_id'), catalog_key, narrative.get('next')])
+        else:
+            save = f'Save'
+            url = reverse('system_element_control',
+                args=[system.id, narrative.get('producer_element_id'), narrative.get('control_id'), catalog_key, narrative.get('sid')])
+        narrative['save'] = {
+            'text': save,
+            'url': url,
+        }
 
-        # Retrieve impl_smts produced by element and consumed by system
-        # Get the impl_smts contributed by this component to system
-        impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
-
-        # Retrieve used catalog_key
-        catalog_key = impl_smts[0].sid_class
-
-        # Retrieve control ids
-        cat = Catalog.GetInstance(catalog_key=catalog_key)
-        catalog_controls = cat.get_controls_all()
-
-        # Load only data needed for the page.
-        page_data = get_component_page_data(cat, impl_smts)
-
-        # Retrieve control
-        ctl_id = list(page_data.keys())[0]
-        control = next((ctl for ctl in catalog_controls if ctl['id'] == oscalize_control_id(page_data[ctl_id]["sid"])), None)
-
+        cl_id = control_id if control_id else narrative.get('control_id')
+        cat = get_catalog_data_by_control(catalog_key, cl_id)
         nav = project_nav.project_navigation(request, project)
 
         # Return the system's element information
         context = {
-            "system": system,
-            "project": project,
-            "element": element,
-            "impl_smts": impl_smts,
-            "catalog_controls": catalog_controls,
-            "catalog_key": catalog_key,
-            "control": control,
-            "page_data": page_data,
-            "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
-            "nav": nav,
+            'title': name,
+            'catalog': cat,
+            'nav': nav,
+            'project': project,
+            'statements': statements,
+            'system': system,
+            'narrative': narrative,
         }
-        return render(request, "systems/element_detail_tabs.html", context)
+        return render(request, 'components/component-editor.html', context)
     else:
         # User does not have permission to this system
         raise Http404
-
-@login_required
-def system_element_control(request, system_id, element_id, catalog_key, control_id):
-    """Display System's selected element detail view"""
-
-    # Retrieve identified System
-    system = System.objects.get(id=system_id)
-    # Retrieve related selected controls if user has permission on system
-    if request.user.has_perm('view_system', system):
-        # Retrieve primary system Project
-        # Temporarily assume only one project and get first project
-        project = system.projects.all()[0]
-
-        # Retrieve element
-        element = Element.objects.get(id=element_id)
-
-        # Retrieve impl_smts produced by element and consumed by system
-        # Get the impl_smts contributed by this component to system
-        impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
-        # Get the cont
-        impl_smt_ctl = next((ctl for ctl in impl_smts if ctl.sid == control_id and ctl.sid_class == catalog_key), None)
-
-        # Retrieve control ids
-        # TODO: Only need to individual control
-        cat = Catalog.GetInstance(catalog_key=catalog_key)
-        catalog_controls = cat.get_controls_all()
-
-        # Load only data needed for the page.
-        page_data = get_component_page_data(cat, impl_smts)
-
-        # Retrieve control
-        control = next((ctl for ctl in catalog_controls if ctl['id'] == oscalize_control_id(control_id)), None)
-
-        # Build OSCAL and OpenControl
-        oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
-        opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
-        states = [choice_tup[1] for choice_tup in ComponentStateEnum.choices()]
-        types = [choice_tup[1] for choice_tup in ComponentTypeEnum.choices()]
-
-        nav = project_nav.project_navigation(request, project)
-
-        # Return the system's element information
-        context = {
-            "states": states,
-            "types": types,
-            "system": system,
-            "project": project,
-            "element": element,
-            "impl_smts": impl_smts,
-            "impl_smt_ctl": impl_smt_ctl,
-            "catalog_controls": catalog_controls,
-            "catalog_key": catalog_key,
-            "control": control,
-            "oscal": oscal_string,
-            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "opencontrol": opencontrol_string,
-            "page_data": page_data,
-            "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
-            "nav": nav,
-        }
-        return render(request, "systems/element_detail_control.html", context)
-
-
-def get_component_page_data(catalog, statements):
-    page_data = {}
-    for c in statements:
-        ctrl = catalog.get_control_by_id(c.sid)
-        cid = catalog.get_control_property_by_name(ctrl, "sort-id")
-        page_data[cid] = {
-            "description": catalog.get_control_prose_as_markdown(ctrl, "statement"),
-            "family": catalog.get_group_title_by_id(c.sid[:2]),
-            "guidance": catalog.get_control_prose_as_markdown(ctrl, "guidance"),
-            "implementation": catalog.get_control_prose_as_markdown(ctrl, "implementation"),
-            "label": catalog.get_control_property_by_name(ctrl, "label"),
-            "narrative": c.body,
-            "sid": c.sid,
-            "status": c.status,
-            'statement_id': c.id,
-        }
-    sorted_data = {}
-    for i in sorted(page_data.items()):
-        sorted_data[i[0]] = i[1]
-    return sorted_data
 
 
 def edit_component_state(request, system_id, element_id):
@@ -1974,15 +1888,26 @@ def project_control_editor(request, system_id, catalog_key, cl_id, statement_id=
 
         statements = get_statements_by_component(system, cl_id, catalog_key, statement_id)
         narrative = get_narrative(statements, statement_id)
+        if narrative.get('next'):
+            save = f'Save & next'
+            url = reverse('control_editor_statement',
+                args=[system.id, catalog_key, cl_id, narrative.get('next')])
+        else:
+            save = f'Save'
+            url = reverse('control_editor_statement',
+                args=[system.id, catalog_key, cl_id, narrative.get('sid')])
+        narrative['save'] = {
+            'text': save,
+            'url': url,
+        }
 
-        catalog = get_catalog_data_by_control(catalog_key, cl_id)
+        cat = get_catalog_data_by_control(catalog_key, cl_id)
         nav = project_nav.project_navigation(request, project)
 
         context = {
-            'catalog': catalog,
+            'catalog': cat,
             'nav': nav,
             'project': project,
-            'send_invitation': Invitation.form_context_dict(request.user, project, [request.user]),
             'statements': statements,
             'system': system,
             'narrative': narrative,
@@ -2010,7 +1935,7 @@ def get_catalog_data_by_control(catalog_key, control_id):
     return catalog_data
 
 
-def get_statements_by_component(system, control_id, catalog_key, statement_id, key='component'):
+def get_statements_by_component(system, control_id, catalog_key, statement_id):
     """
     Given a system element, a control ID and a catalog key, return the associated
     statements.
@@ -2033,12 +1958,62 @@ def get_statements_by_component(system, control_id, catalog_key, statement_id, k
         st[s.producer_element.name] = {
             'body': s.body,
             'inheritance': s.inheritance,
+            'label': s.producer_element.name,
             'sid': s.id,
             'producer_element_name': s.producer_element.name,
             'producer_element_id': s.producer_element.id,
             'status': s.status,
             'href': reverse('control_editor_statement',
                 args=[system.id, catalog_key, control_id, s.id]),
+            'active': active,
+        }
+
+    if st:
+        statements = dict(sorted(st.items()))
+        if not statement_id:
+            k = list(statements.keys())[0]
+            statements[k]['active'] = True
+    else:
+        statements = {}
+
+    return statements
+
+
+def get_statements_by_control(system, component_id, catalog_key, statement_id):
+    """
+    Given a system element, a control ID and a catalog key, return the associated
+    statements.
+    """
+    # Get and return the control
+    # Retrieve any related Implementation Statements filtering by control, and system.root_element, Catalog, Type
+    stmts = Statement.objects.filter(
+        producer_element_id=component_id,
+        consumer_element=system.root_element,
+        sid_class=catalog_key,
+        statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name
+    ).order_by('pid')
+
+    catalog = Catalog.GetInstance(catalog_key=catalog_key)
+
+    st = {}
+    for s in stmts:
+        active = False
+        if statement_id and s.id == int(statement_id):
+            active = True
+
+        ctrl = catalog.get_control_by_id(s.sid)
+        cid = catalog.get_control_property_by_name(ctrl, "sort-id")
+        st[cid] = {
+            'body': s.body,
+            'inheritance': s.inheritance,
+            'sid': s.id,
+            'control_id': s.sid,
+            'label': catalog.get_control_property_by_name(ctrl, "label"),
+            'producer_element_name': s.producer_element.name,
+            'producer_element_id': s.producer_element.id,
+            'status': s.status,
+            'href': reverse('system_element_control',
+                args=[system.id, component_id, catalog_key, s.sid, s.id]),
             'active': active,
         }
 

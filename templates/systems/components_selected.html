@@ -96,8 +96,6 @@
     <div>
         {% include 'components/paginate_comp.html' with system_elements=page_obj %}
     </div>
-
-{{ send_invitation|first|json_script:"send_invitation"}}
 {% endblock %}
 
 {% block scripts %}
