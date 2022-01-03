@@ -43,73 +43,7 @@
             {% include 'controls/controls-sidenav.html' %}
         </div>
         <div class="grid-col-fill">
-            <div class="margin-bottom-1">
-                <h3 id="component-name" class="text-bold margin-bottom-2">{{ narrative.producer_element_name }}</h3>
-                <ul class="usa-list usa-list--unstyled">
-                    <li>
-                        {% if inheritance.name %}
-                            <b>Responsibility</b>: <span id="responsibility">{{ narrative.inheritance.name }}</span>
-                        {% else %}
-                            <b>Responsibility</b>:
-                            <span id="responsibility">
-                                {% if narrative.inheritance.name %}
-                                    {{ narrative.inheritance.name }}
-                                {% else %}
-                                    Fully Allocated
-                                {% endif %}
-                            </span>
-                        {% endif %}
-                    </li>
-                    <li>
-                        <b>Control Description</b>: {{ catalog.control.description|linebreaks }}
-                    </li>
-                </ul>
-                {% include 'systems/_responsibilities.html' %}
-                <div class="usa-accordion usa-accordion--bordered" aria-multiselectable="true">
-                    <h4 class="usa-accordion__heading">
-                        <button
-                          class="usa-accordion__button"
-                          aria-expanded="false"
-                          aria-controls="b-a1"
-                        >CMS Implementation Standard</button>
-                    </h4>
-                    <div id="b-a1" class="usa-accordion__content usa-prose">
-                        {% if catalog.implementation %}
-                            <p>{{ catalog.implementation|linebreaks }}</p>
-                        {% else %}
-                            <p>No Implementation Standards provided.</p>
-                        {% endif %}
-                    </div>
-                    <h4 class="usa-accordion__heading">
-                        <button
-                          class="usa-accordion__button"
-                          aria-expanded="false"
-                          aria-controls="b-a2"
-                        >Guidance</button>
-                    </h4>
-                    <div id="b-a2" class="usa-accordion__content usa-prose">
-                        {% if catalog.guidance %}
-                            <p>{{ catalog.guidance|linebreaks }}</p>
-                        {% else %}
-                            <p>No Guidance provided.</p>
-                        {% endif %}
-                    </div>
-                    <h4 class="usa-accordion__heading">
-                        <button
-                          class="usa-accordion__button"
-                          aria-expanded="true"
-                          aria-controls="b-a3"
-                        >Control Narrative</button>
-                    </h4>
-                    <div id="b-a3" class="usa-accordion__content usa-prose padding-0">
-                        {% if narrative %}
-                            {% include 'controls/statement_edit_form.html' %}
-                        {% else %}
-                            <p class="margin-1 padding-top-2">There are no Components that address this Control.</p>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+            {% include 'controls/editor-narrative.html' %}
         </div>
     </div>
 </div>

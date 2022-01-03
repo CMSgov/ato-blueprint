@@ -1151,6 +1151,7 @@ def project_component_editor(request, system_id, element_id, catalog_key=None, c
 
         statements = get_statements_by_control(system, element_id, catalog_key, statement_id)
         narrative = get_narrative(statements, statement_id)
+        narrative['title'] = f'{narrative.get("label")}: {narrative.get("title")}'
         if narrative.get('next'):
             save = f'Save & next'
             url = reverse('system_element_control',
@@ -1888,6 +1889,7 @@ def project_control_editor(request, system_id, catalog_key, cl_id, statement_id=
 
         statements = get_statements_by_component(system, cl_id, catalog_key, statement_id)
         narrative = get_narrative(statements, statement_id)
+        narrative['title'] = narrative.get('producer_element_name')
         if narrative.get('next'):
             save = f'Save & next'
             url = reverse('control_editor_statement',
@@ -2009,6 +2011,7 @@ def get_statements_by_control(system, component_id, catalog_key, statement_id):
             'sid': s.id,
             'control_id': s.sid,
             'label': catalog.get_control_property_by_name(ctrl, "label"),
+            'title': ctrl.get('title'),
             'producer_element_name': s.producer_element.name,
             'producer_element_id': s.producer_element.id,
             'status': s.status,
