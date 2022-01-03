@@ -1,17 +1,17 @@
 from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
-from siteapp.model_mixins.tags import TagView, build_tag_urls
 
 from controls.models import Element
+from siteapp.model_mixins.tags import TagView, build_tag_urls
 
 admin.autodiscover()
 
 from django.views.decorators.csrf import csrf_exempt
-from siteapp.settings import *
 
 import controls.views
 from controls import urls_api, views
+from siteapp.settings import *
 
 urlpatterns = [
     # Docs

@@ -1,24 +1,34 @@
-from itertools import groupby
 import logging
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict, defaultdict
 from datetime import datetime, timezone
+from itertools import groupby
+from urllib.parse import quote
 from uuid import uuid4
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.db.models.functions import Lower
-from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, \
-    HttpResponseNotAllowed
-from django.views.decorators.csrf import csrf_exempt
+from django.http import (
+    Http404,
+    HttpResponse,
+    HttpResponseForbidden,
+    HttpResponseNotAllowed,
+    HttpResponseRedirect,
+    JsonResponse,
+)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
 from jsonschema import validate
-from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
-from urllib.parse import quote
+from jsonschema.exceptions import SchemaError
+from jsonschema.exceptions import ValidationError as SchemaValidationError
+
 from siteapp.models import Project, User
+
 from .forms import *
 from .models import *
 from .utilities import *
@@ -27,6 +37,7 @@ logging.basicConfig()
 import structlog
 from structlog import get_logger
 from structlog.stdlib import LoggerFactory
+
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
@@ -51,6 +62,7 @@ def manage_system_assessment_result_api(request, system_id, sar_id=None, methods
         return JsonResponse(OrderedDict([("status", "error"), ("error", "An API key was not present in the Authorization header.")]), json_dumps_params={ "indent": 2 }, status=403)
     # Check API key permissions and get user
     from django.db.models import Q
+
     # from siteapp.models import User, Project
     try:
         user = User.objects.get(Q(api_key_rw=api_key)|Q(api_key_ro=api_key)|Q(api_key_wo=api_key))
@@ -111,4 +123,3 @@ def manage_system_assessment_result_api(request, system_id, sar_id=None, methods
         ("status", "ok" if ok else "error"),
         # ("details", log),
     ]), json_dumps_params={ "indent": 2 })
-

@@ -1,12 +1,15 @@
-from django import forms
-from django.forms import ModelForm
-from django.core.exceptions import ValidationError
-from django.forms.widgets import HiddenInput
-from django.db.models import Exists
 import json
 
+from django import forms
+from django.core.exceptions import ValidationError
+from django.db.models import Exists
+from django.forms import ModelForm
+from django.forms.widgets import HiddenInput
+
 from guidedmodules.models import AppSource, AppVersion
-from .models import Statement, Poam, Element, Deployment, SystemAssessmentResult
+
+from .models import Deployment, Element, Poam, Statement, SystemAssessmentResult
+
 # from jsonfield import JSONField
 
 
@@ -155,4 +158,3 @@ class SystemAssessmentResultForm(ModelForm):
 
     assessment_results = forms.CharField(label='System assessment result items (JSON)', required=False, widget=forms.Textarea(),
             help_text="Listing of assessment items in JSON")
-

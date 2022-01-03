@@ -171,7 +171,7 @@ class StatementParser_TaggedTextWithElementsInBrackets(object):
     #    by the [LMO team].
     #
     #
-    #    (b) The [LMO Team] and the [ISSO] coordinates the security audit function with other organizational entities 
+    #    (b) The [LMO Team] and the [ISSO] coordinates the security audit function with other organizational entities
     #    requiring audit-related information to enhance mutual support and to help guide the selection of auditable events;
     #
     # Notes:
@@ -269,4 +269,3 @@ class StatementParser_TaggedTextWithElementsInBrackets(object):
                 sd['elements'].append(t)
                 sd['element_counts'][t] = len(t_found)
         return sd
-

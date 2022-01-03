@@ -5,23 +5,28 @@ from copy import deepcopy
 from pathlib import Path
 
 import auto_prefetch
-import tools.diff_match_patch.python3 as dmp_module
 from django.db import models, transaction
 from django.db.models import Count
 from django.utils.functional import cached_property
-from guardian.shortcuts import (assign_perm, get_objects_for_user,
-                                get_perms_for_model, get_user_perms,
-                                get_users_with_perms, remove_perm)
+from guardian.shortcuts import (
+    assign_perm,
+    get_objects_for_user,
+    get_perms_for_model,
+    get_user_perms,
+    get_users_with_perms,
+    remove_perm,
+)
 from jsonfield import JSONField
 from natsort import natsorted
 from simple_history.models import HistoricalRecords
-from siteapp.model_mixins.tags import TagModelMixin
 
+import tools.diff_match_patch.python3 as dmp_module
 from controls.enums.components import ComponentStateEnum, ComponentTypeEnum
 from controls.enums.remotes import RemoteTypeEnum
 from controls.enums.statements import StatementTypeEnum
 from controls.oscal import Catalog, CatalogData
 from controls.utilities import *
+from siteapp.model_mixins.tags import TagModelMixin
 
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
 ORGPARAM_PATH = os.path.join(os.path.dirname(__file__),'data','org_defined_parameters')
@@ -1001,6 +1006,3 @@ class SystemAssessmentResult(auto_prefetch.Model):
 #     def __repr__(self):
 #         # For debugging.
 #         return "<AssesmentResult %s id=%d>" % (self.statement, self.id)
-
-
-

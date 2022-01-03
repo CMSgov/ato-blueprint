@@ -10,9 +10,11 @@
 # If paths differ on your system, you may need to set the PATH system
 # environment variable and the options.binary_location field below.
 import os
+import tempfile
 import unittest
 from pathlib import PurePath
-import tempfile
+from urllib.parse import urlparse
+
 from django.test import TestCase
 from django.utils.text import slugify
 from selenium.common.exceptions import WebDriverException
@@ -21,20 +23,24 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
 
-from controls.models import System
-from controls.models import STATEMENT_SYNCHED, STATEMENT_NOT_SYNCHED, STATEMENT_ORPHANED
-from controls.views import OSCALComponentSerializer, OSCAL_ssp_export
-from siteapp.models import User, Organization, OrganizationalSetting
-from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTests, wait_for_sleep_after
-from system_settings.models import SystemSettings
-from controls.models import *
 from controls.enums.statements import StatementTypeEnum
-from controls.oscal import Catalogs, Catalog, de_oscalize_control_id
-from siteapp.models import User, Project, Portfolio
+from controls.models import *
+from controls.models import (
+    STATEMENT_NOT_SYNCHED,
+    STATEMENT_ORPHANED,
+    STATEMENT_SYNCHED,
+    System,
+)
+from controls.oscal import Catalog, Catalogs, de_oscalize_control_id
+from controls.views import OSCAL_ssp_export, OSCALComponentSerializer
+from siteapp.models import Organization, OrganizationalSetting, Portfolio, Project, User
+from siteapp.tests import (
+    OrganizationSiteFunctionalTests,
+    SeleniumTest,
+    var_sleep,
+    wait_for_sleep_after,
+)
 from system_settings.models import SystemSettings
-
-from urllib.parse import urlparse
-
 
 #####################################################################
 
@@ -757,8 +763,10 @@ class OrgParamTests(SeleniumTest):
         # REMIND: it would be nice to refactor all this setup code so
         # it could be easily reused ...
 
+        from guidedmodules.management.commands.load_modules import (
+            Command as load_modules,
+        )
         from guidedmodules.models import AppSource
-        from guidedmodules.management.commands.load_modules import Command as load_modules
 
         try:
             AppSource.objects.all().delete()
@@ -1193,7 +1201,7 @@ class CatalogTests(TestCase):
                 " Privacy Controls for Federal Information Systems" \
                 " and Organizations"
         self.assertEqual(catalog.catalog_title, expected_title)
-      
+
 
 class CatalogsTest(TestCase):
 

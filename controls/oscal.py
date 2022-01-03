@@ -1,16 +1,17 @@
-from collections import defaultdict
-import os
 import json
-import yaml
+import os
 import re
-from pathlib import Path
 import sys
+from collections import defaultdict
+from pathlib import Path
 from typing import List
+
 import auto_prefetch
+import yaml
 from django.db import models
 from django.utils.functional import cached_property
-from controls.utilities import *
 
+from controls.utilities import *
 
 CATALOG_PATH = os.path.join(os.path.dirname(__file__), 'data', 'catalogs')
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
