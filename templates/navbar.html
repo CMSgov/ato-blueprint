@@ -2,7 +2,7 @@
 
 <nav class="navbar navbar-inverse navbar-fixed-top">
 
-    {% include "classification.html" %}
+  {% include "classification.html" %}
 
   <div class="container-fluid">
     <div class="navbar-header">
@@ -13,7 +13,7 @@
         <span class="icon-bar"></span>
       </button>
       <a class="navbar-brand" href="/">
-          <img alt="Logo" src="{% static "img/brand/navbar-logo.png" %}">
+          <img alt="Logo" src="{% static "img/Blueprint-Logo-KO-230x50_2x.png" %}">
       </a>
     </div>
 
@@ -21,10 +21,8 @@
       <ul class="nav navbar-nav navbar-left">
         {% if request.user.is_authenticated and not request.user.is_anonymous %}
           <li><a href="/projects" id="menu-projects">Projects</a></li>
-          <li><a href="/portfolios" id="menu-portfolios">Portfolios</a></li>
-          <li><a href="/controls" id="menu-controls">Controls</a></li>
+          <li><a href="/controls" id="menu-controls">ARS Catalogs</a></li>
           <li><a href="{% url 'component_library' %}" id="menu-controls">Component Library</a></li>
-          <li><a href="{% url 'store' %}">Template Library</a></li>
         {% endif %}
       </ul>
 
@@ -40,9 +38,6 @@
               <li><a id="" href="{% url 'store' %}?start=true">Start a new project&hellip;</a></li>
               <li class="dropdown-item-text small text-muted nav-dropdown-item-text">Begin a project from the assessment library. You will be able to choose any available assessment.
               </li>
-              <li><a href="/portfolios/new" id="">Create a portfolio&hellip;</a></li>
-              <li class="dropdown-item-text small text-muted nav-dropdown-item-text">Portfolios allow you to organize and manage related projects. Members of a portfolio can access all of its unrestricted projects.
-              </li>
             </ul>
           </li>
         {% endif %}
@@ -56,7 +51,7 @@
           <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="settings-menu-dropdown"><span class="glyphicon glyphicon-cog" aria-label="Settings" tooltip="Settings"></span>
           </a>
           <ul class="dropdown-menu">
-            <li><a href="/settings" id="menu-settings" aria-label="GovReady-Q settings" tooltip="GovReady-Q settings"><span class="glyphicon glyphicon-cog" aria-label="Settings"></span> GovReady-Q settings</a></li>
+            <li><a href="/settings" id="menu-settings" aria-label="Blueprint settings" tooltip="Blueprint settings"><span class="glyphicon glyphicon-cog" aria-label="Settings"></span> Blueprint settings</a></li>
             {% if user.is_staff %}
               <li><a href="{{settings.SITE_ROOT_URL}}/admin" id="menu-settings" aria-label="Database administration" tooltip="Database administration"><span class="glyphicon glyphicon-cog" aria-label="Database administration"></span> Database administration</a></li>
             {% endif %}
@@ -68,8 +63,8 @@
           <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="help-menu-dropdown">Help
           </a>
           <ul class="dropdown-menu">
-            <li><a href="https://govready-q.readthedocs.io/en/latest/" target="_blank" id="help-govready-q-docs">GovReady-Q documentation</a></li>
-            <li><a href="https://github.com/GovReady/govready-q/issues" target="_blank" >Open an issue in GitHub</a></li>
+            <li><a href="https://cmsgov.github.io/rato-website/">About Rapid ATO</a></li>
+            <li><a href="/love-assessments">Blueprint Support</a></li>
           </ul>
         </li>
 
@@ -102,12 +97,6 @@
               <li><a href="/accounts/logout/">Log Out</a></li>
             </ul>
           </li>
-
-        {% elif LOGIN_ENABLED %}
-            <li><a><form name="form" method="post" action={% url 'homepage' %}>
-                   {% csrf_token %}
-        <input type="submit" name="action" value="login"/>
-        </form></a></li>
         {% endif %}
       </ul>
     </div><!-- /.navbar-collapse -->
