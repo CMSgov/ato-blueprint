@@ -31,14 +31,8 @@
         <li class="display-inline margin-right-1"><a id="assign-statement" href="#" data-sid="{{ narrative.sid }}">Assign</a></li>
         <li class="display-inline"><a id="control-delete" href="#" data-sid="{{ narrative.sid }}">Delete</a></li>
       </ul>
-      {% if narrative.next %}
-        <a id="control-next" class="usa-button usa-button--base bg-green display-inline-block float-right" href="{% url 'control_editor_statement' system_id=system.id catalog_key=catalog.catalog_key cl_id=catalog.control.id statement_id=narrative.next %}">
-          Save & next
-        </a>
-      {% else %}
-        <a id="control-next" class="usa-button usa-button--base bg-green display-inline-block float-right" href="{% url 'control_editor_statement' system_id=system.id catalog_key=catalog.catalog_key cl_id=catalog.control.id statement_id=narrative.sid %}">
-          Save
-        </a>
-      {% endif %}
+      <a id="control-next" class="usa-button usa-button--base bg-green display-inline-block float-right" href="{{ narrative.save.url }}">
+        {{ narrative.save.text }}
+      </a>
     </div>
 </form>

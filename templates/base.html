@@ -54,17 +54,17 @@
           {% block pageheader %}
           {% endblock %}
         </div>
-        <div class="tablet:grid-col-4">
-          {% if messages %}
-            {% for message in messages %}
-            <div class="usa-alert usa-alert--{{ message.level_tag }} margin-1">
-              <div class="usa-alert__body">
-                {{ message }}
+        {% if messages %}
+          <div class="tablet:grid-col-4">
+              {% for message in messages %}
+              <div class="usa-alert usa-alert--{{ message.level_tag }} margin-1">
+                <div class="usa-alert__body">
+                  {{ message }}
+                </div>
               </div>
-            </div>
-            {% endfor %}
-          {% endif %}
-        </div>
+              {% endfor %}
+          </div>
+        {% endif %}
       </div>
 
       {% block body-wide %}

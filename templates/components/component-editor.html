@@ -15,12 +15,12 @@
     </a>
   </li>
   <li class="usa-breadcrumb__list-item">
-    <a href="{% url 'controls_selected' system.id %}" class="usa-breadcrumb__link">
-      <span>Controls</span>
+    <a href="{% url 'components_selected' system.id %}" class="usa-breadcrumb__link">
+      <span>Components</span>
     </a>
   </li>
   <li class="usa-breadcrumb__list-item">
-    <span>{{ catalog.control.label }} {{ catalog.control.title }}</span>
+    <span>{{ title.first }}</span>
   </li>
 {% endblock %}
 
@@ -30,7 +30,7 @@
 
 {% block pageheader %}
   <h2 class="margin-bottom-1">
-    {{ catalog.control.family_title }}: {{ catalog.control.label }} {{ catalog.control.title }}
+    {{ title.first }}
   </h2>
   <p><b>Version:</b> {{ catalog.catalog_display }}</p>
 {% endblock %}
@@ -39,7 +39,7 @@
 <div class="grid-container padding-x-0">
     <div class="grid-row">
         <div class="grid-col-3 padding-right-2">
-            <h4 class="text-bold margin-bottom-2 margin-top-1">Components</h4>
+            <h4 class="text-bold margin-bottom-2 margin-top-1">Controls</h4>
             {% include 'controls/controls-sidenav.html' %}
         </div>
         <div class="grid-col-fill">
