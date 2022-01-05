@@ -12,7 +12,6 @@ from urllib.parse import quote, urlunparse
 from uuid import uuid4
 
 import rtyaml
-import siteapp.views as project_nav
 import trestle.oscal.component as trestlecomponent
 import trestle.oscal.ssp as trestlessp
 from django.conf import settings
@@ -22,25 +21,37 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Count, Q
 from django.db.models.functions import Lower
-from django.http import (Http404, HttpResponse, HttpResponseForbidden,
-                         HttpResponseNotAllowed, HttpResponseRedirect,
-                         JsonResponse)
+from django.http import (
+    Http404,
+    HttpResponse,
+    HttpResponseForbidden,
+    HttpResponseNotAllowed,
+    HttpResponseRedirect,
+    JsonResponse,
+)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.text import slugify
 from django.views import View
 from django.views.generic import ListView
 from simple_history.utils import update_change_reason
+
+import controls.utils as utils
+import siteapp.views as project_nav
+from controls.oscal import Catalogs
 from siteapp.models import Invitation, Organization, Project, Tag
 from siteapp.settings import GOVREADY_URL
 from system_settings.models import SystemSettings
 
-import controls.utils as utils
-from controls.oscal import Catalogs
-
-from .forms import (DeploymentForm, ElementEditForm, ElementForm,
-                    ImportOSCALComponentForm, PoamForm, StatementPoamForm,
-                    SystemAssessmentResultForm)
+from .forms import (
+    DeploymentForm,
+    ElementEditForm,
+    ElementForm,
+    ImportOSCALComponentForm,
+    PoamForm,
+    StatementPoamForm,
+    SystemAssessmentResultForm,
+)
 from .models import *
 from .utilities import *
 
@@ -2064,6 +2075,13 @@ def get_narrative(statements, statement_id):
         return None
 
 
+def project_add_component_form(request, system_id):
+    """
+    Render a form for creating a component for a given project.
+    """
+
+
+
 def get_editor_system(catalog_key, system_id):
     """
     Retrieves oscalized control id and catalog key. Also system object from system id.
@@ -3043,8 +3061,7 @@ def poam_export(request, system_id, format='xlsx'):
             from tempfile import NamedTemporaryFile
 
             from openpyxl import Workbook
-            from openpyxl.styles import (Alignment, Border, Font, PatternFill,
-                                         Side)
+            from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 
             wb = Workbook()
             ws = wb.active
