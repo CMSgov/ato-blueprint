@@ -2,7 +2,7 @@
 {% load bootstrap3 %}
 
 {% block title %}
-Invitation to GovReady Q
+Invitation to CMS Blueprint
 {% endblock %}
 
 {% block head %}
@@ -30,7 +30,7 @@ h1 { margin-top: 0; }
   {% endwith %}
 
    <div id="focus-area-wrapper">
-      <h1><strong>{{inv.from_user}}</strong> invited you <strong>{{inv.purpose}}</strong> on <strong>GovReady Q</strong></h1>
+      <h1><strong>{{inv.from_user}}</strong> invited you <strong>{{inv.purpose}}</strong> on <strong>CMS Blueprint</strong></h1>
 
       <div style="margin-top: 2em;">
         <p>On {{inv.created|date}} {{inv.from_user}} emailed:</p>
@@ -40,8 +40,8 @@ h1 { margin-top: 0; }
       {% if LOGIN_ENABLED %}
       <p style="margin: 2em 0">To accept this invitation, log in or sign up:</p>
 
-      <a id="button-sign-in" class="btn btn-success" href="{% url 'account_login' %}?{{next}}">I am an existing GovReady Q user &raquo;</a>
-      <a id="button-sign-up" class="btn btn-success" href="{% url 'account_signup' %}?{{next}}">I am new to GovReady Q &raquo;</a>
+      <a id="button-sign-in" class="btn btn-success" href="{% url 'account_login' %}?{{next}}">I am an existing Blueprint user &raquo;</a>
+      <a id="button-sign-up" class="btn btn-success" href="{% url 'account_signup' %}?{{next}}">I am new to Blueprint &raquo;</a>
 
       {% else %}
       <a id="button-accept" class="btn btn-success" href="?accept-invitation=1">Accept Invitation</a>      
