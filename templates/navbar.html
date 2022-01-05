@@ -4,30 +4,21 @@
 
   {% include "classification.html" %}
 
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-target" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="/">
-          <img alt="Logo" src="{% static "img/Blueprint-Logo-KO-230x50_2x.png" %}">
+  <div class="display-flex flex-row flex-justify margin-x-4">
+    <div id="header-left" class="display-flex flex-row flex-align-center">
+      <a class="margin-right-3" href="/">
+          <img alt="Logo" src="{% static "img/Blueprint_Logo.svg" %}">
       </a>
-    </div>
-
-    <div id="navbar-collapse-target" class="collapse navbar-collapse">
       <ul class="nav navbar-nav navbar-left">
         {% if request.user.is_authenticated and not request.user.is_anonymous %}
           <li><a href="/projects" id="menu-projects">Projects</a></li>
-          <li><a href="/controls" id="menu-controls">ARS Catalogs</a></li>
           <li><a href="{% url 'component_library' %}" id="menu-controls">Component Library</a></li>
         {% endif %}
       </ul>
+    </div>
 
+    <div id="header-right">
       <ul class="nav navbar-nav navbar-right">
-
         {% if request.user.is_authenticated %}
         <!-- Create new projects, portfolios -->
           <li class="dropdown">
@@ -40,23 +31,6 @@
               </li>
             </ul>
           </li>
-        {% endif %}
-
-        {% if user.is_staff %}
-          <li><a href="{% url "guidedmodules_analytics" %}" aria-label="Analytics" tooltip="Analytics"><span class="glyphicon glyphicon-dashboard" aria-label="Analytics" tooltip="Analytics"></span></a></li>
-        {% endif %}
-        {# if user.can_see_any_org_settings or user.is_staff #}
-        {% if user.is_staff %}
-        <li class="dropdown">
-          <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="settings-menu-dropdown"><span class="glyphicon glyphicon-cog" aria-label="Settings" tooltip="Settings"></span>
-          </a>
-          <ul class="dropdown-menu">
-            <li><a href="/settings" id="menu-settings" aria-label="Blueprint settings" tooltip="Blueprint settings"><span class="glyphicon glyphicon-cog" aria-label="Settings"></span> Blueprint settings</a></li>
-            {% if user.is_staff %}
-              <li><a href="{{settings.SITE_ROOT_URL}}/admin" id="menu-settings" aria-label="Database administration" tooltip="Database administration"><span class="glyphicon glyphicon-cog" aria-label="Database administration"></span> Database administration</a></li>
-            {% endif %}
-          </ul>
-        </li>
         {% endif %}
 
         <li class="dropdown">
@@ -99,6 +73,6 @@
           </li>
         {% endif %}
       </ul>
-    </div><!-- /.navbar-collapse -->
-  </div><!-- /.container-fluid -->
+    </div>
+  </div>
 </nav>
