@@ -3,170 +3,77 @@
 {% load q %}
 {% load humanize %}
 
-{% block title %}
-Your Compliance Projects
-{% endblock %}
-
-{% block head %}
-<style>
-  .btn .glyphicon { margin-right: 6px; }
-  .btn.btn-success .glyphicon { color: #FFF; }
-
-  .lifecycle {
-    margin-bottom: 30px;
-  }
-
-  .lifecycle h2 {
-    margin: 0 0 1em 0;
-  }
-
-  .lifecycle .stage {
-    margin: 0 -10px;
-    padding: 10px;
-    background-color: rgb(247,247,247);
-    border-radius: 5px;
-    max-width: 530px; /* so individual cards don't stretch across whole page */
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
-  }
-
-  .lifecycle .stage h3 {
-    color: black;
-    margin: 5px 0 0 0;
-    text-align: center;
-  }
-
-  .lifecycle .stage .stage-subhead {
-    text-align: center;
-    margin-bottom: 15px;
-  }
-
-  .project {
-    background-color: white;
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 3px;
-    border-bottom: 1px solid rgb(204, 204, 204);
-  }
-
-  .project-image {
-    width: 20px;
-    float: left;
-    margin: 4px 0 5px 8px;
-  }
-
-  .project-text {
-  }
-
-  .project-text h4 {
-    margin: 0;
-    font-weight: bold;
-    font-size: inherit;
-  }
-
-  .project-text > * {
-    margin: .5em 0 0 0;
-    font-size: 13px;
-  }
-
-  h1.mini {
-    font-size: 16px;
-    font-family: Hind, sans-serif;
-    line-height: 22px;
-    color: rgba(51, 51, 51, .8);
-    padding: 0px 0px 0px 0px;
-    margin: 0px 0px 0px 0px;
-  }
-
-  .luna-box {
-    border: 1px solid rgb(210, 210, 210);
-    min-height: 160px;
-    margin-top: 30px;
-    font-size: .8em;
-    border-radius: 4px;
-    padding: 20px 20px 0px 0px;
-  }
-
-  .luna-box div.glyphicon {
-    font-size:3em;
-
-    margin:30px 0px 0px 40px;
-  }
-
-</style>
+{% block pagetitle %}
+Welcome to {% if sitename %}{{ sitename }}{% else %}CMS Blueprint{% endif %}
 {% endblock %}
 
 <!-- Remove context bar from top of page -->
 {% block contextbar %}{% endblock %}
 
 {% block body %}
-<body class="splash-bg">
-<div class="projects-top">
+<div id="home" class="container margin-x-5 padding-top-2">  <ol class="usa-process-list margin-bottom-3">
+    <li class="usa-process-list__item width-full padding-bottom-3">
+      <h4 class="usa-process-list__heading">Enter basic information about your system</h4>
+      <p>Name, Acronym, Location, FISMA Impact Level</p>
+    </li>
+    <li class="usa-process-list__item width-full padding-bottom-3">
+      <h4 class="usa-process-list__heading">Select System Components based on your technical architecture & policies</h4>
+      <p>Pre-written control implementation statements to match your system</p>
+    </li>
+    <li class="usa-process-list__item width-full padding-bottom-3">
+      <h4 class="usa-process-list__heading">As you build, add or edit control implementation statements to match your system</h4>
+      <p>Integrating security and compliance into your development process</p>
+    </li>
+    <li class="usa-process-list__item width-full padding-bottom-3">
+      <h4 class="usa-process-list__heading">Download your System Security Plan to import into CFACTS</h4>
+      <p>CFACTS import file, Open Security Control Assessment Language (OSCAL), Microsoft Word</p>
+    </li>
+  </ol>
 
-<div class="container">
+  <!-- Display grid of options -->
 
-<div class="project-main">
-  <a id="new-project" href="{% url 'store' %}" class=" btn btn-success">Start a project</a>
+  <ul class="usa-card-group home">
+    <li class="tablet:grid-col-4 usa-card">
+      <div class="usa-card__container">
+        <header class="usa-card__header">
+          <h2 class="usa-card__heading">Get Started</h2>
+        </header>
+        <div class="usa-card__body padding-bottom-5">
+          <p>Start a project and begin adding System Compontents to your System Security Plan today.</p>
+        </div>
+        <div class="usa-card__footer">
+          <a id="new-project" class="usa-button" href="{% url 'store' %}?start=true" style="width:100%;">Get started</a>
+        </div>
+      </div>
+    </li>
+
+    <li class="tablet:grid-col-4 usa-card">
+      <div class="usa-card__container">
+        <header class="usa-card__header">
+          <h2 class="usa-card__heading">Continue a Project</h2>
+        </header>
+        <div class="usa-card__body padding-bottom-5">
+          <p>Access existing project(s) and continue building your your System Security Plan(s).</p>
+        </div>
+        <div class="usa-card__footer">
+          <a href="/projects" class="usa-button usa-button--outline">Access projects</a>
+        </div>
+      </div>
+    </li>
+
+    <li class="tablet:grid-col-4 usa-card">
+      <div class="usa-card__container">
+        <header class="usa-card__header">
+          <h2 class="usa-card__heading">Learn More</h2>
+        </header>
+        <div class="usa-card__body padding-bottom-5">
+          <p>Learn more about how Blueprint fits into the ATO ecosystem at CMS.</p>
+        </div>
+        <div class="usa-card__footer">
+          <a href="https://cmsgov.github.io/rato-website/" class="usa-button usa-button--outline" target="_blank" rel="noopener noreferrer">Learn more</a>
+        </div>
+      </div>
+    </li>
+  </ul>
 </div>
-
-<h2>Welcome to {% if sitename %}{{sitename}}{% else %}GovReady-Q{% endif %}</h2>
-
-<p>Assess, test, and authorize together</p>
-
-<!-- Display grid of options -->
-  <div class="row">
-
-    <div class="col-sm-6">
-      <div class="luna-box">
-        <div class="col-md-3">
-          <div class="glyphicon glyphicon glyphicon-list-alt"></div>
-        </div>
-        <div class="col-md-9">
-
-          <h3><a id="new-project" href="/projects">You have access to {{ projects_access|length }} project{{ projects_access|pluralize }}</a></h3>
-          <p>Projects are your organization's questionnaires, assessments and guides needed for authorizations.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-sm-6">
-      <div class="luna-box">
-        <div class="col-md-3">
-          <div class="glyphicon glyphicon glyphicon-folder-open"></div>
-        </div>
-        <div class="col-md-9">
-          <h3><a href={% url 'list_portfolios' %}>You have access to {{ portfolios|length }} portfolio{{ portfolios|pluralize }}</a></h3>
-          <p>Portfolios are a way to organize and manage related projects.</p>
-          <p><a href={% url 'new_portfolio' %}>Create a Portfolio</a></p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-sm-6">
-      <div class="luna-box">
-        <div class="col-md-3">
-          <div class="glyphicon glyphicon-heart-empty"></div>
-        </div>
-        <div class="col-md-9">
-          <h3><a href="love-assessments">Fall in love with assessments</a></h3>
-          <p>Assessing, learning, and improving is one of the most powerful things about being  human.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-sm-6">
-      <div class="luna-box">
-        <div class="col-md-3">
-          <div class="glyphicon glyphicon-duplicate"></div>
-        </div>
-        <div class="col-md-9">
-          <h3><a href="https://govready-q.readthedocs.org">Learn more about GovReady-Q</a></h3>
-          <p>Check out our documentation to learn how to take full advantage of GovReady-Q.
-          </p>
-        </div>
-      </div>
-    </div>
-</div>
-
 {% endblock %}

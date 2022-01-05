@@ -33,14 +33,18 @@
           </li>
         {% endif %}
 
-        <li class="dropdown">
-          <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="help-menu-dropdown">Help
-          </a>
-          <ul class="dropdown-menu">
-            <li><a href="https://cmsgov.github.io/rato-website/">About Rapid ATO</a></li>
-            <li><a href="/love-assessments">Blueprint Support</a></li>
-          </ul>
-        </li>
+        {% if user.is_staff %}
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="settings-menu-dropdown"><span class="glyphicon glyphicon-cog" aria-label="Settings" tooltip="Settings"></span>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a href="/settings" id="menu-settings" aria-label="Blueprint settings" tooltip="Blueprint settings"><span class="glyphicon glyphicon-cog" aria-label="Settings"></span> Blueprint settings</a></li>
+              <li><a href="{{settings.SITE_ROOT_URL}}/admin" id="menu-settings" aria-label="Database administration" tooltip="Database administration"><span class="glyphicon glyphicon-cog" aria-label="Database administration"></span> Database administration</a></li>
+            </ul>
+          </li>
+        {% endif %}
+
+        <li><a href="/love-assessments">Help</a></li>
 
         {% if not user.is_anonymous %}{% include "navbar-notifications.html" %}{% endif %}
 

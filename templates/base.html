@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>{% block title %}{% block head_title %}{% endblock %}{% endblock %} - Blueprint</title>
+    <title>{% block title %}{% block head_title %}{% endblock %}{% endblock %} Blueprint</title>
     {% comment %}
     <meta name="description" content="">
     {% endcomment %}
@@ -29,7 +29,7 @@
         <script src="static/js/html5-3.6-respond-1.1.0.min.js"></script>
     <![endif]-->
   </head>
-  <body>
+  <body class="height-viewport display-flex flex-column">
     <div class="grid-container">
       <!--[if lt IE 8]><p>Internet Explorer version 8 or any modern web browser is required to use this website, sorry.<![endif]-->
       <!--[if gt IE 7]><!-->
@@ -124,7 +124,10 @@
       </div>
     </div>
 
-    <!-- <hr> -->
+    {% comment %} This empty div expands to fill the rest of the viewport when the content on the page is smaller,
+      thus displaying the footer at the bottom of the screen for pages with minimal content. {% endcomment %}
+    <div style="flex-grow:1"></div>
+
     <footer class="usa-footer">
       {% include "footer.html" %}
     </footer>
