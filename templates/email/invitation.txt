@@ -4,11 +4,11 @@ Hello,
 
 {% if invitation.is_target_the_portfolio %}
 
-{{invitation.from_user}} added you as a member of the Portfolio "{{invitation.from_portfolio.title}}" at GovReady-Q
+{{invitation.from_user}} added you as a member of the Portfolio "{{invitation.from_portfolio.title}}" at CMS Blueprint
 
 {% else %}
 
-{{invitation.from_user}} is inviting you {{invitation.purpose}} {% if not invitation.is_target_the_project and not invitation.is_target_the_portfolio %}in {{invitation.from_project.title}}{% endif %}at GovReady Q.
+{{invitation.from_user}} is inviting you {{invitation.purpose}} {% if not invitation.is_target_the_project and not invitation.is_target_the_portfolio %}in {{invitation.from_project.title}}{% endif %}at CMS Blueprint.
 
 {% if invitation.text %}
 {{invitation.text}}

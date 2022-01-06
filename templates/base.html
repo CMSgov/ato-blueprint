@@ -6,12 +6,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>{% block title %}{% block head_title %}{% endblock %}{% endblock %} - Blueprint</title>
+    <title>{% block title %}{% block head_title %}{% endblock %}{% endblock %} Blueprint digital SSP tool</title>
     {% comment %}
     <meta name="description" content="">
     {% endcomment %}
-    <link rel="shortcut icon" href='{% static "img/brand/favicon.ico" %}' type="image/x-icon">
-    <link rel="icon" href='{% static "img/brand/favicon.ico" %}' type="image/x-icon">
+    <link rel="shortcut icon" href='{% static "img/blueprint_branding/favicon.ico" %}' type="image/x-icon">
+    <link rel="icon" href='{% static "img/blueprint_branding/favicon.ico" %}' type="image/x-icon">
     <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap.min.css" %}">
     <link rel="stylesheet" href="{% static 'vendor/uswds-2.12.0/css/uswds.min.css' %}">
     <script src="{% static "vendor/uswds-2.12.0/js/uswds-init.min.js" %}"></script>
@@ -29,105 +29,108 @@
         <script src="static/js/html5-3.6-respond-1.1.0.min.js"></script>
     <![endif]-->
   </head>
-  <body>
-    <div class="grid-container">
-      <!--[if lt IE 8]><p>Internet Explorer version 8 or any modern web browser is required to use this website, sorry.<![endif]-->
-      <!--[if gt IE 7]><!-->
+  <body class="height-viewport display-flex flex-column flex-justify">
+    <div id="body-content-container">
+      <div class="grid-container">
+        <!--[if lt IE 8]><p>Internet Explorer version 8 or any modern web browser is required to use this website, sorry.<![endif]-->
+        <!--[if gt IE 7]><!-->
 
-      {% include "navbar.html" %}
+        {% include "navbar.html" %}
 
-      <div class="grid-row margin-bottom-3">
-        <div class="tablet:grid-col-8 margin-top-3 margin-bottom-2">
-          {% block contextbar %}
-            {% block breadcrumbs %}
+        <div class="grid-row margin-bottom-3">
+          <div class="tablet:grid-col-8 margin-top-3 margin-bottom-2">
+            {% block contextbar %}
+              {% block breadcrumbs %}
+              {% endblock %}
             {% endblock %}
-          {% endblock %}
 
-          <h1 class="usa-prose-h1 margin-top-4 margin-bottom-1">
-            {% block pagetitle %}
-            {% endblock %}
-          </h1>
-          <div class="project-subtitle-text">
-            {% block pagesubtitle %}
+            <h1 class="usa-prose-h1 margin-top-4 margin-bottom-1">
+              {% block pagetitle %}
+              {% endblock %}
+            </h1>
+            <div class="project-subtitle-text">
+              {% block pagesubtitle %}
+              {% endblock %}
+            </div>
+            {% block pageheader %}
             {% endblock %}
           </div>
-          {% block pageheader %}
-          {% endblock %}
-        </div>
-        {% if messages %}
-          <div class="tablet:grid-col-4">
-              {% for message in messages %}
-              <div class="usa-alert usa-alert--{{ message.level_tag }} margin-1">
-                <div class="usa-alert__body">
-                  {{ message }}
+          {% if messages %}
+            <div class="tablet:grid-col-4">
+                {% for message in messages %}
+                <div class="usa-alert usa-alert--{{ message.level_tag }} margin-1">
+                  <div class="usa-alert__body">
+                    {{ message }}
+                  </div>
                 </div>
+                {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+        {% block body-wide %}
+          {% block body %}
+          {% endblock %}
+
+          {% block content %}
+          {% endblock %}
+        {% endblock %}
+
+        {% include "bootstrap-helpers.html" %}
+
+        <div id="invitation_modal" class="modal" tabindex="-1" role="dialog" aria-labelledby="invitation_modal_title" aria-hidden="true" data-url="{% url "send_invitation" %}">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="invitation_modal_title">...</h4>
               </div>
-              {% endfor %}
-          </div>
-        {% endif %}
-      </div>
-
-      {% block body-wide %}
-        {% block body %}
-        {% endblock %}
-
-        {% block content %}
-        {% endblock %}
-      {% endblock %}
-
-      {% include "bootstrap-helpers.html" %}
-
-      <div id="invitation_modal" class="modal" tabindex="-1" role="dialog" aria-labelledby="invitation_modal_title" aria-hidden="true" data-url="{% url "send_invitation" %}">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-              <h4 class="modal-title" id="invitation_modal_title">...</h4>
-            </div>
-            <div class="modal-body">
-              <!-- this seems odd -km <p class="modal-text">Hmm text here.</p> -->
-              <form class="form" onsubmit="return send_invitation()">
-                  {% csrf_token %}
-                  <div class="form-group form-group-margin">
-                    <label for="invite-user-select">Select user to invite</label>
-                    <br>
-                    <select id="invite-user-select" class="form-control" name="user" onchange="invite_toggle_mode()">
-                    </select>
-                  </div>
-                  <div class="form-group form-by-email">
-                    <label for="invite-user-email">
-                      Invite by Email
-                      <span>(<a onclick="$('#invite-user-select').val(''); invite_toggle_mode()">back</a>)</span>
-                    </label>
-                    <br>
-                    <input id="invite-user-email" class="form-control form-email-width" name="email" type="email" placeholder="person@your-agency.gov">
-                  </div>
-                  <div id="invite-message-container">
-                    <label for="invite-message">Include a message about why you are sending this invitation:</label>
-                    <textarea id="invite-message invite-message-size" class="form-control"></textarea>
-                  </div>
-                  <div id="invite-addtoteam-container" style="display: none"">
-                    <div class="checkbox form-checkbox">
-                      <label>
-                        <input name="add-to-team" type="checkbox"> Add user to system team
-                      </label>
+              <div class="modal-body">
+                <!-- this seems odd -km <p class="modal-text">Hmm text here.</p> -->
+                <form class="form" onsubmit="return send_invitation()">
+                    {% csrf_token %}
+                    <div class="form-group form-group-margin">
+                      <label for="invite-user-select">Select user to invite</label>
+                      <br>
+                      <select id="invite-user-select" class="form-control" name="user" onchange="invite_toggle_mode()">
+                      </select>
                     </div>
-                  </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-              <button id="invite_submit_btn" type="button" class="btn btn-success btn-submit" onclick="$('#invitation_modal form').submit()">Invite</button>
+                    <div class="form-group form-by-email">
+                      <label for="invite-user-email">
+                        Invite by Email
+                        <span>(<a onclick="$('#invite-user-select').val(''); invite_toggle_mode()">back</a>)</span>
+                      </label>
+                      <br>
+                      <input id="invite-user-email" class="form-control form-email-width" name="email" type="email" placeholder="person@your-agency.gov">
+                    </div>
+                    <div id="invite-message-container">
+                      <label for="invite-message">Include a message about why you are sending this invitation:</label>
+                      <textarea id="invite-message invite-message-size" class="form-control"></textarea>
+                    </div>
+                    <div id="invite-addtoteam-container" style="display: none"">
+                      <div class="checkbox form-checkbox">
+                        <label>
+                          <input name="add-to-team" type="checkbox"> Add user to system team
+                        </label>
+                      </div>
+                    </div>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button id="invite_submit_btn" type="button" class="btn btn-success btn-submit" onclick="$('#invitation_modal form').submit()">Invite</button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- <hr> -->
+    
+    <div id="footer-container">
     <footer class="usa-footer">
       {% include "footer.html" %}
     </footer>
+    </div>
 
     <script src="{% static "vendor/jquery.js" %}"></script>
     <script src="{% static "vendor/jquery-ui.js" %}"></script>

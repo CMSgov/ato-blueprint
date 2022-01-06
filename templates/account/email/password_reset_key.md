@@ -3,7 +3,7 @@
 {% block content %}
 Hello,
 
-You or someone else has requested a password for your user account at GovReady Q.
+You or someone else has requested a password for your user account at CMS Blueprint.
 
 Click the link below to reset your password:
 

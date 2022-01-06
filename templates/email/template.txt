@@ -1,6 +1,6 @@
 {% autoescape off %}{% block content %}
 {% endblock %}
-GovReady *Q*
+CMS Blueprint
 
 {% block after_signature_note %}
 {% endblock %}
