@@ -39,6 +39,7 @@ from simple_history.utils import update_change_reason
 import controls.utils as utils
 import siteapp.views as project_nav
 from controls.oscal import Catalogs
+from guidedmodules.models import Task
 from siteapp.models import Invitation, Organization, Project, Tag
 from siteapp.settings import GOVREADY_URL
 from system_settings.models import SystemSettings
@@ -2075,12 +2076,83 @@ def get_narrative(statements, statement_id):
         return None
 
 
-def project_add_component_form(request, system_id):
+def project_add_component_form(request, system_id, catalog_key):
     """
     Render a form for creating a component for a given project.
     """
+    catalog_key, system = get_editor_system(catalog_key, system_id)
+    # Retrieve related statements if user has permission on system
+    if request.user.has_perm('view_system', system):
+        project = system.projects.first()
+        # Get project acronym
+        task = Task.objects.filter(project=project.id)
+        acronym = None
+        for i in task:
+            if i.module.module_name == 'system_basic_info':
+                s = i.get_answers().with_extended_info()
+                acronym = s.as_dict().get('system_acronym')
+        nav = project_nav.project_navigation(request, project)
+        context = {
+            'project': project,
+            'acronym': acronym,
+            'security_sensitivity': utils.get_security_sensitivity(project),
+            'nav': nav,
+            'form': ElementForm(),
+        }
+        if request.method == 'POST':
+            component_form = ElementForm(request.POST)
+            if component_form.is_valid():
+                component, created = Element.objects.get_or_create(name=component_form.cleaned_data['name'])
+                if created:
+                    component.name=component_form.cleaned_data['name']
+                    component.full_name=component_form.cleaned_data['full_name']
+                    component.description=component_form.cleaned_data['description']
+                    component.element_type=component_form.cleaned_data['element_type']
+                    component.component_state=component_form.cleaned_data['component_state']
+                    component.component_type=component_form.cleaned_data['component_type']
+                    component.save()
+                    redirect_path = reverse('component_add_controls', args=[system_id, component.id, catalog_key])
+                    return HttpResponseRedirect(redirect_path)
+                else:
+                    component_form.fields['name'].error_messages = f'A component with the name {component_form.cleaned_data["name"]} already exists.'
+
+                    html = render(request, 'components/component_add.html', {'form': component_form})
+                    context['form'] = component_form
+            else:
+                context['form'] = component_form
+        html = render(request, 'components/component_add.html', context)
+        return html
+    else:
+        raise Http404
 
 
+def project_component_add_controls(request, system_id, element_id, catalog_key):
+    """
+    Add controls to a newly created component.
+    """
+    catalog = Catalog.GetInstance(catalog_key=catalog_key)
+    groups = catalog.get_groups()
+    families = {}
+    for gr in groups:
+        if gr.get('class') == 'family':
+            f = gr.get('id')
+            families[f] = {
+                'title': gr.get('title'),
+                'controls': {},
+            }
+            for control in gr.get('controls'):
+                ctrl = catalog.get_control_by_id(control.get('id'))
+                sort_id = catalog.get_control_property_by_name(ctrl, 'sort-id')
+                families[f]['controls'][sort_id] = {
+                    'label': catalog.get_control_property_by_name(ctrl, 'label'),
+                    'name': control.get('title'),
+                }
+    context = {
+        'controls': families,
+    }
+
+    html = render(request, 'components/component_add_statements.html', context)
+    return html
 
 def get_editor_system(catalog_key, system_id):
     """

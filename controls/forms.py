@@ -4,7 +4,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.db.models import Exists
 from django.forms import ModelForm
-from django.forms.widgets import HiddenInput
+from django.forms.widgets import HiddenInput, Select, Textarea, TextInput
 
 from guidedmodules.models import AppSource, AppVersion
 
@@ -74,13 +74,21 @@ class ElementForm(ModelForm):
     class Meta:
         model = Element
         fields = ['name', 'full_name', 'description', 'element_type', 'component_type', 'component_state']
+        widgets = {
+            'name': TextInput(attrs={'class': 'usa-input'}),
+            'full_name': TextInput(attrs={'class': 'usa-input'}),
+            'description': Textarea(attrs={'class': 'usa-textarea'}),
+            'component_type': Select(attrs={'class': 'usa-select'}),
+            'component_state': Select(attrs={'class': 'usa-select'}),
+        }
+
 
     def clean(self):
         """Extend clean to validate element name is not reused."""
         cd = self.cleaned_data
         # Validate element name does not exist case insensitive
         if Element.objects.filter(name__iexact=cd['name']).exists():
-            raise ValidationError("Component (aka Element) name {} not available.".format(cd['name']))
+            raise ValidationError(f'Component name {cd["name"]} not available.')
         return cd
 
 class ElementEditForm(ModelForm):

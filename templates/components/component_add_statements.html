@@ -1,0 +1,60 @@
+{% extends "project-base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+  {{ project.title }}
+{% endblock %}
+
+{% block breadcrumbs_extension %}
+  <li class="usa-breadcrumb__list-item">
+    <a href="{{project.get_absolute_url}}" class="usa-breadcrumb__link">
+      <span>{{project.title}}</span>
+    </a>
+  </li>
+  <li class="usa-breadcrumb__list-item">
+    <a href="{% url 'components_selected' system.id %}" class="usa-breadcrumb__link">
+      <span>Manage Components</span>
+    </a>
+  </li>
+  <li class="usa-breadcrumb__list-item">
+    <span>Add component statements</span>
+  </li>
+{% endblock %}
+
+{% block pagetitle %}
+<a href="{{project.get_absolute_url}}">{{ project }}{% if acronym %} ({{ acronym|safe }}){% endif %}</a>
+{% endblock %}}
+
+{% block pagesubtitle %}
+<div class="display-flex flex-row">
+    <div class="padding-right-1 padding-top-1">
+      FISMA Impact Level: {% if security_sensitivity %}{{ project.root_task.module.spec.title }} {{ security_sensitivity|lower }}{% else %} Undetermined{% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block body_content %}
+<div class="usa-accordion usa-accordion--bordered">
+{% for f, c in controls.items %}
+  <h4 class="usa-accordion__heading">
+    <button
+      class="usa-accordion__button"
+      aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+      aria-controls="{{ f }}"
+    >
+      {{ c.title }}
+    </button>
+  </h4>
+  <div id="{{ f }}" class="usa-accordion__content usa-prose">
+    <ul class="usa-list usa-list--unstyled">
+    {% for k, cr in c.controls.items %}
+      <li>{{ cr.label }}: {{ cr.name }}</li>
+    {% endfor %}
+    </ul>
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

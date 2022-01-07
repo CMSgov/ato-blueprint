@@ -1,0 +1,72 @@
+{% extends "project-base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+  {{ project.title }}
+{% endblock %}
+
+{% block breadcrumbs_extension %}
+  <li class="usa-breadcrumb__list-item">
+    <a href="{{project.get_absolute_url}}" class="usa-breadcrumb__link">
+      <span>{{project.title}}</span>
+    </a>
+  </li>
+  <li class="usa-breadcrumb__list-item">
+    <a href="{% url 'components_selected' system.id %}" class="usa-breadcrumb__link">
+      <span>Manage Components</span>
+    </a>
+  </li>
+  <li class="usa-breadcrumb__list-item">
+    <span>Create a New Component</span>
+  </li>
+{% endblock %}
+
+{% block pagetitle %}
+<a href="{{project.get_absolute_url}}">{{ project }}{% if acronym %} ({{ acronym|safe }}){% endif %}</a>
+{% endblock %}}
+
+{% block pagesubtitle %}
+<div class="display-flex flex-row">
+    <div class="padding-right-1 padding-top-1">
+      FISMA Impact Level: {% if security_sensitivity %}{{ project.root_task.module.spec.title }} {{ security_sensitivity|lower }}{% else %} Undetermined{% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block body_content %}
+<h2>Create a New Component</h2>
+<p>If you can't find the right component in the Component Library, build one here.</p>
+<form class="" method="POST">
+  {% csrf_token %}
+  {{ form.element_type }}
+  <label class="usa-label" for="name">Name</label>
+  {% if form.name.errors %}
+    {% for error in form.name.errors %}
+      <span class="usa-error-message" id="input-error-message">{{ error }}</span>
+    {% endfor %}
+  {% endif %}
+  {{ form.name }}
+  <label class="usa-label" for="full_name">Acronym</label>
+  {% if form.full_name.errors %}
+    {% for error in form.full_name.errors %}
+      <span class="usa-error-message" id="input-error-message">{{ error }}</span>
+    {% endfor %}
+  {% endif %}
+  {{ form.full_name }}
+  <label class="usa-label" for="description">Description</label>
+  {% if form.description.errors %}
+    {% for error in form.description.errors %}
+      <span class="usa-error-message" id="input-error-message">{{ error }}</span>
+    {% endfor %}
+  {% endif %}
+  {{ form.description }}
+  <label class="usa-label" for="component_type" required>Component type</label>
+  {{ form.component_type }}
+  <label class="usa-label" for="component_state" required>Component state</label>
+  {{ form.component_state }}
+  <button class="usa-button margin-top-3" type="submit">Save</button>
+</form>
+{% endblock %}
