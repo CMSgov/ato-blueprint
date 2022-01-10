@@ -554,9 +554,6 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         wait_for_sleep_after(lambda: self.browser.get(self.url("/terms-of-service")))
         wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Terms of Service"))
 
-        wait_for_sleep_after(lambda: self.browser.get(self.url("/love-assessments")))
-        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Love Assessments"))
-
     def test_session_timeout(self):
         self._login()
         ping_url = self.url("/session_security/ping/?idleFor=0")
