@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block breadcrumbs %}
-<nav class="usa-breadcrumb" aria-label="Breadcrumbs,,">
+<nav class="usa-breadcrumb" aria-label="Breadcrumbs">
   <ol class="usa-breadcrumb__list">
     <li class="usa-breadcrumb__list-item">
       <a href="/" class="usa-breadcrumb__link"><span>Home</span></a>
@@ -14,16 +14,17 @@
 </nav>
 {% endblock %}
 
+{% block pagetitle %} 
+  <h1>Help</h1>
+{% endblock %}
+
 {% block body %}
 <div>
-  <h1>Help</h1>
-  <br>
-  <p>
+  <p class="margin-bottom-6" style="font-size: 22px;">
     Browse the FAQs for for quick answers or visit the website for in-depth
     information. Contact us directly if you have a comment or don’t find what
     you’re looking. Thank you for using Blueprint!
   </p>
-  <br>
   <ul class="usa-card-group">
     <li class="tablet:grid-col-4 usa-card">
       <div class="usa-card__container border-width-1px radius-md">
@@ -34,7 +35,7 @@
           <p>Most popular inquiries</p>
         </div>
         <div class="usa-card__footer">
-          <a  href="/faq" class="usa-button" style="width:100%;">Read the FAQs</a>
+          <a  href="/faq" class="usa-button button-link" style="width:100%;">Read the FAQs</a>
         </div>
       </div>
     </li>
@@ -48,7 +49,10 @@
           <p>Read more about the initiative</p>
         </div>
         <div class="usa-card__footer">
-          <a href="https://cmsgov.github.io/rato-website/" class="usa-button" style="width:100%;">Learn more</a>
+          <a href="https://cmsgov.github.io/rato-website/" class="usa-button button-link display-flex flex-row flex-align-center flex-justify-center" style="width:100%;">
+            Learn more
+            <img src="static/img/icons/external-link.svg" alt="external link" class="margin-left-1">
+          </a>
         </div>
       </div>
     </li>
@@ -62,7 +66,7 @@
           <p>We look forward to connecting</p>
         </div>
         <div class="usa-card__footer">
-          <a href="/contact" class="usa-button" style="width:100%;">Contact us</a>
+          <a href="/contact" class="usa-button button-link" style="width:100%;">Contact us</a>
         </div>
       </div>
     </li>

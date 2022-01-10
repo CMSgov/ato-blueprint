@@ -48,6 +48,11 @@ h3 { font-size: 18px; }
 .btn.btn-sm { font-size: 12px; }
 .btn.btn-xs { font-size: 12px; }
 
+.button-link {
+  font-family: Public Sans;
+  font-size: 16px;
+}
+
 footer { margin-top:60px;
   font-size: .75em;
   color: #888;

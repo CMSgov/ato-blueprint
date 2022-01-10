@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block breadcrumbs %}
-<nav class="usa-breadcrumb" aria-label="Breadcrumbs,,">
+<nav class="usa-breadcrumb" aria-label="Breadcrumbs">
   <ol class="usa-breadcrumb__list">
     <li class="usa-breadcrumb__list-item">
       <a href="/" class="usa-breadcrumb__link"><span>Home</span></a>
@@ -13,89 +13,163 @@
       </a>
     </li>
     <li class="usa-breadcrumb__list-item">
-			<span>FAQ</span>
+      <span>FAQ</span>
     </li>
   </ol>
 </nav>
 {% endblock %}
 
+{% block pagetitle %} 
+  <h1>Frequently Asked Questions</h1>
+{% endblock %}
+
 {% block body %}
 <div>
-  <h1>Frequently Asked Questions</h1>
-	<div class="margin-bottom-8">
+  <div class="margin-bottom-8 measure-6">
+    <h3>How does Blueprint help you get an ATO?</h3>
+    <p>
+      Completing the System Security Plan (SSP) accounts for about 80 percent of
+      the work needed to get an ATO, and writing security control implementation
+      statements is one of the biggest challenges.
+    </p>
+    <p>
+      Blueprint simplifies the process by providing reusable compliance
+      components that match your system and include draft control implementation
+      statements that satisfy requirements.
+    </p>
+    <p class="margin-bottom-5">
+      Components enhance the creation, maintenance and understanding of System
+      Security SSPs. They’ll also support gap analysis, automated verification
+      and ongoing assessments and authorization. By providing pre-written
+      control implementation statements in components, Blueprint helps you
+      create your SSP faster.
+    </p>
 
-  <h2>How does Blueprint help you get an ATO?</h2>
-  Completing the System Security Plan (SSP) accounts for about 80 percent of the
-  work needed to get an ATO, and writing security control implementation
-  statements is one of the biggest challenges. Blueprint simplifies the process
-  by providing reusable compliance components that match your system and include
-  draft control implementation statements that satisfy requirements. Components
-  enhance the creation, maintenance and understanding of System Security SSPs.
-  They’ll also support gap analysis, automated verification and ongoing
-  assessments and authorization. By providing pre-written control implementation
-  statements in components, Blueprint helps you create your SSP faster.
+    <h3>When should you start building your SSP?</h3>
+    <p>
+      As soon as you start deploying your infrastructure environments and
+      developing your system!
+    </p>
+    <p>
+      Blueprint’s goal is to make compliance more iterative. As you build your
+      system, add components based on the policies and technologies you’re
+      using.
+    </p>
+    <p class="margin-bottom-5">
+      Once your system is built, your SSP should be as well. No more waterfall
+      compliance!
+    </p>
 
-  <h2>When should you start building your SSP?</h2>
-  As soon as you start deploying your infrastructure environments and developing
-  your system! Blueprint’s goal is to make compliance more iterative. As you
-  build your system, add components based on the policies and technologies
-  you’re using. Once your system is built, your SSP should be as well. No more
-  waterfall compliance!
+    <h3>What are security controls?</h3>
+    <p>
+      Security controls are requirements or guidelines to ensure minimum
+      security is achieved for federal information systems. Each system is
+      assigned a baseline of controls based on its environment and other
+      factors.
+    </p>
+    <p class="margin-bottom-5">
+      A System Security Plan includes implementation statements for each
+      required control. These statements explain what measures are being taken
+      to mitigate the risk for each control.
+    </p>
 
-  <h2>What are security controls?</h2>
-  Security controls are requirements or guidelines to ensure minimum security is
-  achieved for federal information systems. Each system is assigned a baseline
-  of controls based on its environment and other factors. A System Security Plan
-  includes implementation statements for each required control. These statements
-  explain what measures are being taken to mitigate the risk for each control.
+    <h3>Are all controls created equal?</h3>
+    <p>
+      No, but the good news is that Blueprint clearly identifies which controls
+      statements are:
+    </p>
+    <ul style="line-height: 2;">
+      <li>
+        <b>Fully inherited</b> (Other CMS systems provide the full statement)
+      </li>
+      <li>
+        <b>Shared</b> (Other CMS systems and your system each contribute to the
+        statement)
+      </li>
+      <li>
+        <b>Allocated</b> (your system is responsible for the full statement)
+      </li>
+    </ul>
+    <p class="margin-bottom-5">So your team can focus on what needs attention.</p>
 
-  <h2>Are all controls created equal?</h2>
-  No, but the good news is that Blueprint clearly identifies which controls
-  statements are: Fully inherited (Other CMS systems provide the full statement)
-  Shared (Other CMS systems and your system each contribute to the statement)
-  Allocated (your system is responsible for the full statement) So your team can
-  focus on what needs attention.
+    <h3>What does “shared responsibility” mean?</h3>
+    <p>
+      The shared responsibility model helps product teams manage risk and meet
+      compliance requirements.
+    </p>
+    <p class="margin-bottom-5">
+      By allowing the CMS hosting environment to take on certain
+      responsibilities, you fully inherit some control narratives. This means
+      you don’t have to write them. There are also shared controls, where the
+      host is responsible for part of the narrative and the product team
+      provides supplemental information to complete it.
+    </p>
 
-  <h2>What does “shared responsibility” mean?</h2>
-  The shared responsibility model helps product teams manage risk and meet
-  compliance requirements. By allowing the CMS hosting environment to take on
-  certain responsibilities, you fully inherit some control narratives. This
-  means you don’t have to write them. There are also shared controls, where the
-  host is responsible for part of the narrative and the product team provides
-  supplemental information to complete it.
+    <h3>What are components?</h3>
+    <p>
+      Reusable components are groups of partial or complete control
+      implementation statements that deal with security requirements of a
+      defined technology, function or process.
+    </p>
+    <p>
+      Instead of writing all of the control implementation statements required
+      for your system, components do some of the work for you.
+    </p>
+    <p>
+      Blueprint automatically adds some components to your system based on the
+      information you provide.
+    </p>
+    <p class="margin-bottom-5">
+      You can also visit the Component Library to search for new components as
+      you build your system, and even create your own.
+    </p>
 
-  <h2>What are components?</h2>
-  Reusable components are groups of partial or complete control implementation
-  statements that deal with security requirements of a defined technology,
-  function or process. Instead of writing all of the control implementation
-  statements required for your system, components do some of the work for you.
-  Blueprint automatically adds some components to your system based on the
-  information you provide. You can also visit the Component Library to search
-  for new components as you build your system, and even create your own.
+    <h3>Will components cover your entire SSP?</h3>
+    <p>
+      The CMS security and compliance community is working to build components
+      for every control. But, there are controls that aren’t included in a
+      component yet.
+    </p>
+    <p class="margin-bottom-5">
+      For these controls, your team is responsible for creating accurate,
+      complete control implementation statements.
+    </p>
 
-  <h2>Will components cover your entire SSP?</h2>
-  The CMS security and compliance community is working to build components for
-  every control. But, there are controls that aren’t included in a component
-  yet. For these controls, your team is responsible for creating accurate,
-  complete control implementation statements.
+    <h3>How do I know which components to add in Blueprint?</h3>
+    <p>
+      The components you select should align with your system’s technologies and
+      policies.
+    </p>
+    <p>
+      For example, if your system is using Splunk to track audit logs and
+      Confluence to manage information, you can select the Splunk and Confluence
+      components and Blueprint will suggest control implementation narratives
+      for your system.
+    </p>
+    <p>
+      Rather than writing the statements from scratch, you can simply review and
+      edit/augment the statements as needed. This also allows you to build your
+      SSP as you build your system.
+    </p>
+  </div>
 
-  <h2>How do I know which components to add in Blueprint?</h2>
-  The components you select should align with your system’s technologies and
-  policies. For example, if your system is using Splunk to track audit logs and
-  Confluence to manage information, you can select the Splunk and Confluence
-  components and Blueprint will suggest control implementation narratives for
-  your system. Rather than writing the statements from scratch, you can simply
-  review and edit/augment the statements as needed. This also allows you to
-  build your SSP as you build your system.
-	</div>
-
-	<div class="tablet:grid-col-4 usa-card usa-card__container border-width-1px radius-md margin-left-0">
-		<header class="usa-card__header padding-bottom-2">
-			<h2 class="usa-card__heading">Do you have questions?</h2>
-		</header>
-		<div class="usa-card__footer">
-			<a href="/contact" class="usa-button" style="width:100%;">Contact us</a>
-		</div>
-	</div>
+  <div
+    class="
+      tablet:grid-col-4
+      usa-card usa-card__container
+      border-width-1px
+      radius-md
+      margin-left-0
+    "
+  >
+    <header class="usa-card__header padding-bottom-2">
+      <h2 class="usa-card__heading">Do you have questions?</h2>
+    </header>
+    <div class="usa-card__footer">
+      <a href="/contact" class="usa-button button-link" style="width: 100%"
+        >Contact us</a
+      >
+    </div>
+  </div>
 </div>
 {% endblock %}
