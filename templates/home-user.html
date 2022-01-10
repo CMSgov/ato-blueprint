@@ -11,7 +11,7 @@ Welcome to {% if sitename %}{{ sitename }}{% else %}CMS Blueprint{% endif %}
 {% block contextbar %}{% endblock %}
 
 {% block body %}
-<div id="home" class="container margin-x-5 padding-top-2">  <ol class="usa-process-list margin-bottom-3">
+<div id="home" class="margin-x-5 padding-top-2">  <ol class="usa-process-list margin-bottom-3">
     <li class="usa-process-list__item width-full padding-bottom-3">
       <h4 class="usa-process-list__heading">Enter basic information about your system</h4>
       <p>Name, Acronym, Location, FISMA Impact Level</p>
@@ -32,9 +32,9 @@ Welcome to {% if sitename %}{{ sitename }}{% else %}CMS Blueprint{% endif %}
 
   <!-- Display grid of options -->
 
-  <ul class="usa-card-group home">
+  <ul class="usa-card-group">
     <li class="tablet:grid-col-4 usa-card">
-      <div class="usa-card__container">
+      <div class="usa-card__container border-width-1px radius-md">
         <header class="usa-card__header">
           <h2 class="usa-card__heading">Get Started</h2>
         </header>
@@ -42,13 +42,13 @@ Welcome to {% if sitename %}{{ sitename }}{% else %}CMS Blueprint{% endif %}
           <p>Start a project and begin adding System Compontents to your System Security Plan today.</p>
         </div>
         <div class="usa-card__footer">
-          <a id="new-project" class="usa-button" href="{% url 'store' %}?start=true" style="width:100%;">Get started</a>
+          <a id="new-project" class="usa-button button-link" href="{% url 'store' %}?start=true" style="width:100%;">Get started</a>
         </div>
       </div>
     </li>
 
     <li class="tablet:grid-col-4 usa-card">
-      <div class="usa-card__container">
+      <div class="usa-card__container border-width-1px radius-md">
         <header class="usa-card__header">
           <h2 class="usa-card__heading">Continue a Project</h2>
         </header>
@@ -56,13 +56,13 @@ Welcome to {% if sitename %}{{ sitename }}{% else %}CMS Blueprint{% endif %}
           <p>Access existing project(s) and continue building your your System Security Plan(s).</p>
         </div>
         <div class="usa-card__footer">
-          <a href="/projects" class="usa-button usa-button--outline">Access projects</a>
+          <a href="/projects" class="usa-button button-link usa-button--outline" style="width:100%;">Access projects</a>
         </div>
       </div>
     </li>
 
     <li class="tablet:grid-col-4 usa-card">
-      <div class="usa-card__container">
+      <div class="usa-card__container border-width-1px radius-md">
         <header class="usa-card__header">
           <h2 class="usa-card__heading">Learn More</h2>
         </header>
@@ -70,7 +70,7 @@ Welcome to {% if sitename %}{{ sitename }}{% else %}CMS Blueprint{% endif %}
           <p>Learn more about how Blueprint fits into the ATO ecosystem at CMS.</p>
         </div>
         <div class="usa-card__footer">
-          <a href="https://cmsgov.github.io/rato-website/" class="usa-button usa-button--outline" target="_blank" rel="noopener noreferrer">Learn more</a>
+          <a href="https://cmsgov.github.io/rato-website/" class="usa-button button-link usa-button--outline" target="_blank" rel="noopener noreferrer" style="width:100%;">Learn more</a>
         </div>
       </div>
     </li>
