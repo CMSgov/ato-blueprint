@@ -10,8 +10,8 @@
 
 {% block breadcrumbs_extension %}
   <li class="usa-breadcrumb__list-item">
-    <a href="{{project.get_absolute_url}}" class="usa-breadcrumb__link">
-      <span>{{project.title}}</span>
+    <a href="{{ project.get_absolute_url }}" class="usa-breadcrumb__link">
+      <span>{{ project.title }}</span>
     </a>
   </li>
   <li class="usa-breadcrumb__list-item">
@@ -55,23 +55,36 @@
       </button>
     </h4>
     <div id="{{ f }}" class="usa-accordion__content usa-prose">
-      {% for k, cr in c.controls.items %}
-        <div class="usa-checkbox control family-{{ f }}">
-          <input
-            class="usa-checkbox__input"
-            id="check-{{ k }}"
-            type="checkbox"
-            name="{{ k }}"
-            value="{{ k }}"
-          />
-          <label class="usa-checkbox__label" for="check-{{ k }}">{{ cr.label }}: {{ cr.name }}
-            <svg class="usa-icon font-alt-lg" aria-hidden="true" focusable="false" role="img">
-              <use xlink:href="{% static 'vendor/uswds-2.12.0/img/sprite.svg#arrow_forward' %}"></use>
-            </svg>
-          </label>
-        </div>
-      {% endfor %}
-      <button class="usa-button margin-top-2 add-control" data-family="family-{{ f }}">Add to component</button>
+      <form id="family-{{ f }}">
+        {% csrf_token %}
+        <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ element.id }}">
+        <input type="hidden" id="producer_element_name" name="producer_element_name" value="{{ element.name }}">
+        <input type="hidden" id="sid_class" name="sid_class" value="{{ catalog_key }}">
+        <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
+        <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
+        <input type="hidden" id="smt_id" name="smt_id" value="">
+        <input type="hidden" id="pid" name="pid" value="">
+        <input type="hidden" id="body" name="body" value="">
+        <input type="hidden" id="remarks" name="remarks" value="">
+        <input type="hidden" id="status" name="status" value="">
+        {% for k, cr in c.controls.items %}
+          <div class="usa-checkbox control family-{{ f }}">
+            <input
+              class="usa-checkbox__input"
+              id="check-{{ k }}"
+              type="checkbox"
+              name="sid"
+              value="{{ cr.id }}"
+            />
+            <label class="usa-checkbox__label" for="check-{{ k }}">{{ cr.label }}: {{ cr.name }}
+              <svg class="usa-icon font-alt-lg" aria-hidden="true" focusable="false" role="img">
+                <use xlink:href="{% static 'vendor/uswds-2.12.0/img/sprite.svg#arrow_forward' %}"></use>
+              </svg>
+            </label>
+          </div>
+        {% endfor %}
+        <button class="usa-button margin-top-2 add-control" data-family="family-{{ f }}">Add to component</button>
+      </form>
     </div>
   {% endfor %}
 </div>

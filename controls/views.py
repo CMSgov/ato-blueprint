@@ -2135,6 +2135,7 @@ def project_component_add_controls(request, system_id, element_id, catalog_key):
     if request.user.has_perm('view_system', system):
         catalog = Catalog.GetInstance(catalog_key=catalog_key)
         groups = catalog.get_groups()
+        producer_element = Element.objects.get(pk=element_id)
         families = {}
         for gr in groups:
             if gr.get('class') == 'family':
@@ -2149,6 +2150,7 @@ def project_component_add_controls(request, system_id, element_id, catalog_key):
                     families[f]['controls'][sort_id] = {
                         'label': catalog.get_control_property_by_name(ctrl, 'label'),
                         'name': control.get('title'),
+                        'id': control.get('id'),
                     }
         project = system.projects.first()
         # Get project acronym
@@ -2160,8 +2162,11 @@ def project_component_add_controls(request, system_id, element_id, catalog_key):
                 acronym = s.as_dict().get('system_acronym')
         nav = project_nav.project_navigation(request, project)
         context = {
+            'element': producer_element,
+            'system': system,
             'project': project,
             'acronym': acronym,
+            'catalog_key': catalog_key,
             'security_sensitivity': utils.get_security_sensitivity(project),
             'nav': nav,
             'controls': families,
@@ -2304,7 +2309,6 @@ def save_smt(request):
                 consumer_element_id=form_values['consumer_element_id'],
             )
             new_statement = True
-
         # Updating or saving a new producer_element?
         try:
             # Does the name match and existing element? (Element names are unique.)
@@ -2363,13 +2367,14 @@ def save_smt(request):
             if new_statement and system_id is not None:
                 try:
                     statement.consumer_element = System.objects.get(pk=form_values['system_id']).root_element
+                    print(f'STATEMENT: statement')
                     #statement.save()
                     statement_msg = "Statement associated with System/Consumer Element."
                 except Exception as e:
                     statement_consumer_status = "error"
-                    statement_consumer_msg = "Failed to associate statement with System/Consumer Element {}".format(e)
+                    statement_consumer_msg = f"Failed to associate statement with System/Consumer Element {e}"
                     return JsonResponse(
-                        {"status": statement_consumer_status, "message": statement_msg + " " + producer_element_msg + " " + statement_consumer_msg})
+                        {"status": statement_consumer_status, "message": statement_consumer_msg})
 
             # Serialize saved data object(s) to send back to update web page
             # The submitted form needs to be updated with the object primary keys (ids)
