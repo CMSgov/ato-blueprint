@@ -1,117 +1,85 @@
 import time
 from urllib.parse import urlencode
+import requests
 
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.utils.crypto import get_random_string
-from mozilla_django_oidc.auth import OIDCAuthenticationBackend, LOGGER
+from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 from mozilla_django_oidc.middleware import SessionRefresh
 from mozilla_django_oidc.utils import absolutify, add_state_and_nonce_to_session
-
+import logging
 from siteapp.models import Portfolio
 
+logger = logging.getLogger(__name__)
 
 class OIDCAuth(OIDCAuthenticationBackend):
 
-    def is_admin(self, groups):
-        if settings.OIDC_ROLES_MAP["admin"] in groups:
-            return True
-        return False
+
+    def filter_users_by_claims(self, claims):
+        logger.debug("OIDCAuth.filter_users_by_claims(claims=%r)", claims)
+        profile = settings.OIDC_PROFILE
+        username = claims.get(profile.get_claim_name("username"))
+        if not username:
+            logger.debug("OIDCAuth.filter_users_by_claims: no username %r found", username)
+            return self.UserModel.objects.none()
+        user = self.UserModel.objects.filter(username__iexact=username)
+        logger.debug("OIDCAuth.filter_users_by_claims: found user %r for username %s",
+                     user, username)
+        return user
 
     def create_user(self, claims):
-        data = {'email': claims[settings.OIDC_CLAIMS_MAP['email']],
-                'first_name': claims[settings.OIDC_CLAIMS_MAP['first_name']],
-                'last_name': claims[settings.OIDC_CLAIMS_MAP['last_name']],
-                'username': claims[settings.OIDC_CLAIMS_MAP['username']],
-                'is_staff': self.is_admin(claims.get(settings.OIDC_CLAIMS_MAP['groups'], []))}
-
+        logger.debug("OIDCAuth.create_user(claims=%r)", claims)
+        profile = settings.OIDC_PROFILE
+        data = profile.get_user_attrs(claims)
+        logger.debug("OIDCAuth.create_user with attrs = %r", data)
         user = self.UserModel.objects.create_user(**data)
-        portfolio = Portfolio.objects.create(title=user.email.split('@')[0], description="Personal Portfolio")
+        logger.debug("OIDCAuth.create_user: created user %r", user)
+        portfolio_title = f"{user.first_name} {user.last_name} ({user.username})"
+        portfolio_description = f"Personal portfolio for {user.first_name} {user.last_name}"
+        portfolio = Portfolio.objects.create(title=portfolio_title, description=portfolio_description)
         portfolio.assign_owner_permissions(user)
         return user
 
     def update_user(self, user, claims):
+        logger.debug("OIDCAuth.update_user(user=%r, claims=%r)", user, claims)
+        profile = settings.OIDC_PROFILE
+
         original_values = [getattr(user, x.name) for x in user._meta.get_fields() if hasattr(user, x.name)]
-
-        user.email = claims[settings.OIDC_CLAIMS_MAP['email']]
-        user.first_name = claims[settings.OIDC_CLAIMS_MAP['first_name']]
-        user.last_name = claims[settings.OIDC_CLAIMS_MAP['last_name']]
-        user.username = claims[settings.OIDC_CLAIMS_MAP['username']]
-        groups = claims.get(settings.OIDC_CLAIMS_MAP['groups'], [])
-        user.is_staff = self.is_admin(groups)
+        data = profile.get_user_attrs(claims)
+        logger.debug("OIDCAuth.update_user with attrs = %r", data)
+        user.username = data["username"]
+        user.email = data["email"]
+        user.name = data["name"]
+        user.first_name = data["first_name"]
+        user.last_name = data["last_name"]
+        user.is_staff = data["is_staff"]
         user.is_superuser = user.is_staff
-
-        # TODO: there is some confusion about names in the User model;
-        #       workaround until resolved
-        user.name = user.first_name + ' ' + user.last_name
 
         new_values = [getattr(user, x.name) for x in user._meta.get_fields() if hasattr(user, x.name)]
         if new_values != original_values:
+            logger.debug("OIDCAuth.update_user: attributes have changed")
             user.save()
         return user
 
-    def authenticate(self, request, **kwargs):
-        """Authenticates a user based on the OIDC code flow."""
 
-        self.request = request
-        if not self.request:
-            return None
-
-        state = self.request.GET.get('state')
-        code = self.request.GET.get('code')
-        nonce = kwargs.pop('nonce', None)
-
-        if not code or not state:
-            return None
-
-        reverse_url = self.get_settings('OIDC_AUTHENTICATION_CALLBACK_URL',
-                                        'oidc_authentication_callback')
-
-        token_payload = {
-            'client_id': self.OIDC_RP_CLIENT_ID,
-            'client_secret': self.OIDC_RP_CLIENT_SECRET,
-            'grant_type': 'authorization_code',
-            'code': code,
-            'redirect_uri': absolutify(
-                self.request,
-                reverse(reverse_url))
-        }
-        token_payload.update(self.get_settings('OIDC_AUTH_REQUEST_EXTRA_PARAMS', {}))
-
-        # Get the token
-        token_info = self.get_token(token_payload)
-        id_token = token_info.get('id_token')
-        access_token = token_info.get('access_token')
-
-        # Validate the token
-        payload = self.verify_token(id_token, nonce=nonce)
-
-        if payload:
-            self.store_tokens(access_token, id_token)
-            try:
-                return self.get_or_create_user(access_token, id_token, payload)
-            except SuspiciousOperation as exc:
-                LOGGER.warning('failed to get or create user: %s', exc)
-                return None
-        return None
-
-
+# TODO: not clear to me that OIDCSessionRefresh is actually needed
 class OIDCSessionRefresh(SessionRefresh):
     def process_request(self, request):
         if not self.is_refreshable_url(request):
-            LOGGER.debug('request is not refreshable')
+            logger.debug('request is not refreshable')
             return
 
         expiration = request.session.get('oidc_id_token_expiration', 0)
         now = time.time()
         if expiration > now:
             # The id_token is still valid, so we don't have to do anything.
-            LOGGER.debug('id token is still valid (%s > %s)', expiration, now)
+            logger.debug('id token is still valid (%s > %s)', expiration, now)
             return
 
-        LOGGER.debug('id token has expired')
+        logger.debug('id token has expired')
         # The id_token has expired, so we have to re-authenticate silently.
         auth_url = self.get_settings('OIDC_OP_AUTHORIZATION_ENDPOINT')
         client_id = self.get_settings('OIDC_RP_CLIENT_ID')
