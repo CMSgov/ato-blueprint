@@ -47,6 +47,15 @@
                                 <label for="remarks_panel_num">Remarks</label>
                                 <textarea class="form-control" id="remarks_panel_num" name="remarks" placeholder="Add remarks for team" rows="4" cols="50"></textarea>
                             </div>
+                              <div class="form-group">
+                                <label for="inheritance_name_panel_num" class="" for="status">Inheritance</label>
+                                <select class="form-control" id="inheritance_name_panel_num" name="inheritance_name" style="width:180px;">
+                                  <option value='' {% if '' == smt.inheritance.name %}selected="selected"{% endif %}>Select Inheritance</option>
+                                  {% for inheritance in inheritances %}
+                                    <option value='{{ inheritance.id }}' {% if inheritance.name == smt.inheritance.name %}selected="selected"{% endif %}>{{ inheritance.name }}</option>
+                                  {% endfor %}
+                                </select>
+                              </div>
                             <input type="hidden" id="system_id_panel_num" name="system_id" value="{{ system.id }}">
                             <input type="hidden" id="statement_type_panel_num" name="statement_type" value="control_implementation">
                             <div class="pull-right">

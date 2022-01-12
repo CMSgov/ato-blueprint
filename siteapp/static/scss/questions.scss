@@ -1,0 +1,11 @@
+.usa-form {
+    max-width: inherit;
+    label {
+        &.usa-radio__label {
+            text-align: left;
+        }
+    }
+    a {
+        text-decoration: none !important;
+    }
+}
