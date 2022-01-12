@@ -1,0 +1,311 @@
+h1 {
+    margin: 0;
+    font-size: 32px;
+}
+
+div {
+    .subtitle {
+        margin: .2em 0 .75em 0;
+        font-weight: bold;
+    }
+}
+
+.link-black {
+    color: black;
+    &:hover {
+        color: black;
+    }
+}
+
+.btn-action {
+    text-align: left;
+    padding-left: 25px;
+}
+
+#action-buttons {
+    &.action-button-box {
+        width:150px;
+    }
+    &.control-list li {
+        border-bottom:3px solid #928d92;
+        padding-top: 1em;
+        padding-bottom: .3em;
+    }
+}
+
+.act-btn {
+    margin-bottom: 2px;
+}
+
+#focus-area-wrapper {
+    padding: 2em 2em 3em 2em;
+}
+
+.question-column {
+    padding: 0px 30px 0px 30px;
+    padding: 10px;
+    max-width:66vw;
+}
+
+.question-group {
+    margin: 0px 0 20px 0;
+    padding-top: 0px;
+}
+
+h3 {
+    &.question-group-title {
+        color: black;
+        font-weight: bold;
+        padding: 0 18px 14px 0;
+        margin: 0;
+    }
+}
+
+.question {
+    margin-bottom: 15px;
+
+    &:hover {
+        text-decoration: none !important;
+    }
+
+    .question-icon {
+        margin: 0 auto;
+        width: 96px;
+        height: 96px;
+        padding:12px;
+    }
+
+    .question-title {
+        margin-top: .5em;
+        color: #222;
+        line-height: 124%;
+    }
+
+    > .btn {
+        margin: 8px 0 0 0;
+    }
+
+    .invitation {
+        font-size: 14px;
+        line-height: 128%;
+    }
+}
+
+.rows {
+    .question-column {
+        padding: 0px 30px 0px 30px;
+    }
+}
+
+.grid {
+    .question {
+        text-align: center;
+        margin-top: 10px;
+    }
+}
+
+.columns {
+    .question-column {
+        h2 {
+            color: black;
+            margin: 5px 0 10px 0;
+            text-align: center;
+        }
+    }
+    .question-group {
+        h3 {
+            font-size: inherit;
+            font-weight: bold;
+        }
+    }
+    .question-group {
+        > .row {
+            margin: 5px 0;
+        }
+    }
+    .question-icon {
+        width: 30px;
+        float: left !important;
+        margin: 4px 0 5px 8px;
+    }
+}
+
+#project-members {
+    margin-top: 1em;
+
+    .role {
+        font-style: italic;
+    }
+
+    .action {
+        font-size: 85%;
+    }
+}
+
+.authoring-tool-hidden {
+    display: none; /* hidden by default */
+}
+
+.authoring-tool-edit-question {
+    position: absolute;
+    right: 0;
+    color: #31708f;
+}
+
+.last-login {
+    font-size:.8em;
+}
+
+.status {
+    font-size:2em;
+    color:#2D3337;
+}
+
+.status-welcome {
+    font-size:2em;
+    margin:0 0 1em 0;
+}
+
+.status-box {
+    border:1px solid #C1C1C1;
+    padding:5px;
+    text-align:center;
+    background: #F6F7F7;
+}
+
+.status-box-invisible {
+    padding:5px;
+    text-align:center;
+}
+
+.status-small {
+    font-size: .8em;
+}
+
+.input-todo {
+    padding-left:5px;
+}
+
+.alert-changed {
+    font-size: 1.2em;
+    margin:0;
+    padding:1em 0 0 0;
+}
+
+.status-section-header {
+    display:block;
+    border-bottom:1px solid #ccc;
+    margin-bottom:1em;
+    font-size:1.3em;
+}
+
+.piechart {
+    display: block;
+    margin:0 auto 0 auto;
+    width: 66px;
+    height: 66px;
+    border-radius: 50%;
+    background-image: conic-gradient(
+        #E1F8E2  70deg,
+        #B2E0B2 0 235deg
+    );
+}
+
+.vuln-table {
+    width:100%;
+}
+
+.vuln-table-head {
+    font-size: .9em;
+}
+
+.vuln-table-component {
+    font-size: 1.2em;
+    font-weight:bold;
+    padding:0;
+    margin:0;
+}
+
+.vuln-table-component-desc {
+    font-size: .8em;
+}
+
+.vuln-table-bad {
+    color: red;
+}
+
+.vuln-table-medium {
+    color: orange;
+}
+
+.portfolio-table {
+    width:100%;
+}
+
+.portfolio-table-component {
+    font-size: 1.2em;
+    font-weight:bold;
+    padding:0;
+    margin:0;
+}
+
+.portfolio-table-component-desc {
+    font-size: .8em;
+}
+
+.component_count {
+    font-size:26px;
+    font-weight: 700;
+    margin-top: 12px;
+}
+
+.status-section-header {
+    border: none;
+    font-family: Public Sans, sans-serif !important;
+    font-size: 28px;
+}
+
+.button-red {
+  color: #d83933;
+  box-shadow:inset 0 0 0 2px #d83933;
+}
+
+/* Circle graph */
+.single-chart {
+  width: 33%;
+  justify-content: space-around ;
+}
+
+.circular-chart {
+  display: block;
+  margin: 10px auto;
+  max-width: 80%;
+  max-height: 100px;
+}
+
+.circle-bg {
+  fill: none;
+  stroke: #eee;
+  stroke-width: 3.8;
+}
+
+.circle {
+  stroke: #4CC790;
+  fill: none;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  animation: progress 1s ease-out forwards;
+}
+
+@keyframes progress {
+  0% {
+    stroke-dasharray: 0 100;
+  }
+}
+
+.percentage {
+  fill: #666;
+  font-family: sans-serif;
+  font-size: 0.5em;
+  text-anchor: middle;
+}

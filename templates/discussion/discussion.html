@@ -1,0 +1,950 @@
+{% load static %}
+
+<link href="{% static "vendor/emojione/emojione-sprite-24.min.css" %}" rel="stylesheet">
+<script src="{% static "vendor/push.js" %}"> </script>
+
+<style>
+  #discussion-your-comment-tips { margin-top: 4px; padding: 2px; font-size: 65%; color: #555; text-align: right;}
+  #discussion-your-comment-tips label { color: inherit; font-weight: normal; cursor: pointer;}
+  #discussion-your-comment-preview-container { border: 1px solid #DDD; border-radius: .25em; background-color: white; padding: .5em; }
+  #discussion-your-comment-preview-container p:last-child { margin: 0; }
+  #discussion .comment-thread { margin-bottom: 1.5em; }
+  #discussion .comment { margin-bottom: 15px; }
+  #discussion .avatar { border-radius: 10px; border: 1px solid #CCC; }
+  #discussion .comment .comment-meta { margin: -15px -15px 15px -15px; padding: 10px 15px; border-bottom: 1px solid #EEE; }
+  #discussion .comment .comment-commands { text-align: right; }
+  #discussion .comment .comment-commands > a:link { margin-left: 8px; color: #AAA; font-size: 85%;}
+  #discussion .comment .comment-commands > a:hover { color: #5A5; }
+  #discussion .comment .comment-author {  }
+  #discussion .comment.author-is-self .comment-author { font-weight: bold; }
+  #discussion .comment .comment-author-role {  }
+  #discussion .comment .ifeditpriv { display: none; }
+  #discussion .comment.has-edit-priv .ifeditpriv { display: inline; }
+  #discussion .comment .ifdeletepriv { display: none; }
+  #discussion .comment.has-delete-priv .ifdeletepriv { display: inline; }
+  #discussion .comment.author-is-self .ifnotauthor { display: none; }
+  #discussion .comment .replies { margin: 15px -15px -15px -15px; padding: 0 15px; border-top: 1px solid #EEE; font-size: 95%;}
+  #discussion .comment .replies .reply { margin: 15px 0; }
+  #discussion .comment .comment-text { overflow-wrap: break-word; }
+  #discussion .comment .comment-text p:last-child { margin-bottom: 0; }
+  #discussion .event { margin-bottom: 20px; /* comments look like they have a margin-bottom of 15px but the panel within it has a margin-bottom of 20px */ }
+  #discussion .event-body { margin-left: .5em; }
+  #discussion .event .event-text {  }
+  #discussion .event .event-info { font-size: 85%; color: #555; margin: 4px 0; }
+
+  #emoji-selector .emoji { display: inline-block; margin-right: 1px; cursor: pointer; padding: 3px; }
+  .emojione { margin: 0; }
+  #emoji-selector .emoji.active { padding: 2px; border: 1px solid #DDE; background-color: #EEF;}
+
+  #preview_comment_toggle { color: #999; font-size: 85%; }
+</style>
+
+<div id="discussion" style="display: none;">
+    <div class="comment-thread">
+
+    </div>
+    <div class="comment-input" style="display: none">
+      <form onsubmit="submit_comment(); return false;">
+        <div style="float: right">
+          <a id="preview_comment_toggle" href="#" onclick="preview_comment_toggle(); return false;">Preview</a>
+        </div>
+        <label id="discussion-your-comment-label" for="discussion-your-comment">
+          ...
+        </label>
+        <div id="discussion-your-comment-input-container">
+          <div style="position: relative;"> {# textcomplete gets confused by bootstrap cols? -- need a new relative container? #}
+            <textarea id="discussion-your-comment" class="form-control" rows="3" placeholder=""></textarea>
+            <div id="discussion-your-comment-saved" style="display: none; position: absolute; bottom: 8px; right: 8px; padding: .25em; background-color: rgba(255,255,255,.9); border: 1px solid #DDD; border
+-radius: .25em;"></div>
+          </div>
+          <div id="discussion-your-comment-tips">
+
+            <label for="discussion-attach-file"><span class="glyphicon glyphicon-paperclip" style="margin-right: 3px"></span> <span href="#" title="Accepted file types are: ZIP, PDF, PNG, JPG, DOC, DOCX, XLS, XLSX, CSV, PPT, PPTX ">Attach a File</span></label>
+            <div style="display: none"><input name="value" type="file" id="discussion-attach-file" multiple onchange="attach_files(this.files)" /></div>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <span>formatting:</span>
+            &nbsp;
+            <span><b>**bold**</b></span>
+            &nbsp;
+            <span><em>*italic*</em></span>
+            &nbsp;
+            <span style="border:1px solid #ddd; background-color: #eee; padding: 0px 2px 0px 2px; border-radius: 3px;">[link](http://to)</span>
+            &nbsp;
+            <span># heading.</span>
+            &nbsp;
+            <a href="http://commonmark.org/help/" target="_blank"><span class="glyphicon glyphicon-info-sign" style="margin-right: 3px">
+            </a>
+          </div>
+        </div>
+        <div id="discussion-your-comment-preview-container" style="display: none;">
+        </div>
+        <div style="margin-top: 1em; margin-bottom:3em;">
+          {# <button type="submit" class="btn btn-default">Propose an Answer</button> #}
+          {% if discussion_close_and_comment_strings %}
+          <button class="btn btn-default" onclick="submit_comment(close_and_comment_clicked);">
+            {% for css_class, text in discussion_close_and_comment_strings %}
+              <span class="{{css_class}}" style="display: none">{{text}}</span>
+            {% endfor %}
+          </button>
+          {% endif %}
+          <button type="submit" class="btn-cms-comment">Comment</button>
+        </div>
+      </form>
+    </div>
+
+    <p id="discussion-you-are-alone" style="display: none" class="">
+      You are the only person in this conversation so far. <a href="#" onclick="return invite_user_to_discussion()" class="">Invite a colleague</a> to join you.
+    </p>
+
+    {% if show_discussion_members_count %}
+    <p class="small active-discussion-only" style="display: none">
+      Who can see this conversation? <span class="fillin-project_name"></span> members<span class="fillin-guests"></span>.
+      <a id="invite-guest" href="#" onclick="return invite_user_to_discussion()">Invite Colleague</a>
+    </p>
+    {% endif %}
+</div>
+
+<div id="comment-template" style="display: none;">
+  <div class="comment row">
+    <div class="col-xs-2 col-lg-1 avatar-container" style="padding-right: 0"> {# kill the right padding so we get rid of half of the gutter so the avatar isn't so far away, and do it here and not on the next column because tk's header lines up better #}
+    </div>
+    <div class="col-xs-10 col-lg-11">
+    <div class="panel panel-default">
+    <div class="panel-body">
+      <div class="comment-meta">
+        <div class="row">
+          <div class="col-sm-9">
+            <span class="comment-author">...</span>
+            <span class="comment-author-role">...</span>
+            commented
+            <span class="comment-date"></span>
+          </div>
+          <div class="col-sm-3 comment-commands">
+            <a title="Edit your comment" class="ifeditpriv" href="#" onclick="return begin_comment_edit(this);">
+              <em class="glyphicon glyphicon-pencil"></em>
+            </a>
+            <a title="Delete this comment" class="ifdeletepriv" href="#" onclick="return do_delete_comment(this);">
+              <em class="glyphicon glyphicon-trash"></em>
+            </a>
+            <a title="React to this comment with an emoji" class="react-with-emoji" href="#" onclick="return begin_emoji_reaction(event, this);">
+              <em class="glyphicon glyphicon-plus" style="font-size: 80%;"></em>
+              <em class="glyphicon glyphicon-heart" style="position: relative; left: -6px"></em>
+            </a>
+          </div>
+        </div> <!-- /row -->
+      </div> <!-- /comment-meta -->
+      <div class="comment-text"> </div>
+
+      <form class="comment-edit clearfix" style="display: none" onsubmit="do_comment_save(this); return false;">
+        <textarea class="form-control" style="width: 100%;"> </textarea>
+        <div style="margin: 1em 0; float: right">
+          <button type="submit" class="btn btn-cancel" onclick="return close_comment_edit(this);">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+
+      {% comment %}
+      <div class="proposed-answer">
+        <div class="radio">
+          <label>
+            <input type="radio" disabled> No
+          </label>
+        </div>
+        <div class="radio">
+          <label>
+            <input type="radio" checked disabled> Yes
+          </label>
+        </div>
+      </div>
+      {% endcomment %}
+
+      <div class="replies">
+      </div>
+    </div> <!-- /panel-body -->
+  </div> <!-- /panel -->
+ </div> <!-- /col -->
+ </div> <!-- /row -->
+</div> <!-- /template -->
+
+<div id="reply-template" style="display: none">
+  <div class="reply">
+    <span class="comment-author">...</span>
+    <span class="comment-author-role"></span>
+    reacted
+    <span class="comment-emojis"></span>
+    <span class="comment-date"></span>
+  </div>
+</div>
+
+<div id="event-template" style="display: none">
+  <div class="event">
+    <div class="row">
+      <div class="col-xs-2 col-lg-1 avatar-container" style="padding-right: 0"> {# kill the right padding so we get rid of half of the gutter so the avatar isn't so far away, and do it here and not on the next column because tk's header lines up better #}
+      </div>
+      <div class="col-xs-10 col-lg-11">
+        <div class="event-body">
+          <div class="event-text"> </div>
+          <div class="event-info">
+            <div>
+              <span class="event-date"></span>
+              <span class="event-who"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="emoji-selector" style="display: none; border-top: 10px solid rgba(255,255,255, .5); border-left: 10px solid rgba(255,255,255, .5);">
+  <div class="panel panel-default" style="margin: 0">
+    <div class="panel-heading" style="padding: 5px 15px;">
+      <button type="button" class="close" aria-label="Close" onclick="save_emoji_reaction()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <strong>React with an emoji</strong>
+    </div>
+    <div class="panel-body">
+      <div>
+      </div>
+      <div>
+        <span class="emoji" title="React with a heart!" data-sprite="symbols" data-code="2764">heart</span>
+        <span class="emoji" title="React with a thumbs-up!" data-sprite="people" data-code="1f44d">thumbsup</span>
+        <span class="emoji" title="React with a thumbs-down!" data-sprite="people" data-code="1f44e">thumbsdown</span>
+        <span class="emoji" title="React with a smiley face!" data-sprite="people" data-code="1f603">smile</span>
+        <span class="emoji" title="React with a frowning face!" data-sprite="people" data-code="1f641">slight_frown</span>
+      </div>
+    </div>
+    </div>
+  </div>
+
+<script>
+
+function init_discussion_html() {
+  // Clicks outside of the emoji-selector trigger closing & saving the dialog.
+  $(document).click(save_emoji_reaction);
+  $('body').append($('#emoji-selector')); // move to body to make positioning easier in case this whole template is inside a relatively positioned element like a col
+  $('#emoji-selector').click(function(event) { event.stopPropagation(); });
+  $('#emoji-selector .emoji').each(function() {
+    // Initialize - replace text in markup with images.
+    $(this)
+      .addClass("emojione-24-" + $(this).attr('data-sprite'))
+      .addClass("_" + $(this).attr('data-code'))
+      .click(function() { $(this).toggleClass('active'); save_emoji_reaction(); })
+      .attr('data-emoji-name', $(this).text());
+  });
+};
+
+var discussion_info = { max_event_time: 0 };
+var discussion_has_any_comment = false;
+var discussion_has_any_comment_from_someone_else = false;
+var discussion_comment_count = 0;
+
+function display_discussion(discussion, is_page_load) {
+  // first time initialization
+  if (window.init_discussion_html)
+    init_discussion_html();
+  else
+    delete window.init_discussion_html;
+
+  // remember what discussion is displayed
+  discussion_info = discussion.discussion;
+
+  // show the discussion
+  $('#discussion').show();
+  $('#discussion .active-discussion-only').show();
+  $('#discussion #invite-guest').toggle(discussion_info.can_invite);
+
+  // INITIALIZE THE COMMENT EDITOR
+
+  if (discussion_info.can_comment) {
+    $('#discussion .comment-input').show();
+    $('#discussion-your-comment-label').text("Add the first comment:")
+
+    // initialize the editor
+    if (!is_page_load || discussion.events.length == 0) $('#discussion-your-comment').focus();
+
+    // show an existing draft and poll for updating the draft
+    if (discussion.draft) {
+      draft_state = discussion.draft;
+      $('#discussion-your-comment').val(discussion.draft.text);
+    }
+
+    // start polling for changes to save as draft
+    start_update_draft_poller();
+
+    // BUTTON LABEL TOGGLES
+
+    // toggle a class depending on whether the user's comment textarea has
+    // anything in it, which is used if we have a "Close & Comment" / "Re-open & Comment"
+    // button
+    function discussion_update_your_comment_empty_class() {
+      var isEmpty = $('#discussion-your-comment').val() == "";
+      $('#discussion .comment-input').toggleClass('user-input-empty', isEmpty);
+      $('#discussion .comment-input').toggleClass('user-input-not-empty', !isEmpty);
+    }
+    $('#discussion-your-comment').on("keyup change paste", discussion_update_your_comment_empty_class);
+    discussion_update_your_comment_empty_class();
+  }
+
+  // fill in the context block on the right side
+  $('#discussion .fillin-project_name').text(discussion_info.project.title);
+  if (discussion.guests.length > 0 || 1) {
+    // show guest count & names
+    var text = " and " + discussion.guests.length + " guest";
+    if (discussion.guests.length != 1) text += "s";
+    if (discussion.guests.length > 1) {
+      text += " (";
+      for (var i = 0; i < discussion.guests.length; i++) {
+        text += discussion.guests[i].name;
+        if (i < discussion.guests.length-1)
+          text += ", ";
+      }
+      text += ")";
+    }
+    $('#discussion .fillin-guests').text(text);
+  }
+
+  // POLLING FOR NEW COMMENTS
+
+  // for polling, what did we last see
+  discussion_info.max_comment_id = 0;
+  discussion_info.max_event_time = 0;
+
+  // render events
+  $('#discussion .comment-thread').html('');
+  render_events(discussion, true);
+
+  // Autocomplete. The discussion object has a mapping from trigger
+  // characters to autocomplete possibilities:
+  //
+  // {
+  //   "@": [{
+  //             "tag": "thing the autocomplete inserts",
+  //             "display": "text displayed in the autocomplete popup",
+  //         }, ... ]
+  // }
+  function make_autocomplete_strategy(trigger_character) {
+    var autocomplete = discussion.autocomplete[trigger_character];
+
+    RegExp.escape = function(s) {
+      // http://stackoverflow.com/a/18151038
+      return String(s).replace(/([-()\[\]{}+?*.$\^|,:#<!\\])/g, '\\$1').
+      replace(/\x08/g, '\\x08');
+    };
+    return {
+      match: new RegExp("(^|\\s)" + RegExp.escape(trigger_character) + "(\\w*)$"),
+      search: function (term, callback, match) {
+        // Perform a search.
+        var matches = [];
+        term = match[2].toLowerCase().replace(/ /, "");
+        for (var i = 0; i < autocomplete.length; i++) {
+          var item = autocomplete[i];
+          var search_key = (item.tag + item.display).toLowerCase().replace(/ /, "");
+          if (search_key.indexOf(term) >= 0) {
+            matches.push(item);
+          }
+        }
+        callback(matches)
+      },
+      template: function(value) {
+        if (!value.display)
+          return value.tag;
+        var node = $("<span><span class='display'/> <span class='tag' style='font-style: italic; padding-left: 1.5em;'/></span>");
+        node.find(".display").text(value.display);
+        node.find(".tag").text(value.tag);
+        return node.html();
+      },
+      replace: function(value, event) { return "$1" + (trigger_character + value.tag).replace(/\$/g, "$$$$") + " "; } // must escape any dollar signs in the replacement text, and since we're using replace to do it we need to escape the literal $ twice!
+    }
+  };
+  new Textcomplete(new Textcomplete.editors.Textarea($('#discussion-your-comment')[0]))
+  .register(
+    Object.keys(discussion.autocomplete).map(make_autocomplete_strategy)
+  , {
+    // options
+  });
+
+  // start poor-man's polling the server for new events
+  // don't poll if the user can't comment because the discussion view
+  // will say they don't have permission to poll
+  /* Temporarily stop our polling to make logs quieter
+  if (discussion_info.can_comment)
+     discussion_poll();
+  */
+}
+
+function render_events(discussion, initial) {
+  discussion.events.forEach(function(item) {
+    if (item.type == "event")
+        render_event(item, initial)
+    else if (item.type == "comment")
+        render_comment(item);
+  });
+}
+
+function discussion_poll() {
+  setTimeout(function() {
+      discussion_poll_now(function(){
+        discussion_poll(); // poll again
+      })
+    },
+
+    // poll interval (10s)
+    10000);
+}
+
+function discussion_poll_now(cb) {
+  $.ajax({
+      url: "{% url 'discussion_poll_for_events' %}",
+      method: "POST",
+      data: {
+          id: discussion_info.id,
+          comment_since: discussion_info.max_comment_id,
+          event_since: discussion_info.max_event_time
+      },
+      success: function(res) {
+        render_events(res);
+        show_notification(res);
+        if (cb) cb()
+      }
+  });
+}
+
+function show_notification(discussion) {
+  function truncate(string) {
+    if (string.length > 60)
+      string = string.substring(0, 57) + "...";
+    return string;
+  }
+
+  var notification = "";
+  discussion.events.forEach(function(item) {
+    if (!item.notification_text) return;
+    {% if request.user.is_authenticated %}
+    if (item.user && item.user.id == {{request.user.id}}) return; // no notifications for actions the user took themself
+    {% endif %}
+    notification += truncate(item.notification_text) + "\n\n";
+  })
+
+  // if there's anything to show, show it
+  if (notification != "")
+    Push.create(discussion.discussion.title, {
+      body: notification,
+      /*icon: {
+          x16: 'images/icon-x16.png',
+          x32: 'images/icon-x32.png'
+      },*/
+      timeout: 5000
+  });
+}
+
+function render_comment(item) {
+  // Update existing DOM node?
+  var n = $('#discussion .comment[data-id=ID], #discussion .reply[data-id=ID]'.replace(/ID/g, item.id));
+  var isnew = false;
+  if (n.length == 0) {
+    // Create and fill in a DOM node.
+    n = (!item.replies_to ? $('#comment-template') : $('#reply-template')).find('> div').clone();
+    isnew = true;
+  }
+
+  // If the reaction is empty, i.e. if the emojis were edited-away, then hide the
+  // DOM node. Continue processing because we still have to update max_comment_id
+  // and update the emoji state, which is read back to pre-populate this user's
+  // emoji reactions.
+  n.toggle(!item.replies_to || (item.emojis != null && item.emojis.length > 0));
+
+  // Fill in.
+  n.attr('data-id', item.id);
+  n.attr('data-sort-order', item.date_posix);
+  if (item.user)
+    render_avatar(n.find('.avatar-container'), item.user)
+  n.find('.comment-author').text(item.user.display_name || item.user.name);
+  n.find('.comment-date').text(item.date_relative);
+  n.find('.comment-date').attr('title', new Date(item.date_posix * 1000));
+  n.find('.comment-author-role').text(item.user_role ? ("(" + item.user_role + ")") : "");
+  n.find('.comment-text').html(item.text_rendered);
+    n.find('.comment-text').find("img").addClass("img-responsive");
+  n.attr('data-text', item.text);
+  if (item.can_edit)
+    n.addClass('has-edit-priv');
+  if (item.can_delete)
+    n.addClass('has-delete-priv');
+  {% if request.user.is_authenticated %}
+  if (item.user.id == {{request.user.id}})
+    n.addClass('author-is-self');
+  {% endif %}
+  n.find('.comment-emojis').html('');
+  if (!item.emojis) item.emojis = []; // if null, turn into empty array
+  n.attr('data-emojis', item.emojis.join(','));
+  item.emojis.forEach(function(item) {
+    // Find matching emoji from selector, which holds sprite and code.
+    $('#emoji-selector .emoji').each(function() {
+      if (item == $(this).text()) {
+        var em = $(this).clone();
+        em.attr("title", item);
+        n.find('.comment-emojis').append(em);
+      }
+    })
+  })
+
+  // The rest is only if we're seeing a new comment.
+  if (!isnew)
+    return;
+
+  // Update state - if any comments are present, change label.
+  $('#discussion-your-comment-label').text("Add your comment:")
+  discussion_has_any_comment = true;
+  {% if request.user.is_authenticated %}
+  if (item.user.id != {{request.user.id}})
+    discussion_has_any_comment_from_someone_else = true;
+  {% endif %}
+  var show_youre_alone = discussion_has_any_comment && !discussion_has_any_comment_from_someone_else;
+  $('#discussion-you-are-alone').toggle(show_youre_alone && discussion_info.can_invite);
+  $('#discussion #invite-guest').toggle(!show_youre_alone && discussion_info.can_invite);
+
+  // Event handlers.
+  n.find('textarea').keydown(textarea_ctrlenter_handler);
+
+  // Add to the DOM.
+  if (!item.replies_to) {
+    var c = $('#discussion .comment-thread');
+    c.append(n);
+  } else {
+    var parent = $('#discussion .comment[data-id=' + item.replies_to + ']');
+    parent.find('.replies').append(n);
+  }
+
+  // Remember the last comment we've seen, for polling.
+  if (item.id > discussion_info.max_comment_id)
+    discussion_info.max_comment_id = item.id;
+
+  // Scroll here if the window location fragment targets this.
+  if (window.location.hash == "#discussion-comment-" + item.id)
+    smooth_scroll_to(n);
+
+  // Update containing document fields.
+  discussion_comment_count += 1;
+  $('#page-comment-count').text(discussion_comment_count + " comments");
+}
+
+function render_event(item, initial) {
+  var n = $('#event-template > div').clone();
+  n.attr('data-sort-order', item.date_posix);
+
+  n.find('.event-text').html(item.html);
+  n.find('.event-date').text(item.date_relative);
+  n.find('.event-date').attr('title', new Date(item.date_posix * 1000));
+  if (item.user && !item.user_is_in_text)
+    n.find('.event-who').text("by " + item.user.name);
+  if (item.user)
+    render_avatar(n.find('.avatar-container'), item.user)
+
+  var c = $('#discussion .comment-thread')
+  c.append(n);
+
+  // Remember the last event we've seen, for polling.
+  if (item.date_posix > discussion_info.max_event_time)
+    discussion_info.max_event_time = item.date_posix;
+
+  // For integration with outer template-
+  if (!initial && window.on_discussion_event)
+    window.on_discussion_event(item);
+}
+
+function render_avatar(container, user) {
+  var n;
+
+  // Clear any previous avatar. When comments are edited,
+  // we update the node in place, so a previous avatar
+  // will still be there.
+  container.html('');
+
+  if (user.picture) {
+    n = $('<img class="avatar img-responsive">');
+    n.attr('src', user.picture.url);
+
+  } else if (user.fallback_avatar) {
+    n = $('<div class="avatar">'
+    +'<table height="100%" width="100%">'
+    +'<tr valign="middle">'
+    +'<td style="text-align: center; font-weight: bold;">'
+    +user.fallback_avatar.text
+    +'</td>'
+    +'</tr>'
+    +'</table>'
+    +'</div>');
+    n.attr('style', user.fallback_avatar.css);
+    n.css({ width: "36px", height: "36px", border: '1px solid #444' });
+  }
+
+  n.css({ float: "right" })
+  container.append(n);
+}
+
+function start_update_draft_poller() {
+  // Record the last time of a keypress in the comment box.
+  var last_keypress_time = Date.now();
+  $('#discussion-your-comment').keypress(function() {
+    last_keypress_time = Date.now();
+  })
+
+  // Check at intervals.
+  setInterval(function() {
+    if (is_submitting)
+      return;
+    if (Date.now() - last_keypress_time < 2000)
+      return;
+    update_draft();
+  }, 500);
+}
+
+var draft_state = null;
+var is_submitting = false;
+var publish_draft_after_save = null;
+function update_draft(force, callback, error_callback) {
+  // Show the "Saved" indicator only if this is happening in the
+  // update_draft_poller.
+  var show_saved = (callback == null);
+
+  // Simplify the code below - if no callback was given, make it a dummy.
+  if (!callback) {
+    callback = function(next) {
+      if (next)
+        next();
+    }
+  }
+
+  // Has there been a change since the last saved draft?
+  // If force is not truthy, then don't save an empty editor if there's
+  // no draft yet. Attachments require saving an empty editor so there is
+  // something to attach the attachment to, so it passes force=true.
+  var current_text = $('#discussion .comment-input form textarea').val();
+  if ((draft_state && current_text == draft_state.text)
+      || (!force && !/\S/.test(current_text) && draft_state == null)) {
+    callback();
+    return;
+  }
+
+  is_submitting = true;
+  $.ajax({
+    url: "{% url 'discussion-comment-draft' %}",
+    method: "POST",
+    data: {
+      discussion: discussion_info.id,
+      draft: draft_state ? draft_state.id : null,
+      text: current_text
+    },
+    success: function(c) {
+      // Update state.
+      draft_state = c;
+
+      // Track the text we submitted, in case there is server-side
+      // sanitization. We need to know what we submitted so we
+      // can know if the textarea has been changed.
+      draft_state.text = current_text;
+
+      // Show status in UI, but not when there was a callback since
+      // then we're doing this because of some other action.
+      if (show_saved) {
+        $('#discussion-your-comment-saved')
+          .text("Draft saved.")
+          .fadeIn('fast');
+        setTimeout(function() {
+          $('#discussion-your-comment-saved').fadeOut()
+        }, 1000);
+      }
+
+      // Execute callback. If the user clicked the Comment button
+      // while we were saving the draft, do that too. We might
+      // have to wait for our own callback to finish first if
+      // e.g. this draft is being saved because the user is adding
+      // an attachment, and the we publish after the attachment is
+      // added. Run the callback on a different dick so that the
+      // complete handler finishes first.
+      setTimeout(function() { callback(publish_draft_after_save) }, 1);
+      publish_draft_after_save = null;
+    },
+    error: function() {
+      if (error_callback)
+        error_callback();
+    },
+    complete: function() {
+      is_submitting = false;
+    }
+  });
+}
+
+function disable_enable_submit_comment_controls(state) {
+  $('#discussion .comment-input form').find('textarea, input, button')
+    .prop("disabled", state);
+}
+
+function submit_comment(callback) {
+  var text = $('#discussion-your-comment').val();
+  if (!/\S/.test(text)) {
+    // The comment is only whitespace. Don't save.
+    // Put focus back. Execute callback immediately.
+    $('#discussion-your-comment').focus();
+    if (callback)
+      callback();
+    return;
+  }
+
+  // If a draft is currently being saved, then store this call for later.
+  if (is_submitting) {
+    publish_draft_after_save = function() { submit_comment(callback); } ;
+    return;
+  }
+
+  // First update the draft, then publish the draft.
+  disable_enable_submit_comment_controls(true);
+  update_draft(true, function() {
+    is_submitting = true;
+    $.ajax({
+      url: "{% url 'discussion-comment-submit' %}",
+      method: "POST",
+      data: {
+        discussion: discussion_info.id,
+        draft: draft_state.id
+      },
+      success: function(c) {
+        // keep the window scrolled such that the input box stays
+        // in the same place -- i.e., the new comment pushes things
+        // up.
+        var y = $('#discussion .comment-input').offset().top - $(window).scrollTop();
+
+        // clear text input, trigger events
+        $('#discussion .comment-input form textarea')
+          .val('')
+          .trigger("change");
+        draft_state = null;
+
+        // render the comment in the thread
+        render_comment(c)
+
+        // adjust scroll position
+        $(window).scrollTop($('#discussion .comment-input').offset().top - y);
+
+        // execute callback
+        if (callback)
+          callback();
+      },
+      complete: function() {
+        is_submitting = false;
+        disable_enable_submit_comment_controls(false);
+      }
+    });
+  }, function() {
+    // update_draft error handler
+    disable_enable_submit_comment_controls(false);
+  });
+}
+
+function preview_comment_toggle() {
+  var state = $('#preview_comment_toggle').text();
+  if (state == "Preview") {
+    update_draft(false, function() {
+      var text_rendered = "<i>your comment is empty</i>";
+      if (draft_state)
+        text_rendered = draft_state.text_rendered;
+      $("#discussion-your-comment-preview-container").css({ minHeight: $("#discussion-your-comment-input-container").outerHeight() });
+      $("#discussion-your-comment-input-container").hide();
+      $("#discussion-your-comment-preview-container").show();
+      $("#discussion-your-comment-preview-container").html(text_rendered);
+      $('#preview_comment_toggle').text('Hide Preview');
+    })
+  } else {
+    $("#discussion-your-comment-input-container").show();
+    $("#discussion-your-comment-preview-container").hide();
+    $('#preview_comment_toggle').text('Preview');
+  }
+}
+
+function get_comment_from_command_elem(command_elem) {
+  var c = $(command_elem).parents(".comment");
+  if (c.length == 0) throw "something went wrong";
+  return c;
+}
+
+var open_editors = { };
+
+function begin_comment_edit(command_elem) {
+  var c = get_comment_from_command_elem(command_elem);
+  c.find('.comment-edit textarea').css({ minHeight: c.find('.comment-text').height()+30 });
+  c.find('.comment-edit textarea').val(c.attr('data-text'));
+  c.find('.comment-text').hide();
+  c.find('.comment-edit').show();
+  return false;
+}
+
+function close_comment_edit(command_elem) {
+  var c = get_comment_from_command_elem(command_elem);
+  c.find('.comment-text').show();
+  c.find('.comment-edit').hide();
+  return false;
+}
+
+function do_comment_save(command_elem) {
+  var c = get_comment_from_command_elem(command_elem);
+  ajax_with_indicator({
+    url: "{% url 'discussion-comment-edit' %}",
+    method: "POST",
+    data: {
+      id: c.attr('data-id'),
+      text: c.find('.comment-edit textarea').val()
+    },
+    controls: c.find('textarea, input, button'),
+    success: function(res) {
+      // update UI
+      render_comment(res);
+      close_comment_edit(command_elem);
+    }
+  })
+}
+
+function do_delete_comment(command_elem) {
+  var c = get_comment_from_command_elem(command_elem);
+  show_modal_confirm(
+    "Delete Comment",
+    "Are you sure you want to delete that comment?",
+    "Delete",
+    function() {
+      ajax_with_indicator({
+        url: "{% url 'discussion-comment-delete' %}",
+        method: "POST",
+        data: {
+          id: c.attr('data-id')
+        },
+        success: function(res) {
+          c.slideUp();
+        }
+      })
+    });
+  return false;
+}
+
+var current_emoji_reaction = null;
+
+function begin_emoji_reaction(event, command_elem) {
+  // We have a click handler on the document to close the
+  // reaction dialog. But clicking on the button to open
+  // the dialog should not propagate and trigger that.
+  event.stopPropagation();
+
+  // Save any emoji reaction currently being edited.
+  if (current_emoji_reaction) {
+    save_emoji_reaction();
+    return false;
+  }
+
+  // Initialize and show.
+  var c = get_comment_from_command_elem(command_elem);
+  current_emoji_reaction = c;
+  var et = $(command_elem);
+  var es = $('#emoji-selector');
+
+  // reset state to previously reacted emojis
+  es.find('.emoji').removeClass('active');
+  var emojis = c.find('.replies .author-is-self').attr('data-emojis');
+  if (emojis) {
+    emojis.split(',').forEach(function(shortname) {
+      es.find('.emoji').each(function() {
+        if (this.getAttribute('data-emoji-name') == shortname)
+          $(this).addClass('active');
+      });
+    });
+  }
+
+  var left = et.offset().left + et.width() + 5;
+  var top = et.offset().top - 30;
+  if (left + es.width() + 15 > $(window).width()) {
+    es.show(); // need width
+    left = et.offset().left + et.outerWidth() - es.width();
+    top = et.offset().top + et.outerHeight();
+  }
+
+  es.css({
+    display: 'block',
+    position: 'absolute',
+    width: '20em',
+    left: left,
+    top: top
+  })
+  return false;
+}
+
+function save_emoji_reaction() {
+  var es = $('#emoji-selector').hide();
+  if (!current_emoji_reaction)
+    return;
+
+  // what emojis are selected
+  var emojis = [];
+  es.find('.emoji.active').each(function() {
+    emojis.push($(this).attr('data-emoji-name'));
+  })
+
+  // update db
+  ajax_with_indicator({
+    url: "{% url 'discussion-comment-react' %}",
+    method: "POST",
+    data: {
+      id: current_emoji_reaction.attr('data-id'),
+      emojis: emojis.join(",")
+    },
+    success: function(res) {
+      // updates UI
+      render_comment(res);
+    }
+  })
+  current_emoji_reaction = null;
+}
+
+function attach_files(files) {
+  // Update the draft to ensure there is a draft to attach the
+  // attachments to.
+  disable_enable_submit_comment_controls(true);
+  update_draft(true, function(next) {
+    // Create an AJAX request to upload all of the files at once.
+    var data = new FormData();
+    data.append("discussion", discussion_info.id);
+    data.append("draft", draft_state.id);
+    for (var i = 0; i < files.length; i++)
+      data.append("file" + i, files[i])
+
+    // Submit the ajax request.
+    ajax_with_indicator({
+      url: "{% url 'discussion-comment-create-attachments' %}",
+      data: data,
+      controls: $('#discussion .comment-input form').find('textarea, input, button'),
+      success: function(res) {
+        // We get back a mapping indicating what was uploaded.
+        Object.keys(res).forEach(function(key) {
+          var attachment = res[key];
+          var ins;
+          if (attachment.is_image)
+            ins = "\n![Uploaded Image File](attachment:" + attachment.id + ")\n";
+          else
+            ins = " [" + attachment.original_fn.replace(/[\\[\]]/g, "") + "](attachment:" + attachment.id + ") ";
+          $('#discussion-your-comment').insertAtCaret(ins);
+        });
+
+        if (next)
+          next();
+      },
+      complete: function() {
+        disable_enable_submit_comment_controls(false);
+      },
+        error: function(res){
+          var errorjson = $.parseJSON(res);
+            show_modal_error("Attachment Error", errorjson["message"]);
+        }
+    });
+  }, function() {
+    // update_draft error handler
+    disable_enable_submit_comment_controls(false);
+  });
+}
+</script>

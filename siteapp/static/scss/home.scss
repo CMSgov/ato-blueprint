@@ -1,0 +1,96 @@
+.btn {
+  .glyphicon {
+    margin-right: 6px;
+  }
+
+  &.btn-success {
+    .glyphicon {
+      color: #FFF;
+    }
+  }
+}
+
+.lifecycle {
+  margin-bottom: 30px;
+
+  h2 {
+      margin: 0 0 1em 0;
+  }
+  .stage {
+    margin: 0 -10px;
+    padding: 10px;
+    background-color: rgb(247,247,247);
+    border-radius: 5px;
+    max-width: 530px; /* so individual cards don't stretch across whole page */
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
+
+    h3 {
+      color: black;
+      margin: 5px 0 0 0;
+      text-align: center;
+    }
+
+    .stage-subhead {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+  }
+}
+
+.project {
+  background-color: white;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 3px;
+  border-bottom: 1px solid rgb(204, 204, 204);
+}
+
+.project-image {
+  width: 20px;
+  float: left;
+  margin: 4px 0 5px 8px;
+}
+
+.project-text {
+  h4 {
+    margin: 0;
+    font-weight: bold;
+    font-size: inherit;
+  }
+  > * {
+    margin: .5em 0 0 0;
+    font-size: 13px;
+  }
+}
+
+.home {
+  .usa-process-list {
+    > .usa-process-list__item {
+      max-width: 100%;
+    }
+  }
+
+  li {
+    .usa-card__container {
+      .usa-card__footer {
+        text-align: center;
+      }
+    }
+  }
+}
+
+#home {
+  .usa-process-list {
+    >.usa-process-list__item {
+      max-width: none;
+    }
+
+    .usa-prose {
+      .usa-process-list{
+        >.usa-process-list__item {
+          max-width: none;
+        }
+      }
+    }
+  }
+}
