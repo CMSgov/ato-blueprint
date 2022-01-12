@@ -1,0 +1,68 @@
+/* custom unordered list styled similarly to USWDS's ordered process-list component*/
+.custom-list{
+  font-family: Public Sans, Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
+  font-size:1.06rem;
+  line-height:1.5;
+  margin-bottom:0;
+  margin-top:0;
+  list-style-type:none;
+  padding-left:0;
+  counter-reset:usa-numbered-list;
+  padding:20px 0 0 calc((2.5rem / 2) - (0.5rem / 2));
+  position:relative;
+}
+.custom-list > li{
+  margin-bottom:0;
+  max-width:unset;
+}
+.custom-list > .custom-list__item{
+  max-width:72ex;
+}
+.custom-list__item{
+  border-left: 0.5rem solid #d9e8f6;
+  margin-bottom: 0;
+  padding-bottom: 1rem;
+  padding-left: calc(calc((2.5rem / 2) - 0.25rem) * 2);
+}
+.custom-list__item:last-child{
+  border-left:0.5rem solid transparent;
+}
+.custom-list__item::before{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  height: 2rem;
+  width: 2.5rem;
+  background-color: white;
+  font-size: 1.46rem;
+  font-weight: 700;
+  left: 0;
+  margin-top: -0.2rem;
+  position: absolute;
+  content: url(../img/icons/circle.svg);
+}
+.custom-list__item ul{
+  list-style-type :disc;
+}
+.custom-list__item ul li{
+  margin-bottom :0.25rem;
+}
+.custom-list__item ul li:last-child{
+  margin-bottom :0;
+}
+.custom-list__item > *:first-child{
+  margin-top :0;
+}
+.custom-list__item > *:last-child{
+  margin-bottom :0;
+}
+.custom-list__heading{
+  font-size: 1.46rem;
+  line-height: 1.1;
+  font-weight: 700;
+  margin: 0;
+}
+.custom-list__heading + *{
+  margin-top: 0.25rem;
+}

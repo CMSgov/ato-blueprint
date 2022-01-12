@@ -48,11 +48,6 @@ h3 { font-size: 18px; }
 .btn.btn-sm { font-size: 12px; }
 .btn.btn-xs { font-size: 12px; }
 
-.button-link {
-  font-family: Public Sans;
-  font-size: 16px;
-}
-
 footer { margin-top:60px;
   font-size: .75em;
   color: #888;
@@ -167,7 +162,6 @@ div.question-answer[data-reviewed] a { text-decoration: underline; }
 /* within navbar and base.html */
 .dropdown-menu { width: 300px; }
 .nav-dropdown-item-text { margin: 0px 12px 8px 20px; }
-.nav-profile { margin: -5px 5px; }
 .message-margin { margin-top: 1em; }
 .footer-row { width: 768px; margin: auto; border-top: 1px solid #eee; padding-top: 24px; }
 
@@ -252,9 +246,6 @@ a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none;
 .project-settings-invite { margin: 1em 0; }
 .project-settings-table-head { width:200px; }
 
-.project-setup-confirmation p { font-size: 20px; margin-bottom: 20px; }
-.project-setup-confirmation ul { font-size: 20px; }
-
 .project-api-sample { max-height: 20em; overflow: auto; border: 1px solid #555; margin: 1.5em 0; }
 .project-api-text { font-size: 90%; font-weight: 400; }
 .project-api-title { font-weight: bold; }
@@ -262,8 +253,6 @@ a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none;
 .project-main { float: right; margin: 0 0.5em 0em 5em; }
 .project-top { margin-top: 15px; }
 .project-image { width: 20px; float: left; margin: 4px 0 5px 8px; }
-
-.project-subtitle-text { font-size: 22px; font-weight: 300; }
 
 .project-list-text { font-size: 90%; font-weight: 400; margin: 2em 0 .5em -2px; }
 .project-list-text-item { color: #666; }
@@ -439,46 +428,6 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
 
 .row-control { background:#ffffff;}
 
-/* this is a temporary solution for the navbar being too wide before collapsing to a hamburger. Now it will collapse at 1102px instead of 768px. */
-@media (max-width: 1102px) {
-    .navbar-header {
-        float: none;
-    }
-    .navbar-toggle {
-        display: block;
-    }
-    .navbar-collapse {
-        border-top: 1px solid transparent;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
-    }
-    .navbar-collapse.collapse {
-        display: none!important;
-    }
-    .navbar-nav {
-        float: none!important;
-        margin: 7.5px -15px;
-    }
-    .navbar-nav>li {
-        float: none;
-    }
-    .navbar-nav>li>a {
-        padding-top: 10px;
-        padding-bottom: 10px;
-    }
-    .navbar-text {
-        float: none;
-        margin: 15px 0;
-    }
-    /* since 3.1.0 */
-    .navbar-collapse.collapse.in {
-        display: block!important;
-    }
-    .collapsing {
-        overflow: hidden!important;
-    }
-}
-
-
 /*drag n fill */
 
 .file-droppable {
@@ -555,73 +504,4 @@ form #id_appsource_compapp { width: 100%; overflow: auto !important; }
 .upload-text {
      font-size: .7em;
     color: #777777;
-}
-
-/* custom unordered list styled similarly to USWDS's ordered process-list component*/
-.custom-list{
-  font-family: Public Sans, Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
-  font-size:1.06rem;
-  line-height:1.5;
-  margin-bottom:0;
-  margin-top:0;
-  list-style-type:none;
-  padding-left:0;
-  counter-reset:usa-numbered-list;
-  padding:20px 0 0 calc((2.5rem / 2) - (0.5rem / 2));
-  position:relative;
-}
-.custom-list > li{
-  margin-bottom:0;
-  max-width:unset;
-}
-.custom-list > .custom-list__item{
-  max-width:72ex;
-}
-.custom-list__item{
-  border-left: 0.5rem solid #d9e8f6;
-  margin-bottom: 0;
-  padding-bottom: 1rem;
-  padding-left: calc(calc((2.5rem / 2) - 0.25rem) * 2);
-}
-.custom-list__item:last-child{
-  border-left:0.5rem solid transparent;
-}
-.custom-list__item::before{
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  height: 2rem;
-  width: 2.5rem;
-  background-color: white;
-  font-size: 1.46rem;
-  font-weight: 700;
-  left: 0;
-  margin-top: -0.2rem;
-  position: absolute;
-  content: url(../img/icons/circle.svg);
-}
-.custom-list__item ul{
-  list-style-type :disc;
-}
-.custom-list__item ul li{
-  margin-bottom :0.25rem;
-}
-.custom-list__item ul li:last-child{
-  margin-bottom :0;
-}
-.custom-list__item > *:first-child{
-  margin-top :0;
-}
-.custom-list__item > *:last-child{
-  margin-bottom :0;
-}
-.custom-list__heading{
-  font-size: 1.46rem;
-  line-height: 1.1;
-  font-weight: 700;
-  margin: 0;
-}
-.custom-list__heading + *{
-  margin-top: 0.25rem;
 }

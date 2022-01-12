@@ -3,11 +3,9 @@ h1 {
     font-size: 32px;
 }
 
-div {
-    .subtitle {
-        margin: .2em 0 .75em 0;
-        font-weight: bold;
-    }
+.project-subtitle-text {
+    font-size: 22px;
+    font-weight: 300;
 }
 
 .link-black {
@@ -308,4 +306,14 @@ h3 {
   font-family: sans-serif;
   font-size: 0.5em;
   text-anchor: middle;
+}
+
+.project-setup-confirmation {
+    p {
+        font-size: 20px;
+        margin-bottom: 20px;
+    }
+    ul {
+        font-size: 20px;
+    }
 }
