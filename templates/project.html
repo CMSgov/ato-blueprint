@@ -135,6 +135,15 @@
   <h2 class="status-section-header">System Components</h2>
   {% if elements|length > 0 %}
       <ul class="usa-card-group">
+        <li class="usa-card grid-col-12">
+          <div class="usa-card__container border-width-1px radius-md shadow-2">
+            <header class="usa-card__body">
+              <h2 class="usa-card__heading display-inline">Create a New Component</h2>
+              <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button display-inline float-right">Start</a>
+              <span></span>
+            </header>
+          </div>
+        </li>
         {% for e in elements %}
         <li class="usa-card grid-col-12">
           {% with element_smts_done_count=producer_elements_control_impl_smts_status_dict|get_item:e|get_item:'Implemented' element_smts_count=producer_elements_control_impl_smts_dict|get_item:e|length %}

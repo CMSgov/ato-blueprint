@@ -42,8 +42,13 @@
 {% endblock %}
 
 {% block body_content %}
-<h2>Create a New Component</h2>
-<div class="usa-accordion usa-accordion--bordered">
+<h2>System Component: {{ element.name }}</h2>
+<ul class="usa-list usa-list--unstyled margin-bottom-4">
+  <li><b>Description:</b> {{ element.description }}</li>
+  <li><b>State:</b> {{ element.component_state|title }}</li>
+  <li><b>Type:</b> {{ element.component_type|title }}</li>
+</ul>
+<div class="usa-accordion usa-accordion--bordered margin-top-2">
   {% for f, c in controls.items %}
     <h4 class="usa-accordion__heading">
       <button
@@ -89,5 +94,6 @@
       </form>
     </div>
   {% endfor %}
+  <a href="{% url 'system_element' system.id element.id %}" class="usa-button margin-top-3">Review Component</a>
 </div>
 {% endblock %}
