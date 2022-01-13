@@ -2136,6 +2136,7 @@ def project_component_add_controls(request, system_id, element_id, catalog_key):
         catalog = Catalog.GetInstance(catalog_key=catalog_key)
         groups = catalog.get_groups()
         producer_element = Element.objects.get(pk=element_id)
+        producer_element.component_state = producer_element.component_state.replace('_', ' ')
         families = {}
         for gr in groups:
             if gr.get('class') == 'family':
