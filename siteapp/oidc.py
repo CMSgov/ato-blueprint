@@ -20,6 +20,12 @@ class OIDCProfile:
         self.claims_map = config["claims_map"]
         self.roles_map = config["roles_map"]
         self.scopes = "openid email profile"
+        # WARNING: next three lines are "hacks" that may be
+        # ok to use in a test environment, but probably don't
+        # want this near production
+        self.admins = config.get("admins", [])
+        self.users = config.get("users", [])
+        self.sync_users = config.get("sync_users", True)
 
     def get_endpoint(self, name: str) -> str:
         default_endpoint = self.defaults.get(name, None)
@@ -40,21 +46,38 @@ class OIDCProfile:
 
     def get_user_attrs(self, claims: dict) -> dict:
         "Returns an dictionary of values to create/update a Blueprint User"
+        username = claims[self.get_claim_name("username")]
+        groups = claims.get(self.get_claim_name("groups"), [])
         attrs = {
             "email": claims[self.get_claim_name("email")],
             "name": claims[self.get_claim_name("full_name")],
             "first_name": claims[self.get_claim_name("first_name")],
             "last_name": claims[self.get_claim_name("last_name")],
-            "username": claims[self.get_claim_name("username")],
-            "is_staff": self.is_admin(claims.get(self.get_claim_name("groups"), {})),
+            "username": username,
+            "is_staff": self.is_admin(username, groups),
         }
         return attrs
 
-    def is_admin(self, groups):
-        if self.get_role_name("admin") in groups:
+    def is_user(self, username, groups):
+        if username in self.users:
+            return True
+        elif self.get_role_name("user") in groups:
             return True
         else:
             return False
+
+    def is_admin(self, username, groups):
+        if username in self.admins:
+            return True
+        elif self.get_role_name("admin") in groups:
+            return True
+        else:
+            return False
+
+    def verify(self, claims) -> bool:
+        username = claims[self.get_claim_name("username")]
+        groups = claims.get(self.get_claim_name("groups"), [])
+        return self.is_user(username, groups) or self.is_admin(username, groups)
 
 
 class OKTAOIDCProfile(OIDCProfile):
