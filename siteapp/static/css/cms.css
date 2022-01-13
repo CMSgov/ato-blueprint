@@ -136,3 +136,7 @@ footer {
 #focus-area-wrapper {
   padding-top: 5px;
 }
+
+.control label svg {
+  vertical-align: text-bottom;
+}
