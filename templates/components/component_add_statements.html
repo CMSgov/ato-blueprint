@@ -42,13 +42,15 @@
 {% endblock %}
 
 {% block body_content %}
-<h2>System Component: {{ element.name }}</h2>
+<h2 class="margin-bottom-2">System Component: {{ element.name }}</h2>
 <ul class="usa-list usa-list--unstyled margin-bottom-4">
   <li><b>Description:</b> {{ element.description }}</li>
   <li><b>State:</b> {{ element.component_state|title }}</li>
   <li><b>Type:</b> {{ element.component_type|title }}</li>
 </ul>
-<div class="usa-accordion usa-accordion--bordered margin-top-2">
+<p>Browse controls by family and click the arrow to view details.<br/>
+Add those that apply to this component.</p>
+<div class="usa-accordion usa-accordion--bordered margin-top-4">
   {% for f, c in controls.items %}
     <h4 class="usa-accordion__heading">
       <button
@@ -83,9 +85,11 @@
                 value="{{ cr.id }}"
               />
               <label class="usa-checkbox__label" for="check-{{ k }}">{{ cr.label }}: {{ cr.name }}
-                <svg class="usa-icon font-alt-lg" aria-hidden="true" focusable="false" role="img">
-                  <use xlink:href="{% static 'vendor/uswds-2.12.0/img/sprite.svg#arrow_forward' %}"></use>
-                </svg>
+                <a href="{% url 'control_info' catalog_key cr.id %}">
+                  <svg class="usa-icon font-alt-lg" aria-hidden="true" focusable="false" role="img">
+                    <use xlink:href="{% static 'vendor/uswds-2.12.0/img/sprite.svg#arrow_forward' %}"></use>
+                  </svg>
+                </a>
               </label>
             </div>
           {% endif %}
