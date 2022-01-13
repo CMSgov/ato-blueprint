@@ -2155,6 +2155,9 @@ def project_component_add_controls(request, system_id, element_id, catalog_key):
         project = system.projects.first()
         # Get project acronym
         task = Task.objects.filter(project=project.id)
+        smts = Statement.objects.filter(consumer_element_id=system.root_element.id).filter(producer_element_id=producer_element.id).values('pid')
+        statements = []
+        for s in smts: statements.append(s.get('pid'))
         acronym = None
         for i in task:
             if i.module.module_name == 'system_basic_info':
@@ -2162,14 +2165,15 @@ def project_component_add_controls(request, system_id, element_id, catalog_key):
                 acronym = s.as_dict().get('system_acronym')
         nav = project_nav.project_navigation(request, project)
         context = {
-            'element': producer_element,
-            'system': system,
-            'project': project,
             'acronym': acronym,
             'catalog_key': catalog_key,
-            'security_sensitivity': utils.get_security_sensitivity(project),
-            'nav': nav,
             'controls': families,
+            'element': producer_element,
+            'nav': nav,
+            'project': project,
+            'security_sensitivity': utils.get_security_sensitivity(project),
+            'statements': statements,
+            'system': system,
         }
 
         html = render(request, 'components/component_add_statements.html', context)

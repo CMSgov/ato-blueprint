@@ -2,8 +2,6 @@ jQuery(document).ready(function ($) {
   $('#state_change').select2();
   $('#type_change').select2();
 
-  const project_invitation_info = JSON.parse(document.getElementById('send_invitation').textContent);
-
   var implemented = 0;
   $('li.usa-sidenav__item a').each(function() {
     if ($(this).data('status') === 'implemented') {
@@ -62,25 +60,6 @@ jQuery(document).ready(function ($) {
     }
   });
 
-
-  $('#project-invite').click(function(event) {
-    event.preventDefault();
-    var info = project_invitation_info;
-    show_invite_modal(
-      'Invite To Project Team (' + info.model_title + ')',
-      'Invite a colleague to join this project team.',
-      info,
-      'Please join the project team for ' + info.model_title + '.',
-      {
-        project: info.model_id,
-        add_to_team: '1'
-      },
-      function() { window.location.reload() }
-    );
-
-    return false;
-  });
-
   $('.add-control').click(function (event) {
     event.preventDefault();
     var form_id = $(this).data('family'),
@@ -92,7 +71,8 @@ jQuery(document).ready(function ($) {
       }
     });
     $('#' + form_id + ' :checkbox:checked').each(function(index) {
-      values['sid'] = $(this).val()
+      values['sid'] = $(this).val();
+      values['pid'] = $(this).val();
       $.ajax({
         url: '/controls/smt/_save/',
         method: 'POST',

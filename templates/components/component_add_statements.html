@@ -64,25 +64,26 @@
         <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
         <input type="hidden" id="consumer_element_id" name="consumer_element_id" value="{{ system.root_element.id }}">
         <input type="hidden" id="smt_id" name="smt_id" value="">
-        <input type="hidden" id="pid" name="pid" value="">
         <input type="hidden" id="body" name="body" value="">
         <input type="hidden" id="remarks" name="remarks" value="">
         <input type="hidden" id="status" name="status" value="">
         {% for k, cr in c.controls.items %}
-          <div class="usa-checkbox control family-{{ f }}">
-            <input
-              class="usa-checkbox__input"
-              id="check-{{ k }}"
-              type="checkbox"
-              name="sid"
-              value="{{ cr.id }}"
-            />
-            <label class="usa-checkbox__label" for="check-{{ k }}">{{ cr.label }}: {{ cr.name }}
-              <svg class="usa-icon font-alt-lg" aria-hidden="true" focusable="false" role="img">
-                <use xlink:href="{% static 'vendor/uswds-2.12.0/img/sprite.svg#arrow_forward' %}"></use>
-              </svg>
-            </label>
-          </div>
+          {% if cr.id not in statements %}
+            <div class="usa-checkbox control family-{{ f }}">
+              <input
+                class="usa-checkbox__input"
+                id="check-{{ k }}"
+                type="checkbox"
+                name="sid"
+                value="{{ cr.id }}"
+              />
+              <label class="usa-checkbox__label" for="check-{{ k }}">{{ cr.label }}: {{ cr.name }}
+                <svg class="usa-icon font-alt-lg" aria-hidden="true" focusable="false" role="img">
+                  <use xlink:href="{% static 'vendor/uswds-2.12.0/img/sprite.svg#arrow_forward' %}"></use>
+                </svg>
+              </label>
+            </div>
+          {% endif %}
         {% endfor %}
         <button class="usa-button margin-top-2 add-control" data-family="family-{{ f }}">Add to component</button>
       </form>
