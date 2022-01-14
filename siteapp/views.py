@@ -4,13 +4,12 @@ import random
 import sys
 from datetime import datetime
 
+import controls.utils as utils
 from controls.enums.statements import StatementTypeEnum
 from controls.forms import ImportProjectForm
 from controls.models import (Deployment, Element, ElementControl, Poam,
                              Statement, System)
 from controls.views import add_selected_components
-import controls.utils as utils
-
 from discussion.models import Discussion
 from django.conf import settings
 from django.contrib import messages
@@ -1086,11 +1085,14 @@ def project(request, project):
 
     nav = project_navigation(request, project)
 
+    parameters = project.root_task.module.app.catalog_metadata['parameters']
+    catalog_key = [p for p in parameters if p['id'] == 'catalog_key'][0]['value']
     # Render.
     return render(request, "project.html", {
         "is_project_page": True,
         "project": project,
         "acronym": acronym,
+        'catalog_key': catalog_key,
         "security_sensitivity": utils.get_security_sensitivity(project),
         "confidentiality": confidentiality,
         "integrity": integrity,
