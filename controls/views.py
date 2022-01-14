@@ -2113,11 +2113,6 @@ def project_add_component_form(request, system_id, catalog_key):
                     component.save()
                     redirect_path = reverse('component_add_controls', args=[system_id, component.id, catalog_key])
                     return HttpResponseRedirect(redirect_path)
-                else:
-                    component_form.fields['name'].error_messages = f'A component with the name {component_form.cleaned_data["name"]} already exists.'
-
-                    html = render(request, 'components/component_add.html', {'form': component_form})
-                    context['form'] = component_form
             else:
                 context['form'] = component_form
         html = render(request, 'components/component_add.html', context)
