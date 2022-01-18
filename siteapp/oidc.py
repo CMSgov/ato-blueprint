@@ -3,7 +3,8 @@
 #
 # May eventually move this into OIDCAuthenticate.py
 
-
+import logging
+logger = logging.getLogger(__name__)
 class OIDCProfile:
 
     defaults = {}
@@ -59,20 +60,29 @@ class OIDCProfile:
         return attrs
 
     def is_user(self, username, groups):
+        user = False
         if username in self.users:
-            return True
-        elif self.get_role_name("user") in groups:
-            return True
+            user = True
         else:
-            return False
-
+            user_role = self.get_role_name("user")
+            if user_role and user_role in groups:
+                user = True
+        logger.debug("OIDCProfile.is_user(username=%r, groups=%r) => %r",
+                     username, groups, user)
+        return user
+        
     def is_admin(self, username, groups):
+        admin = False
         if username in self.admins:
-            return True
-        elif self.get_role_name("admin") in groups:
-            return True
+            admin = True
         else:
-            return False
+            admin_role = self.get_role_name("admin")
+            if admin_role and admin_role in groups:
+                admin = True
+
+        logger.debug("OIDCProfile.is_admin(username=%r, groups=%r) => %r",
+                     username, groups, admin)
+        return admin
 
     def verify(self, claims) -> bool:
         username = claims[self.get_claim_name("username")]
