@@ -3,7 +3,11 @@
 #
 # May eventually move this into OIDCAuthenticate.py
 
+from itertools import groupby
+from typing import List
 import logging
+
+
 logger = logging.getLogger(__name__)
 class OIDCProfile:
 
@@ -45,10 +49,14 @@ class OIDCProfile:
     def get_role_name(self, name: str) -> str:
         return self.roles_map.get(name)
 
+    def get_groups_from_claims(self, claims: dict) -> List[str]:
+        return claims.get(self.get_claim_name("groups"), [])
+
     def get_user_attrs(self, claims: dict) -> dict:
         "Returns an dictionary of values to create/update a Blueprint User"
         username = claims[self.get_claim_name("username")]
-        groups = claims.get(self.get_claim_name("groups"), [])
+        groups = self.get_groups_from_claims(claims)
+
         attrs = {
             "email": claims[self.get_claim_name("email")],
             "name": claims[self.get_claim_name("full_name")],
@@ -90,6 +98,56 @@ class OIDCProfile:
         return self.is_user(username, groups) or self.is_admin(username, groups)
 
 
+# utilities for dealing with job code claims
+
+# TODO: just put this together very quickly, could probably be
+# improved
+
+def _labeler(cns: List[bool]) -> List[int]:
+    """
+    Generator that takes a list of boolean values that correspond to
+    a list of DN parts where "true"
+    values indicate a change in item, and
+    produces a corresponding list of labels (integers)
+    """
+    label = 0
+    for n in cns:
+        if n:
+            label += 1
+        yield label
+
+
+def parse_jobcode_claim(s: str) -> List[str]:
+    """
+    Given a jobcode claim, return a list of jobcodes (FQDNS).
+    The tricky bit is that a jobcode claim could have more than
+    one job code, and the job codes are separated by commas.
+    Unfortunately, there are embedded commas in the FQDNs, so
+    this is not that easy to parse.  The idea here is to break up
+    the claim list by splitting on commas, and then put it back together
+    using the "cn=xxx" pieces as clues to where DNs start.
+
+    This has NOT BEEN TESTED with real data from the IDM
+    because we haven't been able to get more than one job code
+    back in a claim, but this should agree with what the IDM
+    folks have told us.
+    """
+
+    # split the list of jobcodes (as FQDNs) into parts, and then
+    # find all the "cn=" parts
+    parts = s.split(',')
+    cns = [part.startswith('cn=') for part in parts]
+
+    # label and group the parts
+    groups = groupby(zip(parts, _labeler(cns)),
+                     key=lambda labeled_part: labeled_part[1])
+
+    # put the parts back together by group
+    return [
+        ','.join(map(lambda part: part[0], parts))
+        for parts in [list(items) for _, items in groups]
+    ]
+
 class OKTAOIDCProfile(OIDCProfile):
 
     defaults = {
@@ -99,7 +157,15 @@ class OKTAOIDCProfile(OIDCProfile):
         "oidc_op_user_endpoint": "/v1/userinfo",
     }
 
+    # override get_groups_from_claims to properly parse
+    # job codes ... this is relatively untested!
 
+    def get_groups_from_claims(self, claims: dict) -> List[str]:
+        unparsed = claims.get(self.get_claim_name("groups"), "")
+        groups = parse_jobcode_claim(unparsed)
+        logger.debug("OKTAOIDCProfile.get_group_from_claims(claims=%r) => %r",
+                     claims, groups)
+        return groups
 class AUTH0OIDCProfile(OIDCProfile):
 
     defaults = {
