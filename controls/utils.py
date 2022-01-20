@@ -31,6 +31,22 @@ def get_controls_addressed_count(project):
 
   return controls_addressed_count
 
+def get_control_compliance_stats(project):
+    # Get total number of controls assigned to the Project (based on baseline).
+    total_controls_count = ElementControl.objects.filter(element_id=project.system.root_element).count()
+    controls_addressed_count = get_controls_addressed_count(project)
+
+    # Calculate approximate compliance as decimal representation of percent
+    percent_compliant = 0
+    if total_controls_count > 0:
+        percent_compliant = controls_addressed_count/total_controls_count * 100
+
+    return {
+        "total_controls_count": total_controls_count,
+        "controls_addressed_count": controls_addressed_count,
+        "percent_compliant": percent_compliant
+    }
+
 # Get statement defining Security Sensitivity level if set
 def get_security_sensitivity(project):
   security_sensitivity_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name)
