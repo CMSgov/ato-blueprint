@@ -278,7 +278,7 @@ class ProjectList(ListView):
     # won't always appear in that order, but it will determine
     # the overall order of the page in a stable way.
     ordering = ['created']
-    paginate_by = 10
+    paginate_by = 9
 
     def get_queryset(self):
         """
