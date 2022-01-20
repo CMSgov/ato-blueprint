@@ -1,5 +1,5 @@
 # use the Alpine version because it's compact
-FROM python:3.7-alpine
+FROM python:3.9-alpine
 
 # copy Simple IAM Proxy Server source code
 COPY iam.py login_page.html ./
