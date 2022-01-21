@@ -5,8 +5,26 @@
 @import "_utility-builders.css";
 @font-face {
   font-family: Public Sans;
-  src: url(../vendor/uswds-2.12.0/fonts/public-sans/PublicSans-Regular.ttf);
+  src: url(../vendor/uswds-2.12.0/fonts/public-sans/PublicSans-Light.ttf);
+  font-weight: 300;
 }
+@font-face {
+  font-family: Public Sans;
+  src: url(../vendor/uswds-2.12.0/fonts/public-sans/PublicSans-Regular.ttf);
+  font-weight: normal;
+}
+@font-face {
+  font-family: Public Sans;
+  src: url(../vendor/uswds-2.12.0/fonts/public-sans/PublicSans-Bold.ttf);
+  font-weight: 700;
+}
+.usa-breadcrumb,
+.usa-card__heading,
+.usa-card__body,
+.usa-intro {
+  font-family: Public Sans;
+}
+
 body {
   padding: 0;
 }
@@ -14,8 +32,8 @@ body {
 h1 {
   font-style: normal;
   font-weight: bold;
-  font-size: 34px;
-  line-height: 38px;
+  font-size: 40px;
+  line-height: 44px;
 }
 h1 .mini {
   font-size: 16px;
@@ -44,11 +62,10 @@ h4 {
   line-height: 26px;
 }
 
-.breadcrumb {
-  font-size: 1em;
-}
-.breadcrumb a {
-  color: blue !important;
+.page-subtitle-text {
+  font-size: 22px;
+  font-weight: 300;
+  line-height: 35px;
 }
 
 /* navbar links and fontface */
@@ -81,14 +98,6 @@ h4 {
 }
 .navbar-inverse .navbar-nav li ul.dropdown-menu > li > a {
   color: #000000;
-}
-
-.usa-card__heading {
-  font-family: Public Sans;
-}
-
-.usa-intro {
-  font-family: Public Sans;
 }
 
 .button-confidence {
