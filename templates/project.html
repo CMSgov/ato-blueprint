@@ -51,12 +51,12 @@
           a 15.9155 15.9155 0 0 1 0 -31.831"
         />
         <path class="circle"
-          stroke-dasharray="{{ percent_compliant_100 }}, 100"
+          stroke-dasharray="{{ percent_compliant }}, 100"
           d="M18 2.0845
             a 15.9155 15.9155 0 0 1 0 31.831
             a 15.9155 15.9155 0 0 1 0 -31.831"
         />
-        <text x="18" y="20.35" class="percentage">{{ percent_compliant_100|floatformat:0 }}%</text>
+        <text x="18" y="20.35" class="percentage">{{ percent_compliant|floatformat:0 }}%</text>
       </svg>
     </div>
     <div class="grid-col-fill">
@@ -116,7 +116,7 @@
                             <input type="hidden" name="project" value="{{project.id}}"/>
                             <input type="hidden" name="question" value="{{q.question.key}}"/>
                             <input type="hidden" name="previous" value="project"/>
-                            <button class="usa-button usa-button--secondary" onclick="window.location='{{ q.task.get_absolute_url }}';">Enter</button>
+                            <button class="usa-button usa-button--secondary button-link" onclick="window.location='{{ q.task.get_absolute_url }}';">Enter</button>
                           </form>
                         {% endif %}
                       {% endif %}
@@ -157,12 +157,12 @@
             </div>
             <div class="usa-card__footer">
               {% if element_smts_done_count > 0 and element_smts_done_count < element_smts_count %}
-                <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button pull-left">In progress</a>
+                <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button button-link pull-left">In progress</a>
               {% elif element_smts_done_count == element_smts_count or element_smts_done_count > element_smts_count %}
-                <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button pull-left margin-right-1">Complete</a>
-                <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button pull-left usa-button--outline">Edit</a>
+                <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button button-link pull-left margin-right-1">Complete</a>
+                <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button button-link pull-left usa-button--outline">Edit</a>
               {% else %}
-                <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button pull-left">Start</a>
+                <a href="{% url 'system_element' project.system.id e.id %}" class="usa-button button-link pull-left">Start</a>
               {% endif %}
             </div>
           </div>

@@ -9,7 +9,7 @@ from controls.forms import ImportProjectForm
 from controls.models import (Deployment, Element, ElementControl, Poam,
                              Statement, System)
 from controls.views import add_selected_components
-import controls.utils as utils
+import controls.utils as control_utils
 
 from discussion.models import Discussion
 from django.conf import settings
@@ -28,11 +28,15 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.views.generic import ListView
+
 from guardian.core import ObjectPermissionChecker
 from guardian.decorators import permission_required_or_403
 from guardian.shortcuts import assign_perm, get_perms, get_perms_for_model
+
 from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
+import guidedmodules.utils as guided_modules_utils
+
 from rest_framework import serializers, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -274,7 +278,7 @@ class ProjectList(ListView):
     # won't always appear in that order, but it will determine
     # the overall order of the page in a stable way.
     ordering = ['created']
-    paginate_by = 10
+    paginate_by = 9
 
     def get_queryset(self):
         """
@@ -283,6 +287,10 @@ class ProjectList(ListView):
         projects = Project.get_projects_with_read_priv(
             self.request.user,
             excludes={"contained_in_folders": None})
+
+        for project in projects:
+            project.acronym = guided_modules_utils.get_project_acronym(project)
+            project.percent_compliant = control_utils.get_control_compliance_stats(project).get('percent_compliant')
 
         # Log listing
         logger.info(
@@ -297,7 +305,6 @@ class ProjectList(ListView):
             self.request.user,
             excludes={"contained_in_folders": None})
         return context
-
 
 def project_list_lifecycle(request):
     # Get all of the projects that the user can see *and* that are in a folder,
@@ -881,14 +888,6 @@ def project_read_required(f):
 
 @project_read_required
 def project(request, project):
-    # Get project acronym
-    task = Task.objects.filter(project=project.id)
-    acronym = None
-    for i in task:
-        if i.module.module_name == 'system_basic_info':
-            s = i.get_answers().with_extended_info()
-            acronym = s.as_dict().get('system_acronym')
-
     # TODO: Lifecycles is part of the kanban style version of presenting projects that hasn't been optimized & fully implemented
     # Get this project's lifecycle stage, which is shown below the project title.
     # assign_project_lifecycle_stage([project])
@@ -1052,22 +1051,6 @@ def project(request, project):
     can_upgrade_app = project.root_task.module.app.has_upgrade_priv(request.user) if project.root_task else True
     authoring_tool_enabled = project.root_task.module.is_authoring_tool_enabled(request.user) if project.root_task else True
 
-    # Get total number of controls assigned to the Project (based on baseline).
-    total_controls_count = ElementControl.objects.filter(element_id=project.system.root_element).count()
-
-    controls_addressed_count = utils.get_controls_addressed_count(project)
-
-    # Calculate approximate compliance as decimal representation of percent
-    percent_compliant = 0
-    if total_controls_count > 0:
-        percent_compliant = controls_addressed_count/total_controls_count
-
-    # Calculate approximate compliance as degrees to display
-    # Need to reverse calculation for displaying as per styles in .piechart class
-    approx_compliance_degrees = 365 - (365 * percent_compliant)
-    if approx_compliance_degrees > 358:
-        approx_compliance_degrees = 358
-
     security_objective_smt = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_IMPACT_LEVEL.name)
     if security_objective_smt.exists():
         security_body = project.system.get_security_impact_level
@@ -1084,22 +1067,21 @@ def project(request, project):
     producer_elements_control_impl_smts_dict = project.system.producer_elements_control_impl_smts_dict
     producer_elements_control_impl_smts_status_dict = project.system.producer_elements_control_impl_smts_status_dict
 
+    control_compliance_stats = control_utils.get_control_compliance_stats(project)
+
     nav = project_navigation(request, project)
 
     # Render.
     return render(request, "project.html", {
         "is_project_page": True,
         "project": project,
-        "acronym": acronym,
-        "security_sensitivity": utils.get_security_sensitivity(project),
+        "acronym": guided_modules_utils.get_project_acronym(project),
+        "security_sensitivity": control_utils.get_security_sensitivity(project),
         "confidentiality": confidentiality,
         "integrity": integrity,
         "availability": availability,
         "controls_status_count": project.system.controls_status_count,
         "poam_status_count": project.system.poam_status_count,
-        "percent_compliant": percent_compliant,
-        "percent_compliant_100": percent_compliant * 100,
-        "approx_compliance_degrees": approx_compliance_degrees,
         "is_admin": request.user in project.get_admins(),
         "can_upgrade_app": can_upgrade_app,
         "can_start_task": can_start_task,
@@ -1120,11 +1102,11 @@ def project(request, project):
         "elements": elements,
         "producer_elements_control_impl_smts_dict": producer_elements_control_impl_smts_dict,
         "producer_elements_control_impl_smts_status_dict": producer_elements_control_impl_smts_status_dict,
-        "total_controls_count": total_controls_count,
-        "controls_addressed_count": controls_addressed_count,
+        "total_controls_count": control_compliance_stats.get('total_controls_count'),
+        "controls_addressed_count": control_compliance_stats.get('controls_addressed_count'),
+        "percent_compliant": control_compliance_stats.get('percent_compliant'),
         "nav": nav,
     })
-
 
 def project_navigation(request, project):
     task = project.root_task.get_or_create_subtask(request.user, "ssp_intro")
@@ -1193,11 +1175,9 @@ def project_settings(request, project):
     nav = project_navigation(request, project)
     task = Task.objects.filter(project=project.id)
     system_info = {}
-    acronym = None
     for i in task:
         if i.module.module_name == 'system_basic_info':
             s = i.get_answers().with_extended_info()
-            acronym = s.as_dict().get('system_acronym')
             system_info = s.render_answers(show_imputed=False)
             system_info_edit = i.get_absolute_url()
 
@@ -1211,7 +1191,7 @@ def project_settings(request, project):
         'nav': nav,
         'system_info': system_info,
         'system_info_edit': system_info_edit,
-        'acronym': acronym,
+        'acronym': guided_modules_utils.get_project_acronym(project),
     })
 
 
