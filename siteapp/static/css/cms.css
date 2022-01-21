@@ -18,7 +18,10 @@
   src: url(../vendor/uswds-2.12.0/fonts/public-sans/PublicSans-Bold.ttf);
   font-weight: 700;
 }
-.usa-breadcrumb, .usa-card__heading, .usa-intro {
+.usa-breadcrumb,
+.usa-card__heading,
+.usa-card__body,
+.usa-intro {
   font-family: Public Sans;
 }
 
@@ -57,6 +60,12 @@ h3 {
 h4 {
   font-size: 18px;
   line-height: 26px;
+}
+
+.page-subtitle-text {
+  font-size: 22px;
+  font-weight: 300;
+  line-height: 35px;
 }
 
 /* navbar links and fontface */

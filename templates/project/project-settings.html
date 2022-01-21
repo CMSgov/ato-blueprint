@@ -28,28 +28,28 @@
 {% block body_content %}
 
   <section class="margin-bottom-4 padding-bottom-2">
-    <p class="usa-intro">
+    <p class="page-subtitle-text">
       Need to update your system information? Review your answers here to suggest System Components
     </p>
     {% for question, answer, value_html in system_info %}
       <p class="margin-top-1"><b>{{ question.spec.prompt }}</b>
       <br>{{ value_html|safe }}</p>
     {% endfor %}
-    <a href="{{ system_info_edit }}" class="usa-button margin-top-1">Edit answers</a>
+    <a href="{{ system_info_edit }}" class="usa-button button-link margin-top-1">Edit answers</a>
   </section>
 
   <section class="margin-bottom-4 padding-bottom-2">
     <p class="usa-intro">
       Update your FISMA Impact Level in CFACTS
     </p>
-    <a href="https://cfacts3.cms.cmsnet/" target="_blank" rel="noopener noreferrer" class="usa-button margin-top-1">Go to CFACTS</a>
+    <a href="https://cfacts3.cms.cmsnet/" target="_blank" rel="noopener noreferrer" class="usa-button button-link margin-top-1">Go to CFACTS</a>
   </section>
 
   <section class="margin-bottom-4 padding-bottom-2">
     <p class="usa-intro">
       Collaborate with your team
     </p>
-    <a href="#" class="usa-button margin-top-1">View team members</a>
+    <a href="#" class="usa-button button-link margin-top-1">View team members</a>
   </section>
 
   {% if project.is_deletable and is_admin %}
@@ -57,7 +57,7 @@
       <p class="usa-intro">
         Delete project?
       </p>
-      <button class="usa-button usa-button--secondary" onclick="return delete_project();">Delete Project</button>
+      <button class="usa-button button-link usa-button--secondary" onclick="return delete_project();">Delete Project</button>
     </section>
   {% endif %}
 
