@@ -1305,7 +1305,9 @@ def component_library_component(request, element_id):
         impl_smts = element.statements_produced.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
     inheritances = Inheritance.objects.all()
-
+    projects = Project.get_projects_with_read_priv(
+        request.user,
+        excludes={"contained_in_folders": None})
     if len(impl_smts) < 1:
         context = {
             "element": element,
@@ -1357,6 +1359,7 @@ def component_library_component(request, element_id):
         "opencontrol": opencontrol_string,
         "form_source": "component_library",
         "inheritances": inheritances,
+        "projects" : projects,
     }
     return render(request, "components/element_detail_tabs.html", context)
 
@@ -2415,17 +2418,17 @@ def delete_smt(request):
 # Components
 
 @login_required
-def add_system_component(request, system_id):
+def add_system_component(request):
     """Add an existing element and its statements to a system"""
 
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
-
     form_dict = dict(request.POST)
     form_values = {}
     for key in form_dict.keys():
         form_values[key] = form_dict[key][0]
-
+    system_id = form_values['system_id']
+    redirect_url = request.META.get('HTTP_REFERER')
     # Does user have permission to add element?
     # Check user permissions
     system = System.objects.get(pk=system_id)
@@ -2459,7 +2462,7 @@ def add_system_component(request, system_id):
         messages.add_message(request, messages.ERROR,
                             f'Component {producer_element.name} can\'t be added because it is already included in your system components.')
         # Redirect to selected element page
-        return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+        return HttpResponseRedirect(redirect_url)
 
     smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
@@ -2470,7 +2473,7 @@ def add_system_component(request, system_id):
         messages.add_message(request, messages.ERROR,
                             f'{producer_element.name} can\'t be added because it does not have any control implementation statements to add.')
         # Redirect to selected element page
-        return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+        return HttpResponseRedirect(redirect_url)
 
     # Loop through all element's prototype statements and add to control implementation statements.
     # System's selected controls will filter what controls and control statements to display.
@@ -2489,7 +2492,7 @@ def add_system_component(request, system_id):
                          f'{producer_element.name} wasn\'t added to the system because it has no controls.')
 
     # Redirect to selected element page
-    return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+    return HttpResponseRedirect(redirect_url)
 
 @login_required
 def search_system_component(request):
