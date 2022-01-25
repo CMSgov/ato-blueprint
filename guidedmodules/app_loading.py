@@ -91,7 +91,7 @@ def load_app_into_database(app, update_mode=AppImportUpdateMode.CreateInstance, 
         processed_modules['app'].save()
 
     # If there's a README.md file, overwrite the app catalog description.
-    import re, fs.errors
+    import re
     try:
         # Read the README.md.
         readme = app.read_file("README.md")
@@ -104,8 +104,8 @@ def load_app_into_database(app, update_mode=AppImportUpdateMode.CreateInstance, 
 
         appinst.catalog_metadata\
             .setdefault("description", {})["long"] = readme
-    except fs.errors.ResourceNotFound:
-        logger.error(event="read_from_readme.md", msg="Failed to read README.md")
+    except Exception:
+        pass
 
     # Update appinst. It may have been modified by extract_catalog_metadata
     # and by the loading of a README.md file.

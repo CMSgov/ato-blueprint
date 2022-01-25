@@ -82,7 +82,7 @@ class DiscussionTests(SeleniumTest):
         self.fill_field("#id_login", self.user.username)
         self.fill_field("#id_password", self.user_pw)
         self.click_element("form#login_form button[type=submit]")
-        self.assertRegex(self.browser.title, "Your Compliance Projects")
+        self.assertRegex(self.browser.title, "Blueprint digital SSP tool")
 
     def _new_project(self):
         self.browser.get(self.url("/projects"))

@@ -1475,12 +1475,10 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         var_sleep(0.5)
 
     def test_settings_page(self):
-        # Log in
-        self._login()
-        # test navigating to settings page not logged in
+        # test when navigating to settings page and not logged in, the site redirects to login page
         self.browser.get(self.url("/settings"))
-        self.assertRegex(self.browser.title, "GovReady-Q")
-        self.assertNotRegex(self.browser.title, "GovReady Setup")
+        self.assertRegex(self.browser.title, "Sign In")
+
         var_sleep(0.5)
 
         # login as user without admin privileges and test settings page unreachable
@@ -1498,7 +1496,7 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         # login as user with admin privileges access settings page
         self._login()
         self.browser.get(self.url("/settings"))
-        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "GovReady-Q Setup"))
+        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "CMS Blueprint Setup"))
 
         print("self.user is '{}'".format(self.user))
         print("self.user.username is '{}'".format(self.user.username))
