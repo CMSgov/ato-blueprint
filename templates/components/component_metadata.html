@@ -1,5 +1,4 @@
 <div class="container pull-left">
-
     <form id="edit_component_state" class="component-form" method="post" action="{% url 'edit_component_state' system_id=system.id element_id=element.id %}">
         {% csrf_token %}
         <div class="form-group">
@@ -34,6 +33,19 @@
                  {% if element.component_type != type %}
                     <option value="{{ type }}">{{ type }}</option>
                 {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+    <form id="project_list" class="component-form" method="post" action="{% url 'add_system_component' %}">
+        {% csrf_token %}
+        <input type="hidden" value="{{ element.id }}" name="producer_element_id">
+        <div class="form-group" data-enhanced="true">
+            <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
+            <select class="chosen-select" id="chosen-select" name="system_id" onchange="$(form).submit();" style="width:340px;">
+                    <option value="None" selected disabled hidden>Project: None Selected</option>
+                {% for project in projects %}
+                    <option value="{{ project.id }}">{{ project.title }}</option>
                 {% endfor %}
             </select>
         </div>

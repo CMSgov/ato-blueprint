@@ -151,7 +151,6 @@
     <script>
     $(document).ajaxSend(function(event, xhr, settings) { if (!/^https?:.*/.test(settings.url)) xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}"); });
     </script>
-    <script src="{% static "js/project.dev.js" %}"></script>
 
     {% if MOUSE_CURSOR_FOLLOWER %}
     <script>enableMouseCursorFollower();</script>
