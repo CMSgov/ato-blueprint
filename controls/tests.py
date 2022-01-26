@@ -10,14 +10,12 @@
 # If paths differ on your system, you may need to set the PATH system
 # environment variable and the options.binary_location field below.
 import os
-import tempfile
 import unittest
 from pathlib import PurePath
 from urllib.parse import urlparse
 
 from django.test import TestCase
 from django.utils.text import slugify
-from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
@@ -32,8 +30,8 @@ from controls.models import (
     System,
 )
 from controls.oscal import Catalog, Catalogs, de_oscalize_control_id
-from controls.views import OSCAL_ssp_export, OSCALComponentSerializer
-from siteapp.models import Organization, OrganizationalSetting, Portfolio, Project, User
+from controls.views import OSCAL_ssp_export
+from siteapp.models import Organization, OrganizationalSetting, Project, User
 from siteapp.tests import (
     OrganizationSiteFunctionalTests,
     SeleniumTest,
