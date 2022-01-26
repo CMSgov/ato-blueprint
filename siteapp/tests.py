@@ -840,12 +840,7 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         # Go to portfolio page
         self.browser.get(self.url("/portfolios"))
 
-        # Navigate to portfolio created on signup
-        self.click_element_with_link_text("portfolio_user")
-
         # Test creating a portfolio using the form
-        # Navigate to the portfolio form
-        wait_for_sleep_after(lambda: self.click_element_with_link_text("Portfolios"))
         # Click Create Portfolio button
         self.click_element("#new-portfolio")
         var_sleep(0.5)
@@ -855,12 +850,11 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         # Submit form
         self.click_element("#create-portfolio-button")
         # Test we are on portfolio page we just created
-        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Test 1 Portfolio - GovReady-Q"))
+        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Test 1 Portfolio"))
 
         # Test we cannot create a portfolio with the same name
-        # Navigate to the portfolio form
-        self.click_element_with_link_text("Portfolios")
         # Click Create Portfolio button
+        self.browser.get(self.url("/portfolios"))
         self.click_element("#new-portfolio")
         var_sleep(0.5)
         # Fill in form
@@ -873,9 +867,8 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         # test error
         wait_for_sleep_after(lambda: self.assertIn("Portfolio name Test 1 not available.", self._getNodeText("div.alert.alert-danger.alert-dismissable.alert-link")))
         # Test uniqueness with case insensitivity
-        # Navigate to the portfolio form
-        self.click_element_with_link_text("Portfolios")
         # Click Create Portfolio button
+        self.browser.get(self.url("/portfolios"))
         self.click_element("#new-portfolio")
         var_sleep(0.5)
         # Fill in form
@@ -890,7 +883,6 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
     def test_create_portfolio_project(self):
         # Create new project within portfolio
         self._login()
-        self._new_project()
 
         # Create new portfolio
         wait_for_sleep_after(lambda: self.browser.get(self.url("/portfolios")))
@@ -899,32 +891,6 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.fill_field("#id_description", "Project Description")
         self.click_element("#create-portfolio-button")
         wait_for_sleep_after(lambda:  self.assertRegex(self.browser.title, "Security Projects"))
-
-    def test_portfolio_projects(self):
-        """
-        Ensure key parts of the portfolio page
-        """
-        # Login as authenticated user
-        self.client.force_login(user=self.user)
-        # Reset login
-        self.browser.get(self.url("/accounts/logout/"))
-        self._login()
-        # If the above is not done a new project cannot be created
-        self._new_project()
-
-        portfolio_id = Project.objects.last().portfolio.id
-        url = reverse('portfolio_projects', args=[portfolio_id])
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'portfolios/detail.html')
-        self.assertContains(response, 'Owner', 1)
-        # Context
-        bool_context_objects = ["can_invite_to_portfolio", "can_edit_portfolio"]
-        for context in bool_context_objects:
-            self.assertEqual(response.context[context], True)
-
-        self.assertEqual(response.context["portfolio"].id, portfolio_id)
-
 
     def test_grant_portfolio_access(self):
         # Grant another member access to portfolio
@@ -976,8 +942,6 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         # journey to portfolios and ensure i have multiple portfolios if not then create new portfolios
         self._login()
         self.browser.get(self.url("/portfolios"))
-        # Navigate to the portfolio form
-        self.click_element_with_link_text("Portfolios")
         # Click Create Portfolio button
         self.click_element("#new-portfolio")
         var_sleep(0.5)
@@ -988,7 +952,7 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.click_element("#create-portfolio-button")
         # Test we are on portfolio page we just created
         var_sleep(0.35)
-        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Test 1 Portfolio - GovReady-Q"))
+        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Test 1 Portfolio"))
         # Navigate to portfolios
         self.browser.get(self.url("/portfolios"))
 
@@ -1006,7 +970,7 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         # Verify new portfolio name is listed under portfolios
         self.assertIn("new me", self._getNodeText("#portfolio_new\ me"))
         # Verify 'updated' message is correct
-        self.assertIn("The portfolio 'new me' has been updated.", self._getNodeText("div.alert.fade.in.alert-info"))
+        self.assertIn("Portfolio new me has been updated.", self._getNodeText("div.usa-alert"))
 
         # verify new description by journeying back to edit_form
         self.browser.find_elements_by_class_name("portfolio-project-link")[-1].click()
@@ -1023,7 +987,7 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.browser.get(self.url(f"/portfolios/{portfolio.id}/delete"))
 
         # Verify 'deleted' message is correct
-        self.assertIn("The portfolio 'me' has been deleted.", self._getNodeText("div.alert.fade.in.alert-info"))
+        self.assertIn("Portfolio me has been deleted.", self._getNodeText("div.usa-alert"))
 
 class QuestionsTests(OrganizationSiteFunctionalTests):
 
