@@ -1305,9 +1305,31 @@ def component_library_component(request, element_id):
         impl_smts = element.statements_produced.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
     inheritances = Inheritance.objects.all()
+
     projects = Project.get_projects_with_read_priv(
         request.user,
         excludes={"contained_in_folders": None})
+    pids = []
+    options = {}
+    for p in projects:
+        pids.append(p.system_id)
+        options[p.system_id] = {'id': p.system_id, 'title' : p.title}
+
+    root_ids = []
+    systems = System.objects.filter(pk__in=pids)
+    for s in systems:
+        root_ids.append(s.root_element_id)
+        options[s.id]['pid'] = s.root_element_id
+
+    existing_list = Statement.objects.filter(
+        consumer_element_id__in=root_ids
+    ).filter(
+        producer_element_id=element_id
+    ).values_list(
+        'consumer_element_id',
+        flat=True
+    ).distinct().order_by('consumer_element_id')
+
     if len(impl_smts) < 1:
         context = {
             "element": element,
@@ -1316,9 +1338,11 @@ def component_library_component(request, element_id):
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "form_source": "component_library",
             "inheritances": inheritances,
+            "projects" : projects,
+            "options" : options,
+            "existing_list" : existing_list
         }
         return render(request, "components/element_detail_tabs.html", context)
-
     # TODO: We may have multiple catalogs in this case in the future
     # Retrieve used catalog_key
     catalog_key = impl_smts[0].sid_class
@@ -1360,6 +1384,8 @@ def component_library_component(request, element_id):
         "form_source": "component_library",
         "inheritances": inheritances,
         "projects" : projects,
+        "existing_list" : existing_list,
+        "options" : options,
     }
     return render(request, "components/element_detail_tabs.html", context)
 
@@ -2427,7 +2453,9 @@ def add_system_component(request):
     form_values = {}
     for key in form_dict.keys():
         form_values[key] = form_dict[key][0]
+    print(f"form_values: {form_values}")
     system_id = form_values['system_id']
+    producer_element_id = form_values['producer_element_id']
     redirect_url = request.META.get('HTTP_REFERER')
     # Does user have permission to add element?
     # Check user permissions
@@ -2490,8 +2518,33 @@ def add_system_component(request):
     else:
         messages.add_message(request, messages.WARNING,
                          f'{producer_element.name} wasn\'t added to the system because it has no controls.')
+    projects = Project.get_projects_with_read_priv(
+            request.user,
+            excludes={"contained_in_folders": None})
+    pids = []
+    options = {}
+    for p in projects:
+        pids.append(p.system_id)
+        options[p.system_id] = {'id': p.system_id, 'title' : p.title}
 
+    root_ids = []
+    systems = System.objects.filter(pk__in=pids)
+    for s in systems:
+        root_ids.append(s.root_element_id)
+        options[s.id]['pid'] = s.root_element_id
+
+    existing_list = Statement.objects.filter(
+        consumer_element_id__in=root_ids
+    ).filter(
+        producer_element_id=producer_element_id
+    ).values_list(
+        'consumer_element_id',
+        flat=True
+    ).distinct().order_by('consumer_element_id')
+    context = {"options" : options, "existing_list":existing_list}
+    request.context = context
     # Redirect to selected element page
+    #return HttpResponseRedirect(redirect_url)
     return HttpResponseRedirect(redirect_url)
 
 @login_required

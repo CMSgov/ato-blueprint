@@ -28,7 +28,6 @@
                 {% else %}
                     <option value="None" selected disabled hidden>Type: None Selected</option>
                 {% endif %}
-
                 {% for type in types %}
                  {% if element.component_type != type %}
                     <option value="{{ type }}">{{ type }}</option>
@@ -40,14 +39,18 @@
     <form id="project_list" class="component-form" method="post" action="{% url 'add_system_component' %}">
         {% csrf_token %}
         <input type="hidden" value="{{ element.id }}" name="producer_element_id">
-        <div class="form-group" data-enhanced="true">
+        <div class="form-group">
             <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
-            <select class="chosen-select" id="chosen-select" name="system_id" onchange="$(form).submit();" style="width:340px;">
-                    <option value="None" selected disabled hidden>Project: None Selected</option>
-                {% for project in projects %}
-                    <option value="{{ project.id }}">{{ project.title }}</option>
+            <select class="type_project_change" id="type_project_change"  name="system_id" style="width:340px;">
+                {% for k, option in options.items %}
+                    <option {% if option.pid in existing_list %} {{ 'disabled' }} {% endif %}
+                            value="{{ option.id }}">{{ option.title }}</option>
                 {% endfor %}
             </select>
         </div>
+        <div>
+            <button id="project_submit_id" class="btn btn-lg btn-primary" type="submit">Submit</button>
+        </div>
     </form>
+
 </div>
