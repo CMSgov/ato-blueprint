@@ -806,33 +806,6 @@ class ImportExportTests(TestCaseWithFixtureData):
         # Download the file @ f"/tasks/{task.id}/system-security-plan/download/document/ssp_v1/docx"
         # Assert no errors.  Not sure how to verify the template changes in the docx
 
-    @patch.object(requests, 'post')
-    def test_export_csv(self, mockcsvexport):
-        """
-        Mock post request of SSP CSV export
-        Check if the mock can create valid ExportCSVTemplateSSPForm data.
-        export_ssp_csv
-        """
-
-        mockresponse = Mock()
-        mockcsvexport.return_value = mockresponse
-        mockresponse.POST = dict(info_system="Information System", control_id="Control ID",
-                                              catalog="Control Set Version Number",
-                                              shared_imps="Shared Implementation Details",
-                                              private_imps="Private Implementation Details")
-
-        export_csv_form = ExportCSVTemplateSSPForm(mockresponse.POST)
-        # we need a system and a component
-        root_element = Element(name="My Root Element",
-                               description="Description of my root element")
-        root_element.save()
-        self.system = System()
-        self.system.root_element = root_element
-        if export_csv_form.is_valid():
-            response = export_ssp_csv(export_csv_form.data, self.system)
-            assert response.status_code == 200
-
-
 class ComplianceAppTests(TestCaseWithFixtureData):
     ## COMPLIANCE APP VISIBILITY DATA TESTS ##
 
