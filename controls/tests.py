@@ -198,7 +198,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
     def test_component_download_oscal_json(self):
         self._login()
-        url = self.url(f"/systems/{self.system.id}/component/{self.component.id}")
+        url = self.url(f"/controls/components/{self.component.id}")
         self.browser.get(url)
         self.click_element('a[href="#oscal"]')
 
@@ -236,102 +236,12 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         elif os.path.isfile(self.json_download.name):
             os.remove(self.json_download.name)
 
-    def test_component_import_invalid_oscal(self):
-        self._login()
-        url = self.url(f"/controls/components")# component library
-        self.browser.get(url)
-        self.click_element('a#component-import-oscal')
-        app_root = os.path.dirname(os.path.realpath(__file__))
-        oscal_json_path = os.path.join(app_root, "data/test_data", "test_invalid_oscal.json")
-        file_input = self.find_selected_option('input#json_content')
-        self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
-
-        element_count_before_import = Element.objects.filter(element_type="system_element").count()
-        statement_count_before_import = Statement.objects.filter(
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
-
-        # Verify that the contents got copied correctly from the file to the textfield
-        try:
-            # Load contents from file
-            with open(oscal_json_path, 'r') as f:
-                loaded_oscal_file_json = json.load(f)
-
-            # Load contents from textarea
-            file_contents = self.find_selected_option('textarea#id_json_content').get_attribute("value")
-            oscal_json_contents = json.loads(file_contents)
-
-            self.assertEqual(loaded_oscal_file_json, oscal_json_contents)
-
-        except ValueError:
-            pass
-
-        self.click_element('input#import_component_submit')
-
-        element_count_after_import = Element.objects.filter(element_type="system_element").count()
-        self.assertEqual(element_count_before_import, element_count_after_import)
-
-        statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
-        self.assertEqual(statement_count_before_import, statement_count_after_import)
-
-    def test_component_import_oscal_json(self):
-        self._login()
-        url = self.url(f"/controls/components")# component library
-        self.browser.get(url)
-
-        element_count_before_import = Element.objects.filter(element_type="system_element").count()
-        statement_count_before_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
-
-        # Test initial import of Component(s) and Statement(s)
-        self.click_element('a#component-import-oscal')
-        app_root = os.path.dirname(os.path.realpath(__file__))
-        oscal_json_path = os.path.join(app_root, "data/test_data", "test_oscal_component.json")
-        file_input = self.find_selected_option('input#json_content')
-        oscal_json_path = self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
-
-        self.click_element('input#import_component_submit')
-        var_sleep(4)
-        element_count_after_import = wait_for_sleep_after(lambda: Element.objects.filter(element_type="system_element").count())
-
-        wait_for_sleep_after(lambda: self.assertEqual(element_count_before_import + 1, element_count_after_import))
-
-        statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
-        self.assertEqual(statement_count_before_import + 1, statement_count_after_import)
-        # Test that duplicate Components are re-imported with a different name and that Statements get reimported
-
-        wait_for_sleep_after(lambda: self.click_element('a#component-import-oscal'))
-
-        file_input = self.find_selected_option('input#json_content')
-        # Using converted keys from above
-        file_input.send_keys(oscal_json_path)
-
-        self.click_element('input#import_component_submit')
-
-        element_count_after_duplicate_import = wait_for_sleep_after(lambda: Element.objects.filter(element_type="system_element").count())
-
-        self.assertEqual(element_count_after_import + 1, element_count_after_duplicate_import)
-
-        original_import_element_count = Element.objects.filter(name='test component 1').count()
-        self.assertEqual(original_import_element_count, 1)
-
-        duplicate_import_element_count = Element.objects.filter(name='test component 1 (1)').count()
-        self.assertEqual(duplicate_import_element_count, 1)
-
-        statement_count_after_duplicate_import = Statement.objects.filter(
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
-        self.assertEqual(statement_count_after_import + 1, statement_count_after_duplicate_import)
-
     def test_import_tracker(self):
         """Tests that imports are tracked correctly."""
 
         self._login()
-        url = self.url(f"/controls/components")# component library
+        url = self.url(f"/controls/import_records")
         self.browser.get(url)
-
-        # Test initial import of Component(s) and Statement(s)
-        self.click_element('a#import_records_link')
-
-        current_path = urlparse(self.browser.current_url).path
-        self.assertEqual('/controls/import_records', current_path)
 
         import_record_links = self.browser.find_elements_by_class_name('import_record_detail_link')
         self.assertEqual(len(import_record_links), 0)
