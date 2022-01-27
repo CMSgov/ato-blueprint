@@ -18,4 +18,3 @@ def project_navigation(request, project):
       },
   }
   return nav
-  

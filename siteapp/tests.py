@@ -1302,35 +1302,3 @@ class ProjectTests(TestCaseWithFixtureData):
         self.assertEqual(edit_project.title, 'Test Project v2')
         self.assertEqual(edit_project.version, "1.1")
         self.assertEqual(edit_project.version_comment, "A new comment!")
-
-class ProjectPageTests(OrganizationSiteFunctionalTests):
-    """ Tests for Project page """
-
-    def test_security_objectives(self):
-        """
-        Test set/get of Security Objective levels
-        """
-        # Log in, create a new project.
-        self._login()
-        self._new_project()
-
-        project =  Project.objects.first()
-        element = Element()
-        element.name = project.title
-        element.element_type = "system"
-        element.save()
-        # Create system
-        system = System(root_element=element)
-        system.save()
-        # Link system to project
-        project.system = system
-
-        # security objectives
-        new_security_objectives = {"security_objective_confidentiality": "low",
-                                   "security_objective_integrity": "high",
-                                   "security_objective_availability": "moderate"}
-        # Setting security objectives for project's statement
-        security_objective_smt, smt = project.system.set_security_impact_level(new_security_objectives)
-
-        # Check value changed worked
-        self.assertEqual(project.system.get_security_impact_level, new_security_objectives)
