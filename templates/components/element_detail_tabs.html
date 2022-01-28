@@ -6,71 +6,6 @@
 {{ portfolio.title }} Component Detail
 {% endblock %}
 
-{% block head %}
-{% include "controls/_style-controls.html" %}
-<style>
-  h3 {
-    color: #888;
-    font-weight: bold;
-    margin-top: 20px;
-  }
-
-  #above-tab-content, #tab-content {
-    max-width: 1250px;
-    margin: auto;
-  }
-
-  .container { width:90%;}
-
-  .control-text {
-    white-space: pre-wrap;
-    font-size: 11pt;
-    /*max-width: 700px;*/
-    font-family: trebuchet ms, sans-serif;
-    text-align: justify;
-    /*text-justify: inter-word;*/
-    line-height: 24px;
-  }
-
-  #control-lookup input {
-    width: 130px;
-  }
-
-  #combined_smt {
-    width: 80%;
-    /*margin: 12px 0 16px 0px;*/
-    padding: 8px;
-    /*display: none;*/
-  }
-
-  textarea {
-    overflow-y: scroll;
-    resize: vertical;
-  }
-
-  a { color: #666; }
-
-
-
-  .panel-heading-smt, .panel-heading-smt-body {
-    white-space: pre-line;
-  }
-
-  .panel-heading a:hover {
-    text-decoration: none;
-    color: #000;
-  }
-
-  .statement-text, .description-text { font-size: 0.8em; }
-
-  .consuming-systems {margin: 1.0em 0 0.5em 0; }
-  .consuming-system {margin: 0 0 0.5em 12px; }
-
-  .control-id-text { font-weight: bold; }
-
-</style>
-{% endblock %}
-
 {% block contextbar %}{% endblock %}
 
 {% block body %}
@@ -517,5 +452,21 @@
     $('#type_change').select2();
   });
       </script>
+    <script>
+        $(document).ready(function() {
+            var val = $( "#type_project_change" ).val();
+            if (! val ) {
+                $("#project_submit_id").prop('disabled', true)
+            }
+        });
+        $( "#type_project_change" ).change(function (e) {
+            var disabled = $("#type_project_change option:selected").prop('disabled');
+            var value = e.target.value;
+            if (!value) {
+                disabled = true
+            }
+            $("#project_submit_id").prop('disabled', disabled)
+        });
 
+    </script>
 {% endblock %}

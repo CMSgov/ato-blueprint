@@ -1317,6 +1317,30 @@ def component_library_component(request, element_id):
 
     inheritances = Inheritance.objects.all()
 
+    projects = Project.get_projects_with_read_priv(
+        request.user,
+        excludes={"contained_in_folders": None})
+    pids = []
+    options = {}
+    for p in projects:
+        pids.append(p.system_id)
+        options[p.system_id] = {'id': p.system_id, 'title' : p.title}
+
+    root_ids = []
+    systems = System.objects.filter(pk__in=pids)
+    for s in systems:
+        root_ids.append(s.root_element_id)
+        options[s.id]['pid'] = s.root_element_id
+
+    existing_list = Statement.objects.filter(
+        consumer_element_id__in=root_ids
+    ).filter(
+        producer_element_id=element_id
+    ).values_list(
+        'consumer_element_id',
+        flat=True
+    ).distinct().order_by('consumer_element_id')
+
     if len(impl_smts) < 1:
         context = {
             "element": element,
@@ -1325,9 +1349,11 @@ def component_library_component(request, element_id):
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "form_source": "component_library",
             "inheritances": inheritances,
+            "projects" : projects,
+            "options" : options,
+            "existing_list" : existing_list
         }
         return render(request, "components/element_detail_tabs.html", context)
-
     # TODO: We may have multiple catalogs in this case in the future
     # Retrieve used catalog_key
     catalog_key = impl_smts[0].sid_class
@@ -1368,6 +1394,9 @@ def component_library_component(request, element_id):
         "opencontrol": opencontrol_string,
         "form_source": "component_library",
         "inheritances": inheritances,
+        "projects" : projects,
+        "existing_list" : existing_list,
+        "options" : options,
     }
     return render(request, "components/element_detail_tabs.html", context)
 
@@ -2429,17 +2458,19 @@ def delete_smt(request):
 # Components
 
 @login_required
-def add_system_component(request, system_id):
+def add_system_component(request):
     """Add an existing element and its statements to a system"""
 
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
-
     form_dict = dict(request.POST)
     form_values = {}
     for key in form_dict.keys():
         form_values[key] = form_dict[key][0]
-
+    print(f"form_values: {form_values}")
+    system_id = form_values['system_id']
+    producer_element_id = form_values['producer_element_id']
+    redirect_url = request.META.get('HTTP_REFERER')
     # Does user have permission to add element?
     # Check user permissions
     system = System.objects.get(pk=system_id)
@@ -2473,7 +2504,7 @@ def add_system_component(request, system_id):
         messages.add_message(request, messages.ERROR,
                             f'Component {producer_element.name} can\'t be added because it is already included in your system components.')
         # Redirect to selected element page
-        return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+        return HttpResponseRedirect(redirect_url)
 
     smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
 
@@ -2484,7 +2515,7 @@ def add_system_component(request, system_id):
         messages.add_message(request, messages.ERROR,
                             f'{producer_element.name} can\'t be added because it does not have any control implementation statements to add.')
         # Redirect to selected element page
-        return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+        return HttpResponseRedirect(redirect_url)
 
     # Loop through all element's prototype statements and add to control implementation statements.
     # System's selected controls will filter what controls and control statements to display.
@@ -2501,9 +2532,34 @@ def add_system_component(request, system_id):
     else:
         messages.add_message(request, messages.WARNING,
                          f'{producer_element.name} wasn\'t added to the system because it has no controls.')
+    projects = Project.get_projects_with_read_priv(
+            request.user,
+            excludes={"contained_in_folders": None})
+    pids = []
+    options = {}
+    for p in projects:
+        pids.append(p.system_id)
+        options[p.system_id] = {'id': p.system_id, 'title' : p.title}
 
+    root_ids = []
+    systems = System.objects.filter(pk__in=pids)
+    for s in systems:
+        root_ids.append(s.root_element_id)
+        options[s.id]['pid'] = s.root_element_id
+
+    existing_list = Statement.objects.filter(
+        consumer_element_id__in=root_ids
+    ).filter(
+        producer_element_id=producer_element_id
+    ).values_list(
+        'consumer_element_id',
+        flat=True
+    ).distinct().order_by('consumer_element_id')
+    context = {"options" : options, "existing_list":existing_list}
+    request.context = context
     # Redirect to selected element page
-    return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+    #return HttpResponseRedirect(redirect_url)
+    return HttpResponseRedirect(redirect_url)
 
 @login_required
 def search_system_component(request):
