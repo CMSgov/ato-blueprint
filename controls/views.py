@@ -1899,20 +1899,23 @@ def project_control_editor(request, system_id, catalog_key, cl_id, statement_id=
             return render(request, 'controls/detail.html', {'catalog': catalog, 'control': {}})
 
         statements = get_statements_by_component(system, cl_id, catalog_key, statement_id)
-        narrative = get_narrative(statements, statement_id)
-        narrative['title'] = narrative.get('producer_element_name')
-        if narrative.get('next'):
-            save = f'Save & next'
-            url = reverse('control_editor_statement',
-                args=[system.id, catalog_key, cl_id, narrative.get('next')])
+        if statements:
+            narrative = get_narrative(statements, statement_id)
+            narrative['title'] = narrative.get('producer_element_name')
+            if narrative.get('next'):
+                save = f'Save & next'
+                url = reverse('control_editor_statement',
+                    args=[system.id, catalog_key, cl_id, narrative.get('next')])
+            else:
+                save = f'Save'
+                url = reverse('control_editor_statement',
+                    args=[system.id, catalog_key, cl_id, narrative.get('sid')])
+            narrative['save'] = {
+                'text': save,
+                'url': url,
+            }
         else:
-            save = f'Save'
-            url = reverse('control_editor_statement',
-                args=[system.id, catalog_key, cl_id, narrative.get('sid')])
-        narrative['save'] = {
-            'text': save,
-            'url': url,
-        }
+            narrative = {}
 
         cat = get_catalog_data_by_control(catalog_key, cl_id)
         nav = project_navigation(request, project)
