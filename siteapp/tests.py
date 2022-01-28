@@ -534,19 +534,6 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         var_sleep(.5) # wait for page to open
         wait_for_sleep_after(lambda: self.assertIn("Account Settings", self.browser.title))
 
-        #  # - The user is looking at the Introduction page.
-        # wait_for_sleep_after(lambda: self.click_element("#save-button"))
-        #  # - Now at the what is your name page?
-        # wait_for_sleep_after(lambda: self.fill_field("#inputctrl", "John Doe"))
-        # wait_for_sleep_after(lambda: self.click_element("#save-button"))
-
-        # - We're on the module finished page.
-        # wait_for_sleep_after(lambda: self.assertNodeNotVisible('#return-to-project'))
-        # wait_for_sleep_after(lambda: self.click_element("#return-to-projects"))
-
-        # wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Your Compliance Projects"))
-        # wait_for_sleep_after(lambda: self.assertNodeNotVisible('#please-complete-account-settings'))
-
     def test_static_pages(self):
         self.browser.get(self.url("/privacy"))
         wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Privacy Policy"))
@@ -562,216 +549,6 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.assertTrue(response.status_code==200)
         self.assertTrue(response.content==b'0')
 
-    def test_simple_module(self):
-        # Log in and create a new project and start its task.
-        self._login()
-        self._new_project()
-        task = self._start_task()
-
-        # Answer the questions.
-
-        # Introduction screen.
-        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Next Question: Module Introduction"))
-        var_sleep(.5)
-        wait_for_sleep_after(lambda: self.click_element("#save-button"))
-
-        # Text question.
-        wait_for_sleep_after(lambda: self.assertIn("| A Simple Module - GovReady-Q", self.browser.title))
-
-        wait_for_sleep_after(lambda: self.fill_field("#inputctrl", "This is some text."))
-        wait_for_sleep_after(lambda: self.click_element("#save-button"))
-
-        # Finished.
-        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "^A Simple Module - "))
-
-        # Go to project page, then review page.
-        # self.click_element("#return-to-project")
-        self.click_element("#btn-review-answers")
-
-        # Mark the answer as reviewed then test that it was saved.
-        wait_for_sleep_after(lambda: self.click_element(".task-" + str(task.id) + "-answer-q1-review-1"))
-
-        var_sleep(.5) # wait for ajax
-        for question, answer in task.get_current_answer_records():
-            if question.key == "q1":
-                self.assertEqual(answer.reviewed, 1)
-
-    def test_invitations(self):
-        # Test a bunch of invitations.
-
-        # Log in and create a new project.
-        self._login()
-        self._new_project()
-        project_page = self.browser.current_url
-
-        # And create a new task.
-        self._start_task()
-        task_page = self.browser.current_url
-
-        # But now go back to the project page.
-        self.browser.get(project_page)
-
-        def start_invitation(username):
-            # Fill out the invitation modal.
-            # self.select_option_by_visible_text('#invite-user-select', username) # This is for selecting user from dropdown list
-            wait_for_sleep_after(lambda: self.fill_field("input#invite-user-email", username))
-            wait_for_sleep_after(lambda: self.click_element("#invitation_modal button.btn-submit"))
-
-        def do_invitation(username):
-            start_invitation(username)
-            var_sleep(.5) # wait for invitation to be sent
-
-            # Log out and accept the invitation as an anonymous user.
-            self.browser.get(self.url("/accounts/logout/"))
-            self._accept_invitation(username)
-
-        def reset_login():
-            # Log out and back in as the original user.
-            self.browser.get(self.url("/accounts/logout/"))
-            self._login()
-            wait_for_sleep_after(lambda: self.browser.get(project_page))
-
-        # Test an invitation to that project. For unknown reasons, when
-        # executing this on CircleCI (but not locally), the click fails
-        # because the element is not clickable -- it reports a coordinate
-        # that's above the button in the site header. Not sure what's
-        # happening. So load the modal using Javascript.
-        self.click_element("#btn-show-project-invite")
-        self.browser.execute_script("invite_user_into_project()")
-        # Toggle field to invite user by email
-        self.browser.execute_script("$('#invite-user-email').parent().toggle(true)")
-
-        # Test an invalid email address.
-        start_invitation("example")
-        wait_for_sleep_after(lambda: self.assertInNodeText("The email address is not valid.", "#global_modal") )# make sure we get a stern message.
-        wait_for_sleep_after(lambda: self.click_element("#global_modal button") )# dismiss the warning.
-
-        wait_for_sleep_after(lambda: self.click_element("#btn-show-project-invite") )# Re-open the invite box.
-        self.browser.execute_script("invite_user_into_project()") # See comment above.
-        # Toggle field to invite user by email
-
-        wait_for_sleep_after(lambda: self.browser.execute_script("$('#invite-user-email').parent().toggle(true)") )
-        var_sleep(3)# Adding to avoid lock
-        do_invitation(self.user2.email)
-        self.fill_field("#id_login", self.user2.username)
-        self.fill_field("#id_password", self.user2.clear_password)
-        self.click_element("form button.primaryAction")
-
-        self.assertRegex(self.browser.title, "I want to answer some questions on Q") # user is on the project page
-        wait_for_sleep_after(lambda: self.click_element('#question-simple_module') )# go to the task page
-        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Next Question: Module Introduction") )# user is on the task page
-
-        # reset_login()
-
-        # Test an invitation to take over editing a task but without joining the project.
-        var_sleep(.5)
-        wait_for_sleep_after(lambda: self.click_element("#save-button"))# pass over the Introductory question because the Help link is suppressed on interstitials
-        wait_for_sleep_after(lambda: self.click_element('#transfer-editorship'))# Toggle field to invite user by email
-
-        self.browser.execute_script("$('#invite-user-email').parent().toggle(true)")
-        wait_for_sleep_after(lambda: do_invitation(self.user3.email))# Toggle field to invite user by email
-
-        self.fill_field("#id_login", self.user3.username)
-        self.fill_field("#id_password", self.user3.clear_password)
-        self.click_element("form button.primaryAction")
-        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Next Question: The Question"))# user is on the task page
-
-        # Test assigning existing user to a project.
-        reset_login()
-        self._new_project()
-        project_page = self.browser.current_url
-
-        # And create a new task.
-        self._start_task()
-        task_page = self.browser.current_url
-
-        # But now go back to the project page.
-        self.browser.get(project_page)
-        wait_for_sleep_after(lambda: self.click_element("#btn-show-project-invite"))
-
-        # Select username "me3"
-        wait_for_sleep_after(lambda: self.select_option_by_visible_text('#invite-user-select', "me3"))
-        wait_for_sleep_after(lambda: self.click_element("#invite_submit_btn"))
-        wait_for_sleep_after(lambda:  self.assertTrue("× me3 granted edit permission to project." == self._getNodeText(".alert-info")))
-
-        # reset_login()
-
-        # Invitations to join discussions are tested in test_discussion.
-
-    # def test_discussion(self):
-        # from siteapp.management.commands.send_notification_emails import Command as send_notification_emails
-
-        # # Log in and create a new project.
-        # self._login()
-        # self._new_project()
-        # self._start_task()
-
-        # # Move past the introduction screen.
-        # self.assertRegex(self.browser.title, "Next Question: Module Introduction")
-        # self.click_element("#save-button")
-        # var_sleep(.8) # wait for page to reload
-
-        # # We're now on the first actual question.
-        # # Start a team conversation.
-        # self.click_element("#start-a-discussion")
-        # self.fill_field("#discussion-your-comment", "Hello is anyone *here*?")
-        # var_sleep(.5) # wait for options to slideDown
-        # self.click_element("#discussion .comment-input button.btn-primary")
-
-        # # Invite a guest to join.
-        # var_sleep(.5) # wait for the you-are-alone div to show
-        # self.click_element("#discussion-you-are-alone a")
-        # self.fill_field("#invitation_modal #invite-user-email", "invited-user@q.govready.com")
-        # self.click_element("#invitation_modal button.btn-submit")
-        # var_sleep(1) # wait for invitation to be sent
-
-        # # Now we become that guest. Log out.
-        # # Then accept the invitation as an anonymous user.
-        # self.browser.get(self.url("/accounts/logout/"))
-        # self._accept_invitation("test+account@q.govready.com")
-        # var_sleep(1) # wait for the invitation to be accepted
-
-        # # Check that the original user received a notification that the invited user
-        # # accepted the invitation.
-        # send_notification_emails().send_new_emails()
-        # self.assertRegex(self.pop_email().body, "accepted your invitation to join the discussion")
-
-        # # This takes the user directly to the discussion they were invited to join.
-        # # Leave a comment.
-
-        # self.fill_field("#discussion-your-comment", "Yes, @me, I am here!\n\nI am here with you!")
-        # self.click_element("#discussion .comment-input button.btn-primary")
-        # var_sleep(.5) # wait for it to submit
-
-        # # Test that a notification was sent to the main user.
-        # from notifications.models import Notification
-        # self.assertTrue(Notification.objects.filter(
-        #     recipient=self.user,
-        #     verb="mentioned you in a comment on").exists())
-
-        # # Test that the notification is emailed out to the main user.
-        # send_notification_emails().send_new_emails()
-        # notification_email_body = self.pop_email().body
-        # self.assertRegex(notification_email_body, "mentioned you in")
-
-        # # Leave an emoji reaction on the initial user's comment.
-        # self.click_element(".react-with-emoji")
-        # var_sleep(.5) # emoji selector shows
-        # self.click_element("#emoji-selector .emoji[data-emoji-name=heart]") # makes active
-        # self.click_element("body") # closes emoji panel and submits via ajax
-        # var_sleep(.5) # emoji reaction submitted
-
-        # # Log back in as the original user.
-        # discussion_page = self.browser.current_url
-        # self.browser.get(self.url("/accounts/logout/"))
-        # self._login()
-        # self.browser.get(discussion_page)
-
-        # # Test that we can see the comment and the reaction.
-        # self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
-        # self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
-
-# CURRENTLY WORKING HERE
 class AccountSettingsTests(OrganizationSiteFunctionalTests):
 
     def fill_in_account_settings(self, email, title, name):
@@ -840,12 +617,7 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         # Go to portfolio page
         self.browser.get(self.url("/portfolios"))
 
-        # Navigate to portfolio created on signup
-        self.click_element_with_link_text("portfolio_user")
-
         # Test creating a portfolio using the form
-        # Navigate to the portfolio form
-        wait_for_sleep_after(lambda: self.click_element_with_link_text("Portfolios"))
         # Click Create Portfolio button
         self.click_element("#new-portfolio")
         var_sleep(0.5)
@@ -855,12 +627,11 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         # Submit form
         self.click_element("#create-portfolio-button")
         # Test we are on portfolio page we just created
-        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Test 1 Portfolio - GovReady-Q"))
+        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Test 1 Portfolio"))
 
         # Test we cannot create a portfolio with the same name
-        # Navigate to the portfolio form
-        self.click_element_with_link_text("Portfolios")
         # Click Create Portfolio button
+        self.browser.get(self.url("/portfolios"))
         self.click_element("#new-portfolio")
         var_sleep(0.5)
         # Fill in form
@@ -873,9 +644,8 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         # test error
         wait_for_sleep_after(lambda: self.assertIn("Portfolio name Test 1 not available.", self._getNodeText("div.alert.alert-danger.alert-dismissable.alert-link")))
         # Test uniqueness with case insensitivity
-        # Navigate to the portfolio form
-        self.click_element_with_link_text("Portfolios")
         # Click Create Portfolio button
+        self.browser.get(self.url("/portfolios"))
         self.click_element("#new-portfolio")
         var_sleep(0.5)
         # Fill in form
@@ -890,7 +660,6 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
     def test_create_portfolio_project(self):
         # Create new project within portfolio
         self._login()
-        self._new_project()
 
         # Create new portfolio
         wait_for_sleep_after(lambda: self.browser.get(self.url("/portfolios")))
@@ -899,32 +668,6 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.fill_field("#id_description", "Project Description")
         self.click_element("#create-portfolio-button")
         wait_for_sleep_after(lambda:  self.assertRegex(self.browser.title, "Security Projects"))
-
-    def test_portfolio_projects(self):
-        """
-        Ensure key parts of the portfolio page
-        """
-        # Login as authenticated user
-        self.client.force_login(user=self.user)
-        # Reset login
-        self.browser.get(self.url("/accounts/logout/"))
-        self._login()
-        # If the above is not done a new project cannot be created
-        self._new_project()
-
-        portfolio_id = Project.objects.last().portfolio.id
-        url = reverse('portfolio_projects', args=[portfolio_id])
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'portfolios/detail.html')
-        self.assertContains(response, 'Owner', 1)
-        # Context
-        bool_context_objects = ["can_invite_to_portfolio", "can_edit_portfolio"]
-        for context in bool_context_objects:
-            self.assertEqual(response.context[context], True)
-
-        self.assertEqual(response.context["portfolio"].id, portfolio_id)
-
 
     def test_grant_portfolio_access(self):
         # Grant another member access to portfolio
@@ -976,8 +719,6 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         # journey to portfolios and ensure i have multiple portfolios if not then create new portfolios
         self._login()
         self.browser.get(self.url("/portfolios"))
-        # Navigate to the portfolio form
-        self.click_element_with_link_text("Portfolios")
         # Click Create Portfolio button
         self.click_element("#new-portfolio")
         var_sleep(0.5)
@@ -988,7 +729,7 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.click_element("#create-portfolio-button")
         # Test we are on portfolio page we just created
         var_sleep(0.35)
-        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Test 1 Portfolio - GovReady-Q"))
+        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "Test 1 Portfolio"))
         # Navigate to portfolios
         self.browser.get(self.url("/portfolios"))
 
@@ -1006,7 +747,7 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         # Verify new portfolio name is listed under portfolios
         self.assertIn("new me", self._getNodeText("#portfolio_new\ me"))
         # Verify 'updated' message is correct
-        self.assertIn("The portfolio 'new me' has been updated.", self._getNodeText("div.alert.fade.in.alert-info"))
+        self.assertIn("Portfolio new me has been updated.", self._getNodeText("div.usa-alert"))
 
         # verify new description by journeying back to edit_form
         self.browser.find_elements_by_class_name("portfolio-project-link")[-1].click()
@@ -1023,7 +764,7 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.browser.get(self.url(f"/portfolios/{portfolio.id}/delete"))
 
         # Verify 'deleted' message is correct
-        self.assertIn("The portfolio 'me' has been deleted.", self._getNodeText("div.alert.fade.in.alert-info"))
+        self.assertIn("Portfolio me has been deleted.", self._getNodeText("div.usa-alert"))
 
 class QuestionsTests(OrganizationSiteFunctionalTests):
 
@@ -1475,12 +1216,10 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         var_sleep(0.5)
 
     def test_settings_page(self):
-        # Log in
-        self._login()
-        # test navigating to settings page not logged in
+        # test when navigating to settings page and not logged in, the site redirects to login page
         self.browser.get(self.url("/settings"))
-        self.assertRegex(self.browser.title, "GovReady-Q")
-        self.assertNotRegex(self.browser.title, "GovReady Setup")
+        self.assertRegex(self.browser.title, "Sign In")
+
         var_sleep(0.5)
 
         # login as user without admin privileges and test settings page unreachable
@@ -1498,7 +1237,7 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         # login as user with admin privileges access settings page
         self._login()
         self.browser.get(self.url("/settings"))
-        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "GovReady-Q Setup"))
+        wait_for_sleep_after(lambda: self.assertRegex(self.browser.title, "CMS Blueprint Setup"))
 
         print("self.user is '{}'".format(self.user))
         print("self.user.username is '{}'".format(self.user.username))
@@ -1563,94 +1302,3 @@ class ProjectTests(TestCaseWithFixtureData):
         self.assertEqual(edit_project.title, 'Test Project v2')
         self.assertEqual(edit_project.version, "1.1")
         self.assertEqual(edit_project.version_comment, "A new comment!")
-
-class ProjectPageTests(OrganizationSiteFunctionalTests):
-    """ Tests for Project page """
-
-    def test_mini_dashboard(self):
-        """ Tests for project page mini compliance dashboard """
-
-        # Log in, create a new project.
-        self._login()
-        self._new_project()
-        # On project page?
-        wait_for_sleep_after( lambda: self.assertInNodeText("I want to answer some questions", "#project-title") )
-
-        # mini-dashboard content
-        self.assertInNodeText("controls", "#status-box-controls")
-        self.assertInNodeText("components", "#status-box-components")
-        self.assertInNodeText("POA&Ms", "#status-box-poams")
-        self.assertInNodeText("compliance", "#status-box-compliance-piechart")
-
-        # mini-dashbard links
-        self.click_element('#status-box-controls')
-        wait_for_sleep_after( lambda: self.assertInNodeText("Selected controls", ".systems-selected-items") )
-        # click project button
-        self.click_element('#btn-project-home')
-        wait_for_sleep_after( lambda: self.assertInNodeText("I want to answer some questions", "#project-title") )
-        # test components
-        self.click_element('#status-box-components')
-        wait_for_sleep_after( lambda: self.assertInNodeText("Selected components", ".systems-selected-items") )
-        # click project button
-        self.click_element('#btn-project-home')
-        wait_for_sleep_after( lambda: self.assertInNodeText("I want to answer some questions", "#project-title") )
-        # test poams
-        self.click_element('#status-box-poams')
-        wait_for_sleep_after( lambda: self.assertInNodeText("POA&Ms", ".systems-selected-items") )
-
-    def test_display_impact_level(self):
-        """ Tests for project page mini compliance dashboard """
-
-        # Log in, create a new project.
-        self._login()
-        self._new_project()
-        # On project page?
-        wait_for_sleep_after( lambda: self.assertInNodeText("I want to answer some questions", "#project-title") )
-
-        # Display imact level testing
-        # New project should not be categorized
-        self.assertInNodeText("Mission Impact: Not Categorized", "#systems-security-sensitivity-level")
-
-        # Update impact level
-        # Get project.system.root_element to attach statement holding fisma impact level
-        project = self.current_project
-        fil = "Low"
-        # Test change and test system security_sensitivity_level set/get methods
-        project.system.set_security_sensitivity_level(fil)
-        # Check value changed worked
-        self.assertEqual(project.system.get_security_sensitivity_level, fil)
-        # Refresh project page
-        self.click_element('#btn-project-home')
-        # See if project page has changed
-        wait_for_sleep_after( lambda: self.assertInNodeText("low", "#systems-security-sensitivity-level") )
-        impact_level_smts = project.system.root_element.statements_consumed.filter(statement_type=StatementTypeEnum.SECURITY_SENSITIVITY_LEVEL.name)
-        self.assertEqual(impact_level_smts.count(), 1)
-
-    def test_security_objectives(self):
-        """
-        Test set/get of Security Objective levels
-        """
-        # Log in, create a new project.
-        self._login()
-        self._new_project()
-
-        project =  Project.objects.first()
-        element = Element()
-        element.name = project.title
-        element.element_type = "system"
-        element.save()
-        # Create system
-        system = System(root_element=element)
-        system.save()
-        # Link system to project
-        project.system = system
-
-        # security objectives
-        new_security_objectives = {"security_objective_confidentiality": "low",
-                                   "security_objective_integrity": "high",
-                                   "security_objective_availability": "moderate"}
-        # Setting security objectives for project's statement
-        security_objective_smt, smt = project.system.set_security_impact_level(new_security_objectives)
-
-        # Check value changed worked
-        self.assertEqual(project.system.get_security_impact_level, new_security_objectives)

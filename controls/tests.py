@@ -10,14 +10,12 @@
 # If paths differ on your system, you may need to set the PATH system
 # environment variable and the options.binary_location field below.
 import os
-import tempfile
 import unittest
 from pathlib import PurePath
 from urllib.parse import urlparse
 
 from django.test import TestCase
 from django.utils.text import slugify
-from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
@@ -32,8 +30,8 @@ from controls.models import (
     System,
 )
 from controls.oscal import Catalog, Catalogs, de_oscalize_control_id
-from controls.views import OSCAL_ssp_export, OSCALComponentSerializer
-from siteapp.models import Organization, OrganizationalSetting, Portfolio, Project, User
+from controls.views import OSCAL_ssp_export
+from siteapp.models import Organization, OrganizationalSetting, Project, User
 from siteapp.tests import (
     OrganizationSiteFunctionalTests,
     SeleniumTest,
@@ -200,7 +198,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
     def test_component_download_oscal_json(self):
         self._login()
-        url = self.url(f"/systems/{self.system.id}/component/{self.component.id}")
+        url = self.url(f"/controls/components/{self.component.id}")
         self.browser.get(url)
         self.click_element('a[href="#oscal"]')
 
@@ -238,6 +236,9 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         elif os.path.isfile(self.json_download.name):
             os.remove(self.json_download.name)
 
+    # Skip test since import OSCAL link was removed from page.
+    # If we don't plan to use this functionality in the future, the test can be removed.
+    @unittest.skip
     def test_component_import_invalid_oscal(self):
         self._login()
         url = self.url(f"/controls/components")# component library
@@ -275,6 +276,9 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
         self.assertEqual(statement_count_before_import, statement_count_after_import)
 
+    # Skip test since import OSCAL link was removed from page.
+    # If we don't plan to use this functionality in the future, the test can be removed.
+    @unittest.skip
     def test_component_import_oscal_json(self):
         self._login()
         url = self.url(f"/controls/components")# component library
@@ -326,14 +330,8 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         """Tests that imports are tracked correctly."""
 
         self._login()
-        url = self.url(f"/controls/components")# component library
+        url = self.url(f"/controls/import_records")
         self.browser.get(url)
-
-        # Test initial import of Component(s) and Statement(s)
-        self.click_element('a#import_records_link')
-
-        current_path = urlparse(self.browser.current_url).path
-        self.assertEqual('/controls/import_records', current_path)
 
         import_record_links = self.browser.find_elements_by_class_name('import_record_detail_link')
         self.assertEqual(len(import_record_links), 0)
@@ -671,6 +669,9 @@ class SystemUnitTests(TestCase):
 
 class SystemUITests(OrganizationSiteFunctionalTests):
 
+    # Skip test since it's reliant on a new project being created.
+    # If we want to keep deployments page functionality, then fix this test.
+    @unittest.skip
     def test_deployments_page_exists(self):
 
         # login as the first user and create a new project
@@ -994,56 +995,6 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         submit_comp_statement = wait_for_sleep_after(lambda: self.browser.find_element_by_xpath("//*[@id='relatedcompModal']/div/div[1]/div[4]/button"))
         submit_comp_statement.click()
 
-class StatementUITests(OrganizationSiteFunctionalTests):
-
-    def test_control_implementation_legacy_ui(self):
-
-       # Test ui
-        # login as the first user and create a new project
-        self._login()
-        self._new_project()
-
-        # systemid = System.objects.all().first()
-        project = Project.objects.all().last()
-        system = project.system
-
-        # Create a smt
-        smt = Statement.objects.create(
-            sid = "ac-3",
-            sid_class = "NIST_SP-800-53_rev4",
-            body = "This is a test legacy statement.",
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_LEGACY.name,
-            consumer_element=system.root_element,
-            producer_element=system.root_element,
-            # status = "Implemented"
-        )
-        smt.save()
-
-        self.assertEqual(smt.body, "This is a test legacy statement.")
-
-        self.navigateToPage(f"/controls/{system.id}/controls/catalogs/{smt.sid_class}/control/{smt.sid}")
-
-class ProjectControlTests(OrganizationSiteFunctionalTests):
-
-    def test_project_controls_selected(self):
-
-        # login as the first user and create a new project
-        self._login()
-        self._new_project()
-
-        project = Project.objects.all().last()
-        system = project.system
-        # Assign low baseline
-        result = system.root_element.assign_baseline_controls(self.user, 'NIST_SP-800-53_rev4', 'low')
-        # Add component(s)
-
-        self.navigateToPage(f"/systems/{system.id}/controls/selected")
-        # var_sleep(10)
-
-        wait_for_sleep_after(lambda: self.assertInNodeText("Selected controls", "#tab-content"))
-
-    # def test_project_control_page(self):
-
 class ControlTestHelper(object):
 
     def create_simple_import_record(self):
@@ -1071,76 +1022,6 @@ class ControlTestHelper(object):
         statement.save()
 
         return import_record
-
-class ImportExportProjectTests(OrganizationSiteFunctionalTests):
-    """
-    Testing the whole import of project JSON which will form a new system, project, and set of components and their statements.
-    """
-
-    def test_update_project_json_import(self):
-        """
-        Testing the update of a project through project JSON import and ingestion of components and their statements
-        """
-
-        # login as the first user and create a new project
-        self._login()
-        self._new_project()
-
-        # Checks the number of projects and components before the import
-        # The number of projects should be 2  to start:
-        #  - the system project representing the organization (legacy)
-        #  - the sample project created during setup of GovReady
-        EXISTING_PROJECT_COUNT = 2
-        self.assertEqual(Project.objects.all().count(), EXISTING_PROJECT_COUNT)
-        self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 0)
-
-        ## Update current project
-        # click import project button, opening the modal
-        self.click_element("#btn-import-project")
-
-
-        file_input = self.browser.find_element_by_css_selector("#id_file")
-
-        file_path = os.getcwd() + "/fixtures/test_project_import_data.json"
-        # convert filepath if necessary and send keys
-        self.filepath_conversion(file_input, file_path, "sendkeys")
-        self.browser.find_element_by_id("import_project_submit").click()
-
-        # Check the new number of projects, and validate that it's the same
-        project_num = Project.objects.all().count()
-        self.assertEqual(project_num, EXISTING_PROJECT_COUNT)
-        # Has the updated name?
-        wait_for_sleep_after(lambda: self.assertEqual(Project.objects.all()[project_num - 1].title, "New Test Project"))
-        # Components and their statements?
-        self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 1)
-        self.assertEqual(Element.objects.all().exclude(element_type='system')[0].name, "test component 1")
-
-        try:
-            self.assertEqual(Statement.objects.all().count(), 1)
-        except:
-            self.assertEqual(Statement.objects.all().count(), 4)
-
-    def test_project_json_export(self):
-        """
-        Testing the export of a project through JSON and ingestion of components and their statements
-        """
-
-        # login as the first user and create a new project
-        self._login()
-        self._new_project()
-
-        # export the only project we have so far
-        self.navigateToPage('/systems/2/export')
-
-        # Project title to search for in file names
-        project_title = "I_want_to_answer_some_questions_on_Q._3"
-        file_system = os.listdir(os.getcwd())
-        # Assert there is a file
-        for file_name in file_system:
-            if file_name == project_title:
-                project_title = file_name
-
-        self.assertIn(file_name, file_system)
 
 class ImportExportOSCALTests(OrganizationSiteFunctionalTests):
     """
@@ -1180,7 +1061,6 @@ class ImportExportOSCALTests(OrganizationSiteFunctionalTests):
         controls = ["ac-2.4", "ac-2.5", "ac-2.11","ac-2.13", "ac-3", "ac-4", "si-3.2", "si-4.2", "si-4.5"]
         regular_sid_controls = [de_oscalize_control_id(control) for control in controls]
         self.assertEqual(['AC-2(4)', 'AC-2(5)', 'AC-2(11)', 'AC-2(13)', 'AC-3', 'AC-4', 'SI-3(2)', 'SI-4(2)', 'SI-4(5)'], regular_sid_controls)
-
 
 class CatalogTests(TestCase):
 
