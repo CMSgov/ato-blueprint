@@ -1343,7 +1343,6 @@ def component_library_component(request, element_id, statement_id=None):
         statements = {}
 
     narrative = get_narrative(statements, statement_id)
-    print(narrative)
     projects = Project.get_projects_with_read_priv(
         request.user,
         excludes={"contained_in_folders": None})
