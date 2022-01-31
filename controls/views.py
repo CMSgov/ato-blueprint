@@ -1298,25 +1298,51 @@ def new_element(request):
     })
 
 @login_required
-def component_library_component(request, element_id):
+def component_library_component(request, element_id, statement_id=None):
     """Display certified component's element detail view"""
 
     # Retrieve element
     element = Element.objects.get(id=element_id)
-    smt_query = request.GET.get('search')
+    if element.component_state:
+        element.component_state = element.component_state.replace('_', ' ')
 
-    # Retrieve systems consuming element
-    consuming_systems = element.consuming_systems()
+    stmts = element.statements_produced.filter(
+        statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
+    catalog_key = stmts[0].sid_class
+    catalog = Catalog.GetInstance(catalog_key=catalog_key)
 
-    if smt_query:
-        impl_smts = element.statements_produced.filter(sid__icontains=smt_query, statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
+    st = {}
+    for s in stmts:
+        active = False
+        if statement_id and s.id == int(statement_id):
+            active = True
+
+        ctrl = catalog.get_control_by_id(s.sid)
+        cid = catalog.get_control_property_by_name(ctrl, "sort-id")
+        st[cid] = {
+            'body': s.body,
+            'inheritance': s.inheritance,
+            'sid': s.id,
+            'control_id': s.sid,
+            'label': catalog.get_control_property_by_name(ctrl, "label"),
+            'title': ctrl.get('title'),
+            'producer_element_name': s.producer_element.name,
+            'producer_element_id': s.producer_element.id,
+            'status': s.status,
+            'href': reverse('component_library_component_details',
+                args=[element.id, s.id]),
+            'active': active,
+        }
+
+    if st:
+        statements = dict(sorted(st.items()))
+        if not statement_id:
+            k = list(statements.keys())[0]
+            statements[k]['active'] = True
     else:
-        # Retrieve impl_smts produced by element and consumed by system
-        # Get the impl_smts contributed by this component to system
-        impl_smts = element.statements_produced.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
+        statements = {}
 
-    inheritances = Inheritance.objects.all()
-
+    narrative = get_narrative(statements, statement_id)
     projects = Project.get_projects_with_read_priv(
         request.user,
         excludes={"contained_in_folders": None})
@@ -1341,64 +1367,20 @@ def component_library_component(request, element_id):
         flat=True
     ).distinct().order_by('consumer_element_id')
 
-    if len(impl_smts) < 1:
-        context = {
-            "element": element,
-            "impl_smts": impl_smts,
-            "is_admin": request.user.is_superuser,
-            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-            "form_source": "component_library",
-            "inheritances": inheritances,
-            "projects" : projects,
-            "options" : options,
-            "existing_list" : existing_list
-        }
-        return render(request, "components/element_detail_tabs.html", context)
-    # TODO: We may have multiple catalogs in this case in the future
-    # Retrieve used catalog_key
-    catalog_key = impl_smts[0].sid_class
-    # Retrieve control ids
-    catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
-    # Build OSCAL and OpenControl
-    oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
-    opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
+    cid = narrative.get('control_id')
+    cat = get_catalog_data_by_control(catalog_key, cid)
 
-    # Use natsort here to handle the sid that has letters and numbers
-    # (e.g. to put AC-14 after AC-2 whereas before it was putting AC-14 before AC-2)
-    # using the natsort package from pypi: https://pypi.org/project/natsort/
-    impl_smts = natsorted(impl_smts, key=lambda x: x.sid)
-
-    # Pagination
-    obj_paginator = Paginator(impl_smts, 10)
-    page_number = request.GET.get('page')
-
-    try:
-        page_obj = obj_paginator.page(page_number)
-    except PageNotAnInteger:
-        page_obj = obj_paginator.page(1)
-    except EmptyPage:
-        page_obj = obj_paginator.page(obj_paginator.num_pages)
-
-    # Return the system's element information
     context = {
-        "page_obj": page_obj,
-        "element": element,
-        "consuming_systems": consuming_systems,
-        "impl_smts": impl_smts,
-        "catalog_controls": catalog_controls,
-        "catalog_key": catalog_key,
-        "oscal": oscal_string,
-        "is_admin": request.user.is_superuser,
-        "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
-        "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
-        "opencontrol": opencontrol_string,
-        "form_source": "component_library",
-        "inheritances": inheritances,
-        "projects" : projects,
-        "existing_list" : existing_list,
-        "options" : options,
+        # 'page_obj': page_obj,
+        'element': element,
+        'catalog': cat,
+        'catalog_key': catalog_key,
+        'narrative': narrative,
+        'statements': statements,
+        'options' : options,
+        'existing_list' : existing_list,
     }
-    return render(request, "components/element_detail_tabs.html", context)
+    return render(request, 'components/library/component_details.html', context)
 
 @login_required
 def api_controls_select(request):

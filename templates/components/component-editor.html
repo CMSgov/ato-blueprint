@@ -5,13 +5,13 @@
 {% load q %}
 
 {% block title %}
-  {{ catalog.control.label }} {{ catalog.control.title }}
+{{ title.first }}
 {% endblock %}
 
 {% block breadcrumbs_extension %}
   <li class="usa-breadcrumb__list-item">
     <a href="{{project.get_absolute_url}}" class="usa-breadcrumb__link">
-      <span>{{project.title}}</span>
+      <span>{{ project.title }}</span>
     </a>
   </li>
   <li class="usa-breadcrumb__list-item">
@@ -25,7 +25,7 @@
 {% endblock %}
 
 {% block pagetitle %}
-<a href="{{project.get_absolute_url}}">{{ project }}{% if acronym %} ({{ acronym|safe }}){% endif %}</a>
+<a href="{{ project.get_absolute_url }}">{{ project }}{% if acronym %} ({{ acronym|safe }}){% endif %}</a>
 {% endblock %}
 
 {% block pageheader %}
