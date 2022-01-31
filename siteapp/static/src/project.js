@@ -2,7 +2,6 @@ jQuery(document).ready(function ($) {
   $('#state_change').select2();
   $('#type_change').select2();
 
-  const project_invitation_info = JSON.parse(document.getElementById('send_invitation').textContent);
 
   var implemented = 0;
   $("li.usa-sidenav__item a").each(function() {
