@@ -4,28 +4,33 @@
 {% load humanize %}
 
 {% block pagetitle %}
-Welcome to {% if sitename %}{{ sitename }}{% else %}CMS Blueprint{% endif %}
+Welcome to {% if sitename %}{{ sitename }}{% else %}Blueprint for CMS{% endif %}
+{% endblock %}
+
+{% block pagesubtitle %}
+Say goodbye to waterfall compliance.
 {% endblock %}
 
 <!-- Remove context bar from top of page -->
 {% block contextbar %}{% endblock %}
 
 {% block body %}
-<div id="home" class="margin-x-5 padding-top-2">  <ol class="usa-process-list margin-bottom-3">
+<div id="home" class="padding-top-2">
+  <ol class="usa-process-list margin-bottom-3">
     <li class="usa-process-list__item width-full padding-bottom-3">
-      <h4 class="usa-process-list__heading">Enter basic information about your system</h4>
+      <p class="usa-process-list__heading">Enter basic information about your system</h4>
       <p>Name, Acronym, Location, FISMA Impact Level</p>
     </li>
     <li class="usa-process-list__item width-full padding-bottom-3">
-      <h4 class="usa-process-list__heading">Select System Components based on your technical architecture & policies</h4>
+      <p class="usa-process-list__heading">Select System Components based on your technical architecture & policies</p>
       <p>Pre-written control implementation statements to match your system</p>
     </li>
     <li class="usa-process-list__item width-full padding-bottom-3">
-      <h4 class="usa-process-list__heading">As you build, add or edit control implementation statements to match your system</h4>
+      <p class="usa-process-list__heading">As you build, add or edit control implementation statements to match your system</p>
       <p>Integrating security and compliance into your development process</p>
     </li>
     <li class="usa-process-list__item width-full padding-bottom-3">
-      <h4 class="usa-process-list__heading">Download your System Security Plan to import into CFACTS</h4>
+      <p class="usa-process-list__heading">Download your System Security Plan to import into CFACTS</p>
       <p>CFACTS import file, Open Security Control Assessment Language (OSCAL), Microsoft Word</p>
     </li>
   </ol>
@@ -36,7 +41,7 @@ Welcome to {% if sitename %}{{ sitename }}{% else %}CMS Blueprint{% endif %}
     <li class="tablet:grid-col-4 usa-card">
       <div class="usa-card__container border-width-1px radius-md">
         <header class="usa-card__header">
-          <h2 class="usa-card__heading">Get Started</h2>
+          <h2 class="usa-card__heading card-headline">Get Started</h2>
         </header>
         <div class="usa-card__body padding-bottom-5">
           <p>Start a project and begin adding System Compontents to your System Security Plan today.</p>
@@ -50,7 +55,7 @@ Welcome to {% if sitename %}{{ sitename }}{% else %}CMS Blueprint{% endif %}
     <li class="tablet:grid-col-4 usa-card">
       <div class="usa-card__container border-width-1px radius-md">
         <header class="usa-card__header">
-          <h2 class="usa-card__heading">Continue a Project</h2>
+          <h2 class="usa-card__heading card-headline">Continue a Project</h2>
         </header>
         <div class="usa-card__body padding-bottom-5">
           <p>Access existing project(s) and continue building your your System Security Plan(s).</p>
@@ -64,7 +69,7 @@ Welcome to {% if sitename %}{{ sitename }}{% else %}CMS Blueprint{% endif %}
     <li class="tablet:grid-col-4 usa-card">
       <div class="usa-card__container border-width-1px radius-md">
         <header class="usa-card__header">
-          <h2 class="usa-card__heading">Learn More</h2>
+          <h2 class="usa-card__heading card-headline">Learn More</h2>
         </header>
         <div class="usa-card__body padding-bottom-5">
           <p>Learn more about how Blueprint fits into the ATO ecosystem at CMS.</p>

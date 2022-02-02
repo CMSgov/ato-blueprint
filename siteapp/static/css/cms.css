@@ -141,7 +141,18 @@ hidden {
 footer {
   clear: both;
 }
+footer li.usa-footer__primary-content {
+  font-family: Public Sans;
+}
 
 #focus-area-wrapper {
   padding-top: 5px;
+}
+
+#home ol li p {
+  font-family: Public Sans;
+}
+
+.card-headline {
+  font-weight: 700;
 }
