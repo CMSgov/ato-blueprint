@@ -158,6 +158,11 @@ hidden {
 
 footer {
   clear: both;
+  li {
+    &.usa-footer__primary-content {
+      font-family: Public Sans;
+    }
+  }
 }
 
 #focus-area-wrapper {

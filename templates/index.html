@@ -32,7 +32,7 @@ Welcome to Compliance Automation
               {% csrf_token %}
               <input type=hidden name=action value=login>
               {% bootstrap_form login_form %}
-              <p><button type="submit" class="btn btn-success">Sign in &raquo;</button></p>
+              <p><button type="submit" class="usa-button">Sign in &raquo;</button></p>
             </form>
             <div><a href="/accounts/password/reset">Forgot password?</a></div>
             {% else %}
