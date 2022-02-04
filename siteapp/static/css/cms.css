@@ -156,3 +156,10 @@ footer li.usa-footer__primary-content {
 .card-headline {
   font-weight: 700;
 }
+
+#file-download caption {
+  font-family: Public Sans;
+  color: #000000;
+  font-size: 24px;
+  font-weight: 700;
+}
