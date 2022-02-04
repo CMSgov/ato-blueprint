@@ -56,7 +56,7 @@
       {% for document in outputs %}
         {% if document.id == "ssp_v1" %}
         <tr>
-          <td>{{document.title}}</td>
+          <td>{{ project.title }}: {{document.title}}</td>
           <td class="font-sans-2xs">Download the recommended file format for importing your SSP into CMS CFACTS.</td>
           <td>
             <a id="cfacts-link" aria-label="CSVDownload">CFACTS (CSV)
@@ -72,7 +72,7 @@
           </td>
         </tr>
         <tr>
-          <td></td>
+          <td>{{ project.title }}: {{document.title}}</td>
           <td class="font-sans-2xs">Download your SSP as an editable Word document to share and edit anywhere.</td>
           <td>
             <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/docx">Word (DOCX)<svg class="usa-icon position-relative usa-icon--size-3 top-1" aria-hidden="true" focusable="false" role="img"><use xlink:href="{% static "vendor/uswds-2.12.0/img/sprite.svg#file_download" %}"></use></svg></a>
@@ -80,7 +80,7 @@
         </tr>
         {% elif document.id == "ssp_v1_oscal_json" %}
         <tr>
-          <td></td>
+          <td>{{ project.title }}: {{document.title}}</td>
           <td class="font-sans-2xs">Download and share your SSP with other risk management tools that support NIST OSCAL.</td>
           <td>
             <a href="{% url 'ssp_export_oscal' project.system.id %}">OSCAL (JSON)<svg class="usa-icon position-relative usa-icon--size-3 top-1" aria-hidden="true" focusable="false" role="img"><use xlink:href="{% static "vendor/uswds-2.12.0/img/sprite.svg#file_download" %}"></use></svg></a>
