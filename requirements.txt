@@ -229,7 +229,7 @@ dj-database-url==0.5.0 \
     --hash=sha256:4aeaeb1f573c74835b0686a2b46b85990571159ffc21aa57ecd4d1e1cb334163 \
     --hash=sha256:851785365761ebe4994a921b433062309eb882fedd318e1b0fcecc607ed02da9
     # via -r requirements.in
-django==3.2.5 \
+django==3.2.12 \
     --hash=sha256:3da05fea54fdec2315b54a563d5b59f3b4e2b1e69c3a5841dda35019c01855cd \
     --hash=sha256:c58b5f19c5ae0afe6d75cbdd7df561e6eb929339985dbbda2565e1cabb19a62e
     # via
@@ -514,7 +514,7 @@ jsonschema==3.2.0 \
     #   -r requirements.in
     #   openapi-schema-validator
     #   openapi-spec-validator
-lxml==4.6.3 \
+lxml==4.6.5 \
     --hash=sha256:079f3ae844f38982d156efce585bc540c16a926d4436712cf4baee0cce487a3d \
     --hash=sha256:0fbcf5565ac01dff87cbfc0ff323515c823081c5777a9fc7703ff58388c258c3 \
     --hash=sha256:122fba10466c7bd4178b07dba427aa516286b846b2cbd6f6169141917283aae2 \
@@ -623,7 +623,7 @@ markupsafe==1.1.1 \
     #   -r requirements.in
     #   compliance-trestle
     #   jinja2
-mistune==2.0.0rc1 \
+mistune==2.0.1 \
     --hash=sha256:02437870a8d594e61e4f6cff2f56f5104d17d56e3fea5fb234070ede5e7c2eae \
     --hash=sha256:452bdba97c27efc7c1a83823ed0d6a08a9ad6ea5c67648248509f618b68aa7d9
     # via compliance-trestle
@@ -687,7 +687,7 @@ pbr==5.6.0 \
     --hash=sha256:42df03e7797b796625b1029c0400279c7c34fd7df24a7d7818a1abb5b38710dd \
     --hash=sha256:c68c661ac5cc81058ac94247278eeda6d2e6aecb3e227b0387c30d277e7ef8d4
     # via stevedore
-pillow==8.3.2 \
+pillow==9.0.0 \
     --hash=sha256:0412516dcc9de9b0a1e0ae25a280015809de8270f134cc2c1e32c4eeb397cf30 \
     --hash=sha256:04835e68ef12904bc3e1fd002b33eea0779320d4346082bd5b24bec12ad9c3e9 \
     --hash=sha256:06d1adaa284696785375fa80a6a8eb309be722cf4ef8949518beb34487a3df71 \
