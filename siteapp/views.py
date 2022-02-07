@@ -4,13 +4,13 @@ import random
 import sys
 from datetime import datetime
 
+import controls.utils as control_utils
+import guidedmodules.utils as guided_modules_utils
 from controls.enums.statements import StatementTypeEnum
 from controls.forms import ImportProjectForm
 from controls.models import (Deployment, Element, ElementControl, Poam,
                              Statement, System)
 from controls.views import add_selected_components
-import controls.utils as control_utils
-
 from discussion.models import Discussion
 from django.conf import settings
 from django.contrib import messages
@@ -26,17 +26,14 @@ from django.http import (Http404, HttpResponse, HttpResponseForbidden,
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.text import slugify
 from django.views.decorators.http import require_http_methods
 from django.views.generic import ListView
-
 from guardian.core import ObjectPermissionChecker
 from guardian.decorators import permission_required_or_403
 from guardian.shortcuts import assign_perm, get_perms, get_perms_for_model
-
 from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
-import guidedmodules.utils as guided_modules_utils
-
 from rest_framework import serializers, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -1130,6 +1127,33 @@ def project_edit(request, project_id):
             rename_project(request, project)
 
             return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+
+def project_downloads(request, project_id, title):
+    """
+    Page to display downloadable files for a given project.
+    """
+
+    project = Project.objects.get(pk=project_id)
+    system = System.objects.get(pk=project.system_id)
+    if request.user.has_perm('view_system', system):
+        task = project.root_task.get_or_create_subtask(request.user, "ssp_intro")
+        answers = task.get_answers()
+        outputs = task.render_output_documents(answers)
+        nav = project_navigation(request, project)
+        context = {
+            'acronym': guided_modules_utils.get_project_acronym(project),
+            'nav': nav,
+            'outputs': outputs,
+            'project': project,
+            'security_sensitivity': control_utils.get_security_sensitivity(project),
+            'task': task,
+        }
+        return render(request, 'project/downloads.html', context)
+    else:
+        # User does not have permission to this system
+        raise Http404
+
 
 def project_security_objs_edit(request, project_id):
     if request.method == 'POST':

@@ -182,3 +182,18 @@ footer {
 .card-headline {
   font-weight: 700;
 }
+
+#file-download {
+  font-family: Public Sans;
+  caption {
+    font-family: Public Sans;
+    color: #000000;
+    font-size: 24px;
+    font-weight: 700;
+  }
+  tr {
+    td {
+      font-family: Public Sans;
+    }
+  }
+}

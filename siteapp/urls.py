@@ -1,12 +1,11 @@
+from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
-from django.conf import settings
 from django.urls import path, re_path
 from django.views.generic import RedirectView
-from rest_framework import routers
-from rest_framework import serializers
-from siteapp.views import UserViewSet
-from siteapp.views import ProjectViewSet
+from rest_framework import routers, serializers
+
+from siteapp.views import ProjectViewSet, UserViewSet
 
 from .model_mixins.tags import build_tag_urls
 from .models import Project
@@ -14,12 +13,13 @@ from .models import Project
 admin.autodiscover()
 
 import controls.views_api
+
 import siteapp.views as views
-import siteapp.views_landing as views_landing
 import siteapp.views_health as views_health
+import siteapp.views_landing as views_landing
+
 from .good_settings_helpers import signup_wrapper
 from .settings import *
-
 
 # Routers provide a way of automatically determining the URL conf.
 router = routers.DefaultRouter()
@@ -84,6 +84,7 @@ urlpatterns = [
     url(r'^projects/(\d+)/(?:[\w\-]+)(/list)$', views.project_list_all_answers), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/outputs)$', views.project_outputs), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/api)$', views.project_api), # must be last because regex matches some previous URLs
+    path('projects/<int:project_id>/<slug:title>/downloads', views.project_downloads, name='project_downloads'),
 
     # portfolios
     url(r'^portfolios$', views.portfolio_list, name="list_portfolios"),
@@ -154,6 +155,7 @@ if 'django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKEN
     ]
 
 import notifications.urls
+
 urlpatterns += [
     url('^user/notifications/', include(notifications.urls, namespace='notifications')),
     url('^_mark_notifications_as_read', views.mark_notifications_as_read),
