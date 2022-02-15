@@ -36,7 +36,9 @@
     <div class="grid-row margin-bottom-3">
         <div class="tablet:grid-col-fill"></div>
         <div class="tablet:grid-col-3">
-            <a id="component-new" href="{% url 'new_element' %}" class="usa-button usa-button--outline margin-bottom-3">Create a Component</a>
+            <a id="component-import-oscal" class="usa-button usa-button--outline margin-bottom-3" onclick="show_import_component_modal(); return false;" href="#">
+                Import OSCAL Component
+            </a>
             <section aria-label="Default search component">
                 <form action="{% url 'component_library' %}" id="library-search" method="GET" class="usa-search" role="search">
                     <label class="usa-sr-only" for="search-field-search-field"> Search </label>
