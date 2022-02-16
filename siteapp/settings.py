@@ -72,6 +72,9 @@ DEBUG = bool(environment.get("debug"))
 ENABLE_TOOLBAR = bool(environment.get("enable_tool_bar"))
 LOGLEVEL = environment.get("loglevel", "DEBUG")
 
+
+APP_ENV_NAME = environment.get('app_env_name') if 'app_env_name' in environment else 'dev'
+
 # Set GOVREADY_URL if 'govready-url' set in environment.json.
 from urllib.parse import urlparse
 
@@ -177,6 +180,7 @@ TEMPLATES = [
 				'django.contrib.auth.context_processors.auth',
 				'django.contrib.messages.context_processors.messages',
 				'django.template.context_processors.request', # allauth
+				'siteapp.context_processors.environment_name', # ENV_NAME
 			],
 			'loaders': [
 					'django.template.loaders.filesystem.Loader',
@@ -407,7 +411,7 @@ if (GOVREADY_URL.scheme == "https") or (GOVREADY_URL.scheme == "" and "https" in
 	# twood
 	USE_X_FORWARDED_HOST = True
 	SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-	
+
 	if environment.get("secure_ssl_redirect", False):
 		# Force Django to redirect non-secure SSL connections to secure SSL connections
 		# NOTE: Setting to True while simultaneously using a http proxy like NGINX
@@ -503,10 +507,10 @@ else:
 
 DOS = True if system() == "Windows" or 'Microsoft' in uname().release else False
 
-# Load logging configuration from settings_logging.py.
-from .settings_logging import *
 # Load all additional settings from settings_application.py.
 from .settings_application import *
+# Load logging configuration from settings_logging.py.
+from .settings_logging import *
 # Profiling.
 from .settings_profiling import *
 
