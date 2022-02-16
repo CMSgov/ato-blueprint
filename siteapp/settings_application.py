@@ -19,6 +19,7 @@ INSTALLED_APPS += [
     'siteapp',
     'guidedmodules',
     'discussion',
+    'project',
     'controls',
     'system_settings',
 
