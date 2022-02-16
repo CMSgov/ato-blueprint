@@ -64,6 +64,7 @@ urlpatterns = [
     url(r'account/settings$', views.account_settings, name="account_settings"),
 
     # projects
+    path('project/', include("project.urls")),
     url(r"^projects$", views.ProjectList.as_view(), name="projects"),
     url(r"^projects/lifecycle$", views.project_list_lifecycle, name="projects_lifecycle"),
     url(r'^projects/(?P<project_id>.*)/__edit$', views.project_edit, name="edit_project"),
