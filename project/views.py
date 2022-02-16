@@ -25,6 +25,6 @@ def project(request, project_id):
 def project_component_detail(request, project_id, component_id):
     project = Package.objects.get(id=project_id)
 
-    return render(request, "package.html", {
+    return render(request, "project.html", {
         "project": project,
     })
