@@ -73,7 +73,7 @@ ENABLE_TOOLBAR = bool(environment.get("enable_tool_bar"))
 LOGLEVEL = environment.get("loglevel", "DEBUG")
 
 
-APP_ENV_NAME = environment.get('app_env_name') if 'app_env_name' in environment else 'dev'
+METRICS_ENV_NAME = environment.get('metrics_env_name') if 'metrics_env_name' in environment else 'dev'
 
 # Set GOVREADY_URL if 'govready-url' set in environment.json.
 from urllib.parse import urlparse

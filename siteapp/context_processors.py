@@ -2,4 +2,4 @@ from django.conf import settings
 
 
 def environment_name(request):
-    return {'ENV_NAME': settings.APP_ENV_NAME}
+    return {'METRICS_ENV_NAME': settings.METRICS_ENV_NAME}
