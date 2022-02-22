@@ -21,7 +21,7 @@ from discussion.validators import validate_file_extension
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.http import (Http404, HttpResponse, HttpResponseForbidden,
                          HttpResponseNotAllowed, HttpResponseRedirect,
                          JsonResponse)
@@ -1453,6 +1453,9 @@ def authoring_import_appsource(request):
             return JsonResponse({ "status": "ok", "redirect": "/store" })
         except ValueError:
             messages.add_message(request, messages.ERROR, f'There was a failure processing {ValueError}. Please confirm that all included files are valid and try again.')
+            return JsonResponse({ "status": "ok", "redirect": "/store" })
+        except IntegrityError:
+            messages.add_message(request, messages.ERROR, f'There was a problem when trying to upload {appsource_zipfile}.  You are likely attempting to import a file that has already been imported.')
             return JsonResponse({ "status": "ok", "redirect": "/store" })
     else:
         messages.add_message(request, messages.ERROR, f'The AppSource file is required.')
