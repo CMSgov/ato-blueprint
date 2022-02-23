@@ -7,13 +7,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0024_auto_20200804_0222'),
+        ("controls", "0024_auto_20200804_0222"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='poam',
-            name='statement',
-            field=models.ForeignKey(blank=True, help_text='The Poam details for this statement. Statement must be type Poam', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='poam', to='controls.Statement'),
+            model_name="poam",
+            name="statement",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="The Poam details for this statement. Statement must be type Poam",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="poam",
+                to="controls.Statement",
+            ),
         ),
     ]

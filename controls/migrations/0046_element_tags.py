@@ -6,14 +6,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('siteapp', '0041_project_tags'),
-        ('controls', '0045_auto_20210228_1431'),
+        ("siteapp", "0041_project_tags"),
+        ("controls", "0045_auto_20210228_1431"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='element',
-            name='tags',
-            field=models.ManyToManyField(related_name='element', to='siteapp.Tag'),
+            model_name="element",
+            name="tags",
+            field=models.ManyToManyField(related_name="element", to="siteapp.Tag"),
         ),
     ]

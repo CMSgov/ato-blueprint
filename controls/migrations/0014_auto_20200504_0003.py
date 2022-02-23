@@ -6,12 +6,19 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0013_auto_20200430_0859'),
+        ("controls", "0013_auto_20200430_0859"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='statement',
-            options={'permissions': [('can_grant_smt_owner_permission', 'Grant a user statement owner permission')]},
+            name="statement",
+            options={
+                "permissions": [
+                    (
+                        "can_grant_smt_owner_permission",
+                        "Grant a user statement owner permission",
+                    )
+                ]
+            },
         ),
     ]

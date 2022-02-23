@@ -6,18 +6,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0041_historicalsystemassessmentresult_systemassessmentresult'),
+        ("controls", "0041_historicalsystemassessmentresult_systemassessmentresult"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='historicalsystemassessmentresult',
-            name='description',
-            field=models.CharField(blank=True, help_text='Brief description of the system assessment result', max_length=255, null=True),
+            model_name="historicalsystemassessmentresult",
+            name="description",
+            field=models.CharField(
+                blank=True,
+                help_text="Brief description of the system assessment result",
+                max_length=255,
+                null=True,
+            ),
         ),
         migrations.AddField(
-            model_name='systemassessmentresult',
-            name='description',
-            field=models.CharField(blank=True, help_text='Brief description of the system assessment result', max_length=255, null=True),
+            model_name="systemassessmentresult",
+            name="description",
+            field=models.CharField(
+                blank=True,
+                help_text="Brief description of the system assessment result",
+                max_length=255,
+                null=True,
+            ),
         ),
     ]

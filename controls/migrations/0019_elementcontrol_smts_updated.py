@@ -6,13 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0018_auto_20200624_0125'),
+        ("controls", "0018_auto_20200624_0125"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='elementcontrol',
-            name='smts_updated',
-            field=models.DateTimeField(blank=True, db_index=True, help_text='Store date of most recent statement update', null=True),
+            model_name="elementcontrol",
+            name="smts_updated",
+            field=models.DateTimeField(
+                blank=True,
+                db_index=True,
+                help_text="Store date of most recent statement update",
+                null=True,
+            ),
         ),
     ]

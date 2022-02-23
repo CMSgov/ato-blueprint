@@ -6,17 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0002_commoncontrol_common_control_provider'),
+        ("controls", "0002_commoncontrol_common_control_provider"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='commoncontrol',
-            name='legacy_impl_smt',
+            model_name="commoncontrol",
+            name="legacy_impl_smt",
         ),
         migrations.AddField(
-            model_name='commoncontrol',
-            name='legacy_imp_stm',
-            field=models.TextField(blank=True, help_text='Legacy large implementation statement', null=True),
+            model_name="commoncontrol",
+            name="legacy_imp_stm",
+            field=models.TextField(
+                blank=True, help_text="Legacy large implementation statement", null=True
+            ),
         ),
     ]

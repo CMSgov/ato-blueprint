@@ -7,23 +7,30 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0019_elementcontrol_smts_updated'),
+        ("controls", "0019_elementcontrol_smts_updated"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='element',
-            name='updated',
+            model_name="element",
+            name="updated",
             field=models.DateTimeField(auto_now=True, db_index=True),
         ),
         migrations.AlterField(
-            model_name='statement',
-            name='parent',
-            field=models.ForeignKey(blank=True, help_text='Parent statement', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='children', to='controls.Statement'),
+            model_name="statement",
+            name="parent",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="Parent statement",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="children",
+                to="controls.Statement",
+            ),
         ),
         migrations.AlterField(
-            model_name='statement',
-            name='updated',
+            model_name="statement",
+            name="updated",
             field=models.DateTimeField(auto_now=True, db_index=True),
         ),
     ]

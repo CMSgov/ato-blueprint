@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0011_auto_20200425_0249'),
+        ("controls", "0011_auto_20200425_0249"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='element',
-            name='name',
-            field=models.CharField(help_text='Common name or acronym of the element', max_length=250, unique=True),
+            model_name="element",
+            name="name",
+            field=models.CharField(
+                help_text="Common name or acronym of the element",
+                max_length=250,
+                unique=True,
+            ),
         ),
     ]

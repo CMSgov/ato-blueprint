@@ -6,23 +6,30 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0016_auto_20200622_0703'),
+        ("controls", "0016_auto_20200622_0703"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='statement',
-            name='status',
-            field=models.TextField(blank=True, help_text='The status of the statement', null=True),
+            model_name="statement",
+            name="status",
+            field=models.TextField(
+                blank=True, help_text="The status of the statement", null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='statement',
-            name='remarks',
-            field=models.TextField(blank=True, help_text='Remarks about the statement', null=True),
+            model_name="statement",
+            name="remarks",
+            field=models.TextField(
+                blank=True, help_text="Remarks about the statement", null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='statement',
-            name='sid_class',
-            field=models.CharField(help_text="Statement identifier 'class' such as 'NIST_SP-800-53_rev4' or other OSCAL catalog name Control ID ", max_length=200),
+            model_name="statement",
+            name="sid_class",
+            field=models.CharField(
+                help_text="Statement identifier 'class' such as 'NIST_SP-800-53_rev4' or other OSCAL catalog name Control ID ",
+                max_length=200,
+            ),
         ),
     ]

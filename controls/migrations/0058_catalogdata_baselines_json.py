@@ -7,13 +7,17 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0057_catalogdata'),
+        ("controls", "0057_catalogdata"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='catalogdata',
-            name='baselines_json',
-            field=jsonfield.fields.JSONField(blank=True, help_text='JSON object representing the baselines for the catalog.', null=True),
+            model_name="catalogdata",
+            name="baselines_json",
+            field=jsonfield.fields.JSONField(
+                blank=True,
+                help_text="JSON object representing the baselines for the catalog.",
+                null=True,
+            ),
         ),
     ]

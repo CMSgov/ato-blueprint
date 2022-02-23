@@ -10,26 +10,33 @@ def create_prototype_statements(apps, schema_editor):
     # We can't import the Statement model directly as it may be a newer
     # version than this migration expects. We use the historical version.
     from copy import deepcopy
-    Statement = apps.get_model('controls', 'Statement')
-    for statement in Statement.objects.filter(statement_type='control_implementation'):
+
+    Statement = apps.get_model("controls", "Statement")
+    for statement in Statement.objects.filter(statement_type="control_implementation"):
         # Test to see if matching control_implementation_prototype statement
         # already exists having the same content as the control_implementation statemen
         # being examined. If a prototype statement already exists, match the control_implementation
         # statement to it
-        prototype_exists = apps.get_model('controls', 'Statement')\
-            .objects\
-            .filter(statement_type='control_implementation_prototype',
-                    body=statement.body,
-                    sid=statement.sid,
-                    sid_class=statement.sid_class,
-                    pid=statement.pid).first()
+        prototype_exists = (
+            apps.get_model("controls", "Statement")
+            .objects.filter(
+                statement_type="control_implementation_prototype",
+                body=statement.body,
+                sid=statement.sid,
+                sid_class=statement.sid_class,
+                pid=statement.pid,
+            )
+            .first()
+        )
         if prototype_exists:
             statement.prototype_id = prototype_exists.id
             statement.save()
         else:
             # Create a prototype statement for the control_implementation_statement
             prototype = deepcopy(statement)
-            prototype.statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value
+            prototype.statement_type = (
+                StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value
+            )
             prototype.consumer_element_id = None
             prototype.id = None
             prototype.save()
@@ -37,18 +44,19 @@ def create_prototype_statements(apps, schema_editor):
             statement.prototype_id = prototype.id
             statement.save()
 
+
 def remove_prototype_statements(apps, schema_editor):
     # We can't import the Statement model directly as it may be a newer
     # version than this migration expects. We use the historical version.
-    apps.get_model("controls", "Statement")\
-        .objects\
-        .filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value)\
-        .delete()
+    apps.get_model("controls", "Statement").objects.filter(
+        statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.value
+    ).delete()
+
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0031_statement_prototype'),
+        ("controls", "0031_statement_prototype"),
     ]
 
     operations = [

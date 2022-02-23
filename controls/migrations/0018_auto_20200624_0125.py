@@ -6,13 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0017_auto_20200624_0105'),
+        ("controls", "0017_auto_20200624_0105"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='statement',
-            name='status',
-            field=models.CharField(blank=True, help_text='The status of the statement', max_length=100, null=True),
+            model_name="statement",
+            name="status",
+            field=models.CharField(
+                blank=True,
+                help_text="The status of the statement",
+                max_length=100,
+                null=True,
+            ),
         ),
     ]

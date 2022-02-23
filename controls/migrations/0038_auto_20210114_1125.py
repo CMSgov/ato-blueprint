@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0037_deployment'),
+        ("controls", "0037_deployment"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='deployment',
-            name='name',
-            field=models.CharField(help_text='Name of the deployment', max_length=250),
+            model_name="deployment",
+            name="name",
+            field=models.CharField(help_text="Name of the deployment", max_length=250),
         ),
     ]

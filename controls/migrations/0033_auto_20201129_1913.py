@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0032_auto_20201113_0458'),
+        ("controls", "0032_auto_20201113_0458"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='element',
-            name='element_type',
-            field=models.CharField(blank=True, help_text='Component type', max_length=150, null=True),
+            model_name="element",
+            name="element_type",
+            field=models.CharField(
+                blank=True, help_text="Component type", max_length=150, null=True
+            ),
         ),
     ]
