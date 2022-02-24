@@ -321,7 +321,6 @@ function authoring_tool_import_appsource_form(argument) {
 function authoring_tool_import_appsource() {
   // Use FormData to serialize form object including uploaded file
   var data = new FormData($('#import_appsource_authoring_tool form')[0]);
-  console.log("data is: "+JSON.stringify(data));
   ajax_with_indicator({
       url: "/tasks/_authoring_tool/import-appsource",
       method: "POST",
