@@ -1,0 +1,89 @@
+{% extends "task-base.html" %}
+{% load static %}
+
+{% block title %}
+One Page
+{% endblock %}
+
+
+{% block body %}
+
+{{block.super}}
+<div class="row" style="padding-left: 22px;">
+  <div id="focus-area-wrapper" class="col-xs-12 col-sm-9 col-md-7 col-lg-7 col-xl-6">
+
+    <h1>Create a Project</h1>
+    <div class="form-group">
+      <form action="/project/create/__submit">
+        <input type="hidden" name="uid" value="{{ user.id }}">
+        {% for q in question %}
+            {% if q.spec.type == "text" or q.spec.type == "email-address" or q.spec.type == "url" %}
+              <label class="usa-label" for="{{ q.spec.id }}">{{ q.spec.title }}</label>
+              <input
+                id="{{ q.spec.id }}"
+                name="{{ q.spec.id }}"
+                class="usa-input"
+                {% if q.spec.type == "email-address" %}
+                type="email"
+                {% elif q.spec.type == "url" %}
+                type="url"
+                {% else %}
+                type="text"
+                {% endif %}
+                placeholder="{{ placeholder_answer }}"
+                {% if answer %}
+                  value="{{ answer }}"
+                {% elif default_answer %}
+                  value="{{ default_answer }}"
+                {% endif %}>
+              <p class="help-block">
+                {% if q.spec.help %}
+                  {{q.spec.help}}
+                {% elif q.spec.type == "email-address" %}
+                  Enter an email address.
+                {% elif q.spec.type == "url" %}
+                  Paste a web address.
+                {% endif %}
+              </p>
+            {% elif q.spec.type == "interstitial" %}
+              <h3>{{ q.spec.prompt|linebreaksbr }}</h3>
+            {% elif q.spec.type == "choice" %}
+              <fieldset class="usa-fieldset margin-top-3">
+                <legend class="usa-legend">{{ q.spec.prompt }}</legend>
+                {% for choice in q.spec.choices %}
+                  <div class="usa-radio">
+                    <input
+                      class="usa-radio__input usa-radio__input--tile"
+                      id="{{ choice.key }}"
+                      type="radio"
+                      name="{{ q.id }}"
+                      value="{{choice.key}}"
+                      {% if answer == choice.key %}checked{% endif %}
+                    />
+                    <label class="usa-radio__label" for="{{ choice.key }}">
+                      {{choice.text}}
+                    </label>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="text-danger">QUESTION TYPE NOT IMPLEMENTED: {{q.spec.type}}</p>
+            {% endif %}
+        {% endfor %}
+      </form>
+    </div>
+  </div>
+  <ul class="usa-button-group margin-left-3">
+    <li class="usa-button-group__item">
+      <a id="project-create-cancel" class="usa-button usa-button--outline">Cancel</a>
+    </li>
+    <li class="usa-button-group__item">
+      <button class="usa-button" type="submit">Create</button>
+    </li>
+  </ul>
+</div> <!-- /row -->
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static "js/questionnaire.dev.js" %}"></script>
+{% endblock %}

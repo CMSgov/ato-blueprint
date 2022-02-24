@@ -64,6 +64,8 @@ urlpatterns = [
     url(r'account/settings$', views.account_settings, name="account_settings"),
 
     # projects
+    url(r'^project/create', views.project_create_form, name='project_create_form'),
+    url(r'^project/create/__submit', views.project_create_submit, name='project_create_submit'),
     url(r"^projects$", views.ProjectList.as_view(), name="projects"),
     url(r"^projects/lifecycle$", views.project_list_lifecycle, name="projects_lifecycle"),
     url(r'^projects/(?P<project_id>.*)/__edit$', views.project_edit, name="edit_project"),
