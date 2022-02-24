@@ -41,7 +41,7 @@ urlpatterns = [
         name="control_compare",
     ),
     url(
-        r"^(?P<system_id>.*)/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)/statement/(?P<statement_id>.*)$",  # noqa: E501
+        r"^(?P<system_id>.*)/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)/statement/(?P<statement_id>.*)/$",  # noqa: E501
         views.project_control_editor,
         name="control_editor_statement",
     ),
@@ -180,7 +180,7 @@ urlpatterns = [
         name="system_element_remove",
     ),
     url(
-        r"^(?P<system_id>.*)/component/(?P<element_id>.*)/(?P<catalog_key>.*)/(?P<control_id>.*)/statement/(?P<statement_id>.*)$",  # noqa: E501
+        r"^(?P<system_id>.*)/component/(?P<element_id>.*)/(?P<catalog_key>.*)/(?P<control_id>.*)/statement/(?P<statement_id>.*)/$",  # noqa: E501
         views.project_component_editor,
         name="system_element_control",
     ),

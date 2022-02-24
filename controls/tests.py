@@ -236,43 +236,6 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
             os.remove(self.json_download.name)
         super().tearDown()
 
-    def test_component_download_oscal_json(self):
-        self._login()
-        url = self.url(f"/controls/components/{self.component.id}")
-        self.browser.get(url)
-        self.click_element('a[href="#oscal"]')
-
-        # sigh; selenium doesn't really let us find out the name of the
-        # downloaded file, so let's make sure it doesn't exist before we
-        # download
-        # definite race condition possibility
-
-        if self.json_download.is_file():
-            self.json_download.unlink()
-        elif os.path.isfile(self.json_download.name):
-            os.remove(self.json_download.name)
-        wait_for_sleep_after(lambda: self.click_element("a#oscal_download_json_link"))
-        var_sleep(2)
-        # assert download exists!
-        try:
-            self.assertTrue(self.json_download.is_file())
-            wait_for_sleep_after(lambda: self.assertTrue(self.json_download.is_file()))
-            filetoopen = self.json_download
-        except Exception:
-            wait_for_sleep_after(
-                lambda: self.assertTrue(os.path.isfile(self.json_download.name))
-            )
-            # assert that it is valid JSON by trying to load it
-            filetoopen = self.json_download.name
-        with open(filetoopen, "r") as f:
-            json_data = json.load(f)
-            self.assertIsNotNone(json_data)
-
-        if self.json_download.is_file():
-            self.json_download.unlink()
-        elif os.path.isfile(self.json_download.name):
-            os.remove(self.json_download.name)
-
     # Skip test since import OSCAL link was removed from page.
     # If we don't plan to use this functionality in the future, the test can be removed.
     @unittest.skip("Inherited")
