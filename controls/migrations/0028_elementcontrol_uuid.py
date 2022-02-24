@@ -8,22 +8,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0027_auto_20200804_1011'),
+        ("controls", "0027_auto_20200804_1011"),
     ]
 
     def create_uuids(apps, schema_editor):
-        ElementControl = apps.get_model('controls', 'ElementControl')
+        ElementControl = apps.get_model("controls", "ElementControl")
         for obj in ElementControl.objects.all():
             obj.uuid = uuid.uuid4()
             obj.save()
 
     operations = [
         migrations.AddField(
-            model_name='elementcontrol',
-            name='uuid',
+            model_name="elementcontrol",
+            name="uuid",
             field=models.UUIDField(
                 default=uuid.uuid4,
-                help_text='A UUID (a unique identifier) for this ElementControl.',
+                help_text="A UUID (a unique identifier) for this ElementControl.",
             ),
         ),
         migrations.RunPython(create_uuids, migrations.RunPython.noop),

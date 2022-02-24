@@ -34,78 +34,97 @@ class ExportCsvMixin:
         meta = self.model._meta
         field_names = [field.name for field in meta.fields]
 
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = "attachment; filename={}.csv".format(meta)
         writer = csv.writer(response)
 
         writer.writerow(field_names)
         for obj in queryset:
-            row = writer.writerow([getattr(obj, field) for field in field_names])
+            writer.writerow([getattr(obj, field) for field in field_names])
 
         return response
 
     export_as_csv.short_description = "Export Selected as CSV"
 
+
 class ImportRecordAdmin(admin.ModelAdmin, ExportCsvMixin):
-    list_display = ('created', 'uuid')
+    list_display = ("created", "uuid")
     actions = ["export_as_csv"]
+
 
 class StatementAdmin(SimpleHistoryAdmin, ExportCsvMixin):
-    list_display = ('id', 'sid', 'sid_class', 'producer_element', 'statement_type', 'uuid')
-    search_fields = ('id', 'sid', 'sid_class', 'producer_element', 'uuid')
+    list_display = (
+        "id",
+        "sid",
+        "sid_class",
+        "producer_element",
+        "statement_type",
+        "uuid",
+    )
+    search_fields = ("id", "sid", "sid_class", "producer_element", "uuid")
     actions = ["export_as_csv"]
-    readonly_fields = ('created', 'updated', 'uuid')
+    readonly_fields = ("created", "updated", "uuid")
     formfield_overrides = {
-        models.JSONField: {'widget': JSONEditorWidget},
+        models.JSONField: {"widget": JSONEditorWidget},
     }
 
+
 class StatementRemoteAdmin(admin.ModelAdmin):
-    list_display = ('id', 'statement', 'remote_statement', 'remote_type')
-    search_fields = ('id', 'statement', 'remote_statement', 'remote_type')
-    readonly_fields = ('created', 'updated', 'uuid')
+    list_display = ("id", "statement", "remote_statement", "remote_type")
+    search_fields = ("id", "statement", "remote_statement", "remote_type")
+    readonly_fields = ("created", "updated", "uuid")
+
 
 class InheritanceAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name')
-    search_fields = ('name', 'description', 'responsibility')
+    list_display = ("id", "name")
+    search_fields = ("name", "description", "responsibility")
+
 
 class ElementAdmin(GuardedModelAdmin, ExportCsvMixin):
-    list_display = ('name', 'full_name', 'element_type', 'id', 'uuid')
-    search_fields = ('name', 'full_name', 'uuid', 'id')
+    list_display = ("name", "full_name", "element_type", "id", "uuid")
+    search_fields = ("name", "full_name", "uuid", "id")
     actions = ["export_as_csv"]
+
 
 class ElementControlAdmin(admin.ModelAdmin, ExportCsvMixin):
-    list_display = ('id', 'element', 'oscal_ctl_id', 'oscal_catalog_key')
+    list_display = ("id", "element", "oscal_ctl_id", "oscal_catalog_key")
     actions = ["export_as_csv"]
-    readonly_fields = ('created', 'updated', 'smts_updated')
+    readonly_fields = ("created", "updated", "smts_updated")
+
 
 class ElementRoleAdmin(admin.ModelAdmin, ExportCsvMixin):
-    list_display = ('id', 'role', 'description')
-    search_fields = ('role', 'description')
+    list_display = ("id", "role", "description")
+    search_fields = ("role", "description")
     actions = ["export_as_csv"]
-    readonly_fields = ('created', 'updated')
+    readonly_fields = ("created", "updated")
+
 
 class SystemAdmin(GuardedModelAdmin, ExportCsvMixin):
-    list_display = ('id', 'root_element')
+    list_display = ("id", "root_element")
     actions = ["export_as_csv"]
+
 
 class CommonControlProviderAdmin(admin.ModelAdmin, ExportCsvMixin):
-    list_display = ('name', 'id')
+    list_display = ("name", "id")
     actions = ["export_as_csv"]
+
 
 class CommonControlAdmin(admin.ModelAdmin, ExportCsvMixin):
-    list_display = ('name', 'oscal_ctl_id', 'id')
+    list_display = ("name", "oscal_ctl_id", "id")
     actions = ["export_as_csv"]
+
 
 class ElementCommonControlAdmin(admin.ModelAdmin, ExportCsvMixin):
-    list_display = ('element', 'common_control', 'oscal_ctl_id', 'id')
+    list_display = ("element", "common_control", "oscal_ctl_id", "id")
     actions = ["export_as_csv"]
 
+
 class PoamAdmin(admin.ModelAdmin, ExportCsvMixin):
-    list_display = ('id', 'poam_id', 'statement', 'controls', 'uuid')
-    search_fields = ('id', 'poam_id', 'statement', 'controls', 'uuid')
+    list_display = ("id", "poam_id", "statement", "controls", "uuid")
+    search_fields = ("id", "poam_id", "statement", "controls", "uuid")
     actions = ["export_as_csv"]
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
+        JSONField: {"widget": JSONEditorWidget},
     }
 
     def uuid(self, obj):
@@ -114,30 +133,34 @@ class PoamAdmin(admin.ModelAdmin, ExportCsvMixin):
     def consumer_element(self, obj):
         return obj.statement.consumer_element
 
+
 class DeploymentAdmin(SimpleHistoryAdmin, ExportCsvMixin):
-    list_display = ('id', 'name', 'system')
-    search_fields = ('id', 'name', 'uuid')
+    list_display = ("id", "name", "system")
+    search_fields = ("id", "name", "uuid")
     actions = ["export_as_csv"]
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
+        JSONField: {"widget": JSONEditorWidget},
     }
 
     def uuid(self, obj):
         return obj.deployment.uuid
 
+
 class SystemAssessmentResultAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'system', 'deployment', 'uuid')
-    search_fields = ('id', 'name', 'system', 'deployment', 'uuid')
+    list_display = ("id", "name", "system", "deployment", "uuid")
+    search_fields = ("id", "name", "system", "deployment", "uuid")
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
+        JSONField: {"widget": JSONEditorWidget},
     }
 
+
 class CatalogDataAdmin(admin.ModelAdmin):
-    list_display = ('catalog_key',)
-    search_fields = ('catalog_key',)
+    list_display = ("catalog_key",)
+    search_fields = ("catalog_key",)
     formfield_overrides = {
-        models.JSONField: {'widget': JSONEditorWidget},
+        models.JSONField: {"widget": JSONEditorWidget},
     }
+
 
 admin.site.register(ImportRecord, ImportRecordAdmin)
 admin.site.register(Statement, StatementAdmin)

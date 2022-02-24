@@ -7,31 +7,56 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0045_auto_20210228_1431'),
+        ("controls", "0045_auto_20210228_1431"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ElementRole',
+            name="ElementRole",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('role', models.CharField(help_text='Common name or acronym of the role', max_length=250, unique=True)),
-                ('description', models.CharField(help_text='Brief description of the Element', max_length=255)),
-                ('created', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('updated', models.DateTimeField(auto_now=True, db_index=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "role",
+                    models.CharField(
+                        help_text="Common name or acronym of the role",
+                        max_length=250,
+                        unique=True,
+                    ),
+                ),
+                (
+                    "description",
+                    models.CharField(
+                        help_text="Brief description of the Element", max_length=255
+                    ),
+                ),
+                ("created", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("updated", models.DateTimeField(auto_now=True, db_index=True)),
             ],
             options={
-                'abstract': False,
-                'base_manager_name': 'prefetch_manager',
+                "abstract": False,
+                "base_manager_name": "prefetch_manager",
             },
             managers=[
-                ('objects', django.db.models.manager.Manager()),
-                ('prefetch_manager', django.db.models.manager.Manager()),
+                ("objects", django.db.models.manager.Manager()),
+                ("prefetch_manager", django.db.models.manager.Manager()),
             ],
         ),
         migrations.AddField(
-            model_name='element',
-            name='roles',
-            field=models.ManyToManyField(blank=True, help_text='Roles assigned to the Element', related_name='elements', to='controls.ElementRole'),
+            model_name="element",
+            name="roles",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text="Roles assigned to the Element",
+                related_name="elements",
+                to="controls.ElementRole",
+            ),
         ),
     ]

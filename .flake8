@@ -1,0 +1,8 @@
+[flake8]
+max-line-length = 100
+exclude =
+    controls/migrations/*,
+    controls/management/*
+ignore =
+    W605,
+    W503

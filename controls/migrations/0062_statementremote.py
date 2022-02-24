@@ -11,29 +11,83 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0061_fix_800_171_ids'),
+        ("controls", "0061_fix_800_171_ids"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='StatementRemote',
+            name="StatementRemote",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('remote_type', models.CharField(blank=True, choices=[('ORIGIN', 'origin')], help_text='Remote type.', max_length=80, null=True)),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, help_text='A UUID (a unique identifier) for this Statement.')),
-                ('created', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('updated', models.DateTimeField(auto_now=True, db_index=True)),
-                ('import_record', auto_prefetch.ForeignKey(blank=True, help_text='The Import Record which created this record.', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='import_record_statement_remotes', to='controls.importrecord')),
-                ('remote_statement', models.ForeignKey(blank=True, help_text='Remote or parent Statement.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='descendents', to='controls.statement')),
-                ('statement', models.ForeignKey(blank=True, help_text='Descendent or cloned Statement.', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='remotes', to='controls.statement')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "remote_type",
+                    models.CharField(
+                        blank=True,
+                        choices=[("ORIGIN", "origin")],
+                        help_text="Remote type.",
+                        max_length=80,
+                        null=True,
+                    ),
+                ),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        help_text="A UUID (a unique identifier) for this Statement.",
+                    ),
+                ),
+                ("created", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("updated", models.DateTimeField(auto_now=True, db_index=True)),
+                (
+                    "import_record",
+                    auto_prefetch.ForeignKey(
+                        blank=True,
+                        help_text="The Import Record which created this record.",
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="import_record_statement_remotes",
+                        to="controls.importrecord",
+                    ),
+                ),
+                (
+                    "remote_statement",
+                    models.ForeignKey(
+                        blank=True,
+                        help_text="Remote or parent Statement.",
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="descendents",
+                        to="controls.statement",
+                    ),
+                ),
+                (
+                    "statement",
+                    models.ForeignKey(
+                        blank=True,
+                        help_text="Descendent or cloned Statement.",
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="remotes",
+                        to="controls.statement",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
-                'base_manager_name': 'prefetch_manager',
+                "abstract": False,
+                "base_manager_name": "prefetch_manager",
             },
             managers=[
-                ('objects', django.db.models.manager.Manager()),
-                ('prefetch_manager', django.db.models.manager.Manager()),
+                ("objects", django.db.models.manager.Manager()),
+                ("prefetch_manager", django.db.models.manager.Manager()),
             ],
         ),
     ]

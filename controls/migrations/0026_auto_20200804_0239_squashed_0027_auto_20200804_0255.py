@@ -6,21 +6,36 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    replaces = [('controls', '0026_auto_20200804_0239'), ('controls', '0027_auto_20200804_0255')]
+    replaces = [
+        ("controls", "0026_auto_20200804_0239"),
+        ("controls", "0027_auto_20200804_0255"),
+    ]
 
     dependencies = [
-        ('controls', '0025_auto_20200804_0229'),
+        ("controls", "0025_auto_20200804_0229"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='poam',
-            name='scheduled_completion_date',
-            field=models.DateTimeField(blank=True, db_index=True, help_text='Planned completion date of all milestones.', null=True),
+            model_name="poam",
+            name="scheduled_completion_date",
+            field=models.DateTimeField(
+                blank=True,
+                db_index=True,
+                help_text="Planned completion date of all milestones.",
+                null=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='poam',
-            name='statement',
-            field=models.OneToOneField(blank=True, help_text='The Poam details for this statement. Statement must be type Poam', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='poam', to='controls.Statement'),
+            model_name="poam",
+            name="statement",
+            field=models.OneToOneField(
+                blank=True,
+                help_text="The Poam details for this statement. Statement must be type Poam",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="poam",
+                to="controls.Statement",
+            ),
         ),
     ]

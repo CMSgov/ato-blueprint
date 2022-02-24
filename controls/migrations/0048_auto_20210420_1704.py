@@ -6,18 +6,48 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0047_merge_20210408_1515'),
+        ("controls", "0047_merge_20210408_1515"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='historicalstatement',
-            name='statement_type',
-            field=models.CharField(blank=True, choices=[('CONTROL_IMPLEMENTATION', 'control_implementation'), ('CONTROL_IMPLEMENTATION_PROTOTYPE', 'control_implementation_prototype'), ('ASSESSMENT_RESULT', 'assessment_result'), ('POAM', 'POAM'), ('FISMA_IMPACT_LEVEL', 'fisma_impact_level')], help_text='Statement type.', max_length=150, null=True),
+            model_name="historicalstatement",
+            name="statement_type",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("CONTROL_IMPLEMENTATION", "control_implementation"),
+                    (
+                        "CONTROL_IMPLEMENTATION_PROTOTYPE",
+                        "control_implementation_prototype",
+                    ),
+                    ("ASSESSMENT_RESULT", "assessment_result"),
+                    ("POAM", "POAM"),
+                    ("FISMA_IMPACT_LEVEL", "fisma_impact_level"),
+                ],
+                help_text="Statement type.",
+                max_length=150,
+                null=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='statement',
-            name='statement_type',
-            field=models.CharField(blank=True, choices=[('CONTROL_IMPLEMENTATION', 'control_implementation'), ('CONTROL_IMPLEMENTATION_PROTOTYPE', 'control_implementation_prototype'), ('ASSESSMENT_RESULT', 'assessment_result'), ('POAM', 'POAM'), ('FISMA_IMPACT_LEVEL', 'fisma_impact_level')], help_text='Statement type.', max_length=150, null=True),
+            model_name="statement",
+            name="statement_type",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("CONTROL_IMPLEMENTATION", "control_implementation"),
+                    (
+                        "CONTROL_IMPLEMENTATION_PROTOTYPE",
+                        "control_implementation_prototype",
+                    ),
+                    ("ASSESSMENT_RESULT", "assessment_result"),
+                    ("POAM", "POAM"),
+                    ("FISMA_IMPACT_LEVEL", "fisma_impact_level"),
+                ],
+                help_text="Statement type.",
+                max_length=150,
+                null=True,
+            ),
         ),
     ]

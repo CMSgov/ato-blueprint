@@ -6,13 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0020_auto_20200709_1049'),
+        ("controls", "0020_auto_20200709_1049"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='statement',
-            name='pid',
-            field=models.CharField(blank=True, help_text="Statement part identifier such as 'h' or 'h__1' for 'h.1' or other part key", max_length=20, null=True),
+            model_name="statement",
+            name="pid",
+            field=models.CharField(
+                blank=True,
+                help_text="Statement part identifier such as 'h' or 'h__1' for 'h.1' or other part key",
+                max_length=20,
+                null=True,
+            ),
         ),
     ]

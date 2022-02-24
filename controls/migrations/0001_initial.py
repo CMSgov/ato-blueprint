@@ -7,26 +7,84 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='CommonControl',
+            name="CommonControl",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(blank=True, help_text='Name of the CommonControl', max_length=150, null=True, unique=True)),
-                ('description', models.CharField(help_text='Brief description of the CommonControlProvider', max_length=255)),
-                ('oscal_ctl_id', models.CharField(blank=True, help_text='OSCAL formatted Control ID (e.g., au-2.3)', max_length=20, null=True)),
-                ('legacy_impl_smt', models.TextField(blank=True, help_text='Legacy large implementation statement', null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        blank=True,
+                        help_text="Name of the CommonControl",
+                        max_length=150,
+                        null=True,
+                        unique=True,
+                    ),
+                ),
+                (
+                    "description",
+                    models.CharField(
+                        help_text="Brief description of the CommonControlProvider",
+                        max_length=255,
+                    ),
+                ),
+                (
+                    "oscal_ctl_id",
+                    models.CharField(
+                        blank=True,
+                        help_text="OSCAL formatted Control ID (e.g., au-2.3)",
+                        max_length=20,
+                        null=True,
+                    ),
+                ),
+                (
+                    "legacy_impl_smt",
+                    models.TextField(
+                        blank=True,
+                        help_text="Legacy large implementation statement",
+                        null=True,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='CommonControlProvider',
+            name="CommonControlProvider",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(help_text='Name of the CommonControlProvider', max_length=150, unique=True)),
-                ('description', models.CharField(help_text='Brief description of the CommonControlProvider', max_length=255)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        help_text="Name of the CommonControlProvider",
+                        max_length=150,
+                        unique=True,
+                    ),
+                ),
+                (
+                    "description",
+                    models.CharField(
+                        help_text="Brief description of the CommonControlProvider",
+                        max_length=255,
+                    ),
+                ),
             ],
         ),
     ]

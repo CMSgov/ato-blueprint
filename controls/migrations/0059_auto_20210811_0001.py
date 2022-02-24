@@ -6,18 +6,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0058_catalogdata_baselines_json'),
+        ("controls", "0058_catalogdata_baselines_json"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='catalogdata',
-            name='baselines_json',
-            field=models.JSONField(blank=True, help_text='JSON object representing the baselines for the catalog.', null=True),
+            model_name="catalogdata",
+            name="baselines_json",
+            field=models.JSONField(
+                blank=True,
+                help_text="JSON object representing the baselines for the catalog.",
+                null=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='catalogdata',
-            name='catalog_json',
-            field=models.JSONField(blank=True, help_text='JSON object representing the OSCAL-formatted control catalog.', null=True),
+            model_name="catalogdata",
+            name="catalog_json",
+            field=models.JSONField(
+                blank=True,
+                help_text="JSON object representing the OSCAL-formatted control catalog.",
+                null=True,
+            ),
         ),
     ]

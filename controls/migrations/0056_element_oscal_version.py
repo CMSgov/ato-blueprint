@@ -6,13 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0055_auto_20210726_2246'),
+        ("controls", "0055_auto_20210726_2246"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='element',
-            name='oscal_version',
-            field=models.CharField(blank=True, default='1.0.0', help_text='OSCAL version number.', max_length=20, null=True),
+            model_name="element",
+            name="oscal_version",
+            field=models.CharField(
+                blank=True,
+                default="1.0.0",
+                help_text="OSCAL version number.",
+                max_length=20,
+                null=True,
+            ),
         ),
     ]

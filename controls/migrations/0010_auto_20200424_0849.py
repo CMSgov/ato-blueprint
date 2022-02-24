@@ -6,13 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0009_auto_20200421_0725'),
+        ("controls", "0009_auto_20200421_0725"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='system',
-            name='fisma_id',
-            field=models.CharField(blank=True, help_text='The FISMA Id of the system', max_length=40, null=True),
+            model_name="system",
+            name="fisma_id",
+            field=models.CharField(
+                blank=True,
+                help_text="The FISMA Id of the system",
+                max_length=40,
+                null=True,
+            ),
         ),
     ]

@@ -7,13 +7,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0001_initial'),
+        ("controls", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='commoncontrol',
-            name='common_control_provider',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='controls.CommonControlProvider'),
+            model_name="commoncontrol",
+            name="common_control_provider",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="controls.CommonControlProvider",
+            ),
         ),
     ]

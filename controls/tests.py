@@ -1,14 +1,4 @@
-
-# the discussion app to run Selenium and Chrome-based functional/integration
-# testing.
-#
-# Selenium requires that 'chromedriver' be on the system PATH. The
-# Ubuntu package chromium-chromedriver installs Chromium and
-# chromedriver. But if you also have Google Chrome installed, it
-# picks up Google Chrome which might be of an incompatible version.
-# So we hard-code the Chromium binary using options.binary_location="/usr/bin/chromium-browser".
-# If paths differ on your system, you may need to set the PATH system
-# environment variable and the options.binary_location field below.
+import json
 import os
 import unittest
 from pathlib import PurePath
@@ -16,17 +6,24 @@ from urllib.parse import urlparse
 
 from django.test import TestCase
 from django.utils.text import slugify
+from guardian.shortcuts import get_user_perms
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
 
 from controls.enums.statements import StatementTypeEnum
-from controls.models import *
 from controls.models import (
     STATEMENT_NOT_SYNCHED,
     STATEMENT_ORPHANED,
     STATEMENT_SYNCHED,
+    Deployment,
+    Element,
+    ElementRole,
+    ImportRecord,
+    OrgParams,
+    Poam,
+    Statement,
     System,
 )
 from controls.oscal import Catalog, Catalogs, de_oscalize_control_id
@@ -40,102 +37,135 @@ from siteapp.tests import (
 )
 from system_settings.models import SystemSettings
 
+# the discussion app to run Selenium and Chrome-based functional/integration
+# testing.
+#
+# Selenium requires that 'chromedriver' be on the system PATH. The
+# Ubuntu package chromium-chromedriver installs Chromium and
+# chromedriver. But if you also have Google Chrome installed, it
+# picks up Google Chrome which might be of an incompatible version.
+# So we hard-code the Chromium binary using options.binary_location="/usr/bin/chromium-browser".
+# If paths differ on your system, you may need to set the PATH system
+# environment variable and the options.binary_location field below.
+
 #####################################################################
 
 
 # Control Tests
+
 
 class Oscal80053Tests(SeleniumTest):
     # Test
     def test_catalog_load_control(self):
         cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4)
         cg_flat = cg.get_flattened_controls_all_as_dict()
-        control = cg_flat['au-2']
-        self.assertEqual(control['id'].upper(), "AU-2")
+        control = cg_flat["au-2"]
+        self.assertEqual(control["id"].upper(), "AU-2")
         # self.assertEqual(control.class, "NIST.800.53")
         # TODO: ADD Class into object
-        self.assertEqual(control['title'].upper(), "AUDIT EVENTS")
+        self.assertEqual(control["title"].upper(), "AUDIT EVENTS")
 
     def test_catalog_all_controls_with_organizational_parameters(self):
-        parameter_values = { 'ac-1_prm_2': 'every 12 parsecs' }
-        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4,
-                                 parameter_values=parameter_values)
+        parameter_values = {"ac-1_prm_2": "every 12 parsecs"}
+        cg = Catalog.GetInstance(
+            Catalogs.NIST_SP_800_53_rev4, parameter_values=parameter_values
+        )
         cg_flat = cg.get_flattened_controls_all_as_dict()
-        control = cg_flat['ac-1']
-        description = control['description']
-        self.assertTrue('every 12 parsecs' in description, description)
+        control = cg_flat["ac-1"]
+        description = control["description"]
+        self.assertTrue("every 12 parsecs" in description, description)
 
     def test_catalog_one_control_with_organizational_parameters(self):
-        parameter_values = { 'ac-1_prm_2': 'every 12 parsecs' }
-        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4,
-                                 parameter_values=parameter_values)
-        control = cg.get_control_by_id('ac-1')
+        parameter_values = {"ac-1_prm_2": "every 12 parsecs"}
+        cg = Catalog.GetInstance(
+            Catalogs.NIST_SP_800_53_rev4, parameter_values=parameter_values
+        )
+        control = cg.get_control_by_id("ac-1")
         flat = cg.get_flattened_control_as_dict(control)
-        description = flat['description']
-        self.assertTrue('every 12 parsecs' in description, description)
+        description = flat["description"]
+        self.assertTrue("every 12 parsecs" in description, description)
 
     def test_catalog_control_organization_parameters_hashing(self):
         # no org params
         cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4)
         cg_flat = cg.get_flattened_controls_all_as_dict()
-        control = cg_flat['ac-1']
-        description = control['description']
-        self.assertTrue('Access control policy [organization-defined frequency]' in description,
-                        description)
+        control = cg_flat["ac-1"]
+        description = control["description"]
+        self.assertTrue(
+            "Access control policy [organization-defined frequency]" in description,
+            description,
+        )
 
         # set org params
-        parameter_values_1 = { 'ac-1_prm_2': 'every 12 parsecs' }
-        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4, parameter_values=parameter_values_1)
+        parameter_values_1 = {"ac-1_prm_2": "every 12 parsecs"}
+        cg = Catalog.GetInstance(
+            Catalogs.NIST_SP_800_53_rev4, parameter_values=parameter_values_1
+        )
         cg_flat = cg.get_flattened_controls_all_as_dict()
-        control = cg_flat['ac-1']
-        description = control['description']
-        self.assertTrue('Access control policy every 12 parsecs' in description,
-                        description)
+        control = cg_flat["ac-1"]
+        description = control["description"]
+        self.assertTrue(
+            "Access control policy every 12 parsecs" in description, description
+        )
 
         # different org params, we should get back a different instance
-        parameter_values_2 = { 'ac-1_prm_2': 'every 13 parsecs' }
-        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4, parameter_values=parameter_values_2)
+        parameter_values_2 = {"ac-1_prm_2": "every 13 parsecs"}
+        cg = Catalog.GetInstance(
+            Catalogs.NIST_SP_800_53_rev4, parameter_values=parameter_values_2
+        )
         cg_flat = cg.get_flattened_controls_all_as_dict()
-        control = cg_flat['ac-1']
-        description = control['description']
-        self.assertTrue('Access control policy every 13 parsecs' in description,
-                        description)
+        control = cg_flat["ac-1"]
+        description = control["description"]
+        self.assertTrue(
+            "Access control policy every 13 parsecs" in description, description
+        )
 
         # switch back to prev org params, we should get an appropriate instance
-        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4, parameter_values=parameter_values_1)
+        cg = Catalog.GetInstance(
+            Catalogs.NIST_SP_800_53_rev4, parameter_values=parameter_values_1
+        )
         cg_flat = cg.get_flattened_controls_all_as_dict()
-        control = cg_flat['ac-1']
-        description = control['description']
-        self.assertTrue('Access control policy every 12 parsecs' in description,
-                        description)
+        control = cg_flat["ac-1"]
+        description = control["description"]
+        self.assertTrue(
+            "Access control policy every 12 parsecs" in description, description
+        )
+
 
 class StatementTests(TestCase):
-
     def test_statement_id_from_control(self):
         cases = (
-            ('ac-1', 'a', 'ac-1_smt.a'),
-            ('ac-1', '', 'ac-1_smt'),
-            ('ac-1.1', 'a', 'ac-1.1_smt.a'),
-            ('1.1.1', '', '1.1.1_smt')
+            ("ac-1", "a", "ac-1_smt.a"),
+            ("ac-1", "", "ac-1_smt"),
+            ("ac-1.1", "a", "ac-1.1_smt.a"),
+            ("1.1.1", "", "1.1.1_smt"),
         )
         test_func = Statement._statement_id_from_control
 
         for control_id, part, expected in cases:
             self.assertEqual(test_func(control_id, part), expected)
 
+
 #####################################################################
+
 
 class ControlUITests(SeleniumTest):
     def test_homepage(self):
         self.browser.get(self.url("/controls/"))
 
     def test_control_lookup(self):
-        self.browser.get(self.url("/controls/catalogs/NIST_SP-800-53_rev4/control/au-2"))
+        self.browser.get(
+            self.url("/controls/catalogs/NIST_SP-800-53_rev4/control/au-2")
+        )
         wait_for_sleep_after(lambda: self.assertInNodeText("AU-2", "#control-heading"))
-        wait_for_sleep_after(lambda: self.assertInNodeText("Audit Events", "#control-heading"))
+        wait_for_sleep_after(
+            lambda: self.assertInNodeText("Audit Events", "#control-heading")
+        )
 
     def test_control_enhancement_lookup(self):
-        self.browser.get(self.url("/controls/catalogs/NIST_SP-800-53_rev4/control/AC-2 (4)"))
+        self.browser.get(
+            self.url("/controls/catalogs/NIST_SP-800-53_rev4/control/AC-2 (4)")
+        )
         self.assertInNodeText("AC-2(4)", "#control-heading")
         self.assertInNodeText("Automated Audit Actions", "#control-heading")
 
@@ -146,7 +176,9 @@ class ControlUITests(SeleniumTest):
         catalog_list = Catalogs.catalogs()
         self.assertEqual(len(catalog_list), 4)
 
+
 #####################################################################
+
 
 class ComponentUITests(OrganizationSiteFunctionalTests):
 
@@ -155,13 +187,15 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
     def setUp(self):
         super().setUp()
 
-        self.json_download = \
-            self.download_path / PurePath(slugify(self.component_name)).with_suffix(".json")
+        self.json_download = self.download_path / PurePath(
+            slugify(self.component_name)
+        ).with_suffix(".json")
         # print("********* self.json_download", self.json_download)
 
         # we need a system and a component
-        root_element = Element(name="My Root Element",
-                               description="Description of my root element")
+        root_element = Element(
+            name="My Root Element", description="Description of my root element"
+        )
         root_element.save()
         self.system = System()
         self.system.root_element = root_element
@@ -171,12 +205,16 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         project.system = self.system
         project.save()
         self.system.assign_owner_permissions(self.user)
-        statement = Statement(sid='ac-1',
-                              sid_class=Catalogs.NIST_SP_800_53_rev4,
-                              body='My statement body',
-                              status='Not Implmented')
+        statement = Statement(
+            sid="ac-1",
+            sid_class=Catalogs.NIST_SP_800_53_rev4,
+            body="My statement body",
+            status="Not Implmented",
+        )
         statement.save()
-        producer_element, created = Element.objects.get_or_create(name=self.component_name)
+        producer_element, created = Element.objects.get_or_create(
+            name=self.component_name
+        )
         statement.producer_element = producer_element
         statement.consumer_element = root_element
         statement.save()
@@ -184,7 +222,9 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.component = producer_element
 
         # enable experimental OpenControl support
-        enable_experimental_opencontrol, _  = SystemSettings.objects.get_or_create(setting='enable_experimental_opencontrol')
+        enable_experimental_opencontrol, _ = SystemSettings.objects.get_or_create(
+            setting="enable_experimental_opencontrol"
+        )
         enable_experimental_opencontrol.active = True
         enable_experimental_opencontrol.save()
 
@@ -196,71 +236,38 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
             os.remove(self.json_download.name)
         super().tearDown()
 
-    def test_component_download_oscal_json(self):
-        self._login()
-        url = self.url(f"/controls/components/{self.component.id}")
-        self.browser.get(url)
-        self.click_element('a[href="#oscal"]')
-
-        # sigh; selenium doesn't really let us find out the name of the
-        # downloaded file, so let's make sure it doesn't exist before we
-        # download
-        # definite race condition possibility
-
-        if self.json_download.is_file():
-            self.json_download.unlink()
-        elif os.path.isfile(self.json_download.name):
-            os.remove(self.json_download.name)
-        wait_for_sleep_after(lambda: self.click_element("a#oscal_download_json_link"))
-        var_sleep(2)
-        # assert download exists!
-        try:
-            # The following test FAILS on MacOS when tests run in HEADLESS mode.
-            # Test passes when tests run in visible mode.
-            # See: https://github.com/SeleniumHQ/selenium/issues/5292#issuecomment-544264234
-            # To use visible mode, add to environment.json file ` "test_visible": true `
-            # See: https://govready-q.readthedocs.io/en/latest/testing-for-govready-q/automated-testing.html#for-developers
-            self.assertTrue(self.json_download.is_file())
-            wait_for_sleep_after(lambda: self.assertTrue(self.json_download.is_file()))
-            filetoopen = self.json_download
-        except:
-            wait_for_sleep_after(lambda: self.assertTrue(os.path.isfile(self.json_download.name)))
-            # assert that it is valid JSON by trying to load it
-            filetoopen = self.json_download.name
-        with open(filetoopen, 'r') as f:
-            json_data = json.load(f)
-            self.assertIsNotNone(json_data)
-
-        if self.json_download.is_file():
-            self.json_download.unlink()
-        elif os.path.isfile(self.json_download.name):
-            os.remove(self.json_download.name)
-
     # Skip test since import OSCAL link was removed from page.
     # If we don't plan to use this functionality in the future, the test can be removed.
-    @unittest.skip
+    @unittest.skip("Inherited")
     def test_component_import_invalid_oscal(self):
         self._login()
-        url = self.url(f"/controls/components")# component library
+        url = self.url("/controls/components")  # component library
         self.browser.get(url)
-        self.click_element('a#component-import-oscal')
+        self.click_element("a#component-import-oscal")
         app_root = os.path.dirname(os.path.realpath(__file__))
-        oscal_json_path = os.path.join(app_root, "data/test_data", "test_invalid_oscal.json")
-        file_input = self.find_selected_option('input#json_content')
+        oscal_json_path = os.path.join(
+            app_root, "data/test_data", "test_invalid_oscal.json"
+        )
+        file_input = self.find_selected_option("input#json_content")
         self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
 
-        element_count_before_import = Element.objects.filter(element_type="system_element").count()
+        element_count_before_import = Element.objects.filter(
+            element_type="system_element"
+        ).count()
         statement_count_before_import = Statement.objects.filter(
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name
+        ).count()
 
         # Verify that the contents got copied correctly from the file to the textfield
         try:
             # Load contents from file
-            with open(oscal_json_path, 'r') as f:
+            with open(oscal_json_path, "r") as f:
                 loaded_oscal_file_json = json.load(f)
 
             # Load contents from textarea
-            file_contents = self.find_selected_option('textarea#id_json_content').get_attribute("value")
+            file_contents = self.find_selected_option(
+                "textarea#id_json_content"
+            ).get_attribute("value")
             oscal_json_contents = json.loads(file_contents)
 
             self.assertEqual(loaded_oscal_file_json, oscal_json_contents)
@@ -268,72 +275,106 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         except ValueError:
             pass
 
-        self.click_element('input#import_component_submit')
+        self.click_element("input#import_component_submit")
 
-        element_count_after_import = Element.objects.filter(element_type="system_element").count()
+        element_count_after_import = Element.objects.filter(
+            element_type="system_element"
+        ).count()
         self.assertEqual(element_count_before_import, element_count_after_import)
 
-        statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
+        statement_count_after_import = Statement.objects.filter(
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name
+        ).count()
         self.assertEqual(statement_count_before_import, statement_count_after_import)
 
     # Skip test since import OSCAL link was removed from page.
     # If we don't plan to use this functionality in the future, the test can be removed.
-    @unittest.skip
+    @unittest.skip("Inherited")
     def test_component_import_oscal_json(self):
         self._login()
-        url = self.url(f"/controls/components")# component library
+        url = self.url("/controls/components")  # component library
         self.browser.get(url)
 
-        element_count_before_import = Element.objects.filter(element_type="system_element").count()
-        statement_count_before_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
+        element_count_before_import = Element.objects.filter(
+            element_type="system_element"
+        ).count()
+        statement_count_before_import = Statement.objects.filter(
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name
+        ).count()
 
         # Test initial import of Component(s) and Statement(s)
-        self.click_element('a#component-import-oscal')
+        self.click_element("a#component-import-oscal")
         app_root = os.path.dirname(os.path.realpath(__file__))
-        oscal_json_path = os.path.join(app_root, "data/test_data", "test_oscal_component.json")
-        file_input = self.find_selected_option('input#json_content')
-        oscal_json_path = self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
+        oscal_json_path = os.path.join(
+            app_root, "data/test_data", "test_oscal_component.json"
+        )
+        file_input = self.find_selected_option("input#json_content")
+        oscal_json_path = self.filepath_conversion(
+            file_input, oscal_json_path, "sendkeys"
+        )
 
-        self.click_element('input#import_component_submit')
+        self.click_element("input#import_component_submit")
         var_sleep(4)
-        element_count_after_import = wait_for_sleep_after(lambda: Element.objects.filter(element_type="system_element").count())
+        element_count_after_import = wait_for_sleep_after(
+            lambda: Element.objects.filter(element_type="system_element").count()
+        )
 
-        wait_for_sleep_after(lambda: self.assertEqual(element_count_before_import + 1, element_count_after_import))
+        wait_for_sleep_after(
+            lambda: self.assertEqual(
+                element_count_before_import + 1, element_count_after_import
+            )
+        )
 
-        statement_count_after_import = Statement.objects.filter(statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
-        self.assertEqual(statement_count_before_import + 1, statement_count_after_import)
-        # Test that duplicate Components are re-imported with a different name and that Statements get reimported
+        statement_count_after_import = Statement.objects.filter(
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name
+        ).count()
+        self.assertEqual(
+            statement_count_before_import + 1, statement_count_after_import
+        )
 
-        wait_for_sleep_after(lambda: self.click_element('a#component-import-oscal'))
+        wait_for_sleep_after(lambda: self.click_element("a#component-import-oscal"))
 
-        file_input = self.find_selected_option('input#json_content')
+        file_input = self.find_selected_option("input#json_content")
         # Using converted keys from above
         file_input.send_keys(oscal_json_path)
 
-        self.click_element('input#import_component_submit')
+        self.click_element("input#import_component_submit")
 
-        element_count_after_duplicate_import = wait_for_sleep_after(lambda: Element.objects.filter(element_type="system_element").count())
+        element_count_after_duplicate_import = wait_for_sleep_after(
+            lambda: Element.objects.filter(element_type="system_element").count()
+        )
 
-        self.assertEqual(element_count_after_import + 1, element_count_after_duplicate_import)
+        self.assertEqual(
+            element_count_after_import + 1, element_count_after_duplicate_import
+        )
 
-        original_import_element_count = Element.objects.filter(name='test component 1').count()
+        original_import_element_count = Element.objects.filter(
+            name="test component 1"
+        ).count()
         self.assertEqual(original_import_element_count, 1)
 
-        duplicate_import_element_count = Element.objects.filter(name='test component 1 (1)').count()
+        duplicate_import_element_count = Element.objects.filter(
+            name="test component 1 (1)"
+        ).count()
         self.assertEqual(duplicate_import_element_count, 1)
 
         statement_count_after_duplicate_import = Statement.objects.filter(
-            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name).count()
-        self.assertEqual(statement_count_after_import + 1, statement_count_after_duplicate_import)
+            statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name
+        ).count()
+        self.assertEqual(
+            statement_count_after_import + 1, statement_count_after_duplicate_import
+        )
 
     def test_import_tracker(self):
         """Tests that imports are tracked correctly."""
 
         self._login()
-        url = self.url(f"/controls/import_records")
+        url = self.url("/controls/import_records")
         self.browser.get(url)
 
-        import_record_links = self.browser.find_elements_by_class_name('import_record_detail_link')
+        import_record_links = self.browser.find_elements_by_class_name(
+            "import_record_detail_link"
+        )
         self.assertEqual(len(import_record_links), 0)
 
         # Create an Import Record with a component and statement
@@ -342,7 +383,11 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         self.browser.refresh()
 
-        import_record_links = wait_for_sleep_after(lambda: self.browser.find_elements_by_class_name('import_record_detail_link'))
+        import_record_links = wait_for_sleep_after(
+            lambda: self.browser.find_elements_by_class_name(
+                "import_record_detail_link"
+            )
+        )
         self.assertEqual(len(import_record_links), 1)
 
     def test_import_delete(self):
@@ -353,17 +398,17 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         import_record = helper.create_simple_import_record()
 
         self._login()
-        url = self.url(f"/controls/import_records")
+        url = self.url("/controls/import_records")
         self.browser.get(url)
 
-        self.click_element(f"a.import_record_detail_link")
-        self.click_element(f"a#delete-import")
+        self.click_element("a.import_record_detail_link")
+        self.click_element("a#delete-import")
 
         # Test that cancel doesn't delete the import, and redirects to the component library
-        self.click_element(f"a#cancel-import-delete")
+        self.click_element("a#cancel-import-delete")
 
         current_path = urlparse(self.browser.current_url).path
-        self.assertEqual('/controls/components', current_path)
+        self.assertEqual("/controls/components", current_path)
 
         import_records_count = ImportRecord.objects.all().count()
         self.assertEqual(import_records_count, 1)
@@ -373,16 +418,16 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.assertEqual(statement_count, 1)
 
         # Test that confirming the deletion deletes the import, component, and statement
-        url = self.url(f"/controls/import_records")
+        url = self.url("/controls/import_records")
         self.browser.get(url)
-        self.click_element(f"a.import_record_detail_link")
-        self.click_element(f"a#delete-import")
+        self.click_element("a.import_record_detail_link")
+        self.click_element("a#delete-import")
 
-        self.click_element(f"a#confirm-import-delete")
+        self.click_element("a#confirm-import-delete")
 
         current_path = urlparse(self.browser.current_url).path
 
-        self.assertEqual('/controls/components', current_path)
+        self.assertEqual("/controls/components", current_path)
 
         import_records_count = ImportRecord.objects.all().count()
         self.assertEqual(import_records_count, 0)
@@ -398,21 +443,24 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         url = self.url(f"controls/components/{self.component.id}")
         self.browser.get(url)
         # Asserts that the edit button element is not found on the page
-        self.assertTrue(len(self.browser.find_elements_by_css_selector('#edit-button'))<1)
+        self.assertTrue(
+            len(self.browser.find_elements_by_css_selector("#edit-button")) < 1
+        )
+
 
 class StatementUnitTests(TestCase):
-    ## Simply dummy test ##
+    # Simply dummy test ##
     def test_tests(self):
-        self.assertEqual(1,1)
+        self.assertEqual(1, 1)
 
     def test_smt_status(self):
         # Create a smt
         smt = Statement.objects.create(
-            sid = "au-3",
-            sid_class = "NIST_SP-800-53_rev4",
-            body = "This is a test statement.",
-            statement_type = "control",
-            status = "Implemented"
+            sid="au-3",
+            sid_class="NIST_SP-800-53_rev4",
+            body="This is a test statement.",
+            statement_type="control",
+            status="Implemented",
         )
         self.assertIsNotNone(smt.id)
         self.assertEqual(smt.status, "Implemented")
@@ -430,11 +478,11 @@ class StatementUnitTests(TestCase):
         # Detection of difference in statement
         # Create a smt
         smt = Statement.objects.create(
-            sid = "au-3",
-            sid_class = "NIST_SP-800-53_rev4",
-            body = "This is a test statement.",
+            sid="au-3",
+            sid_class="NIST_SP-800-53_rev4",
+            body="This is a test statement.",
             statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name,
-            status = "Implemented"
+            status="Implemented",
         )
         smt.save()
         # orphaned w/o prototype
@@ -450,12 +498,17 @@ class StatementUnitTests(TestCase):
         smt.prototype.body = smt.prototype.body + "\nModified statememt"
         smt.prototype.save()
         self.assertEqual(smt.prototype_synched, STATEMENT_NOT_SYNCHED)
-        self.assertEqual(smt.diff_prototype_main, [(0, 'This is a test statement.'), (-1, '\nModified statememt')])
+        self.assertEqual(
+            smt.diff_prototype_main,
+            [(0, "This is a test statement."), (-1, "\nModified statememt")],
+        )
+
 
 class ElementUnitTests(TestCase):
-
     def test_element_create(self):
-        e = Element.objects.create(name="New Element", full_name="New Element Full Name", element_type="system")
+        e = Element.objects.create(
+            name="New Element", full_name="New Element Full Name", element_type="system"
+        )
         self.assertTrue(e.id is not None)
         self.assertTrue(e.name == "New Element")
         self.assertTrue(e.full_name == "New Element Full Name")
@@ -464,7 +517,9 @@ class ElementUnitTests(TestCase):
         self.assertTrue(e.id is None)
 
     def test_element_assign_owner_permissions(self):
-        e = Element.objects.create(name="New Element", full_name="New Element Full Name", element_type="system")
+        e = Element.objects.create(
+            name="New Element", full_name="New Element Full Name", element_type="system"
+        )
         e.save()
         self.assertTrue(e.id is not None)
         self.assertTrue(e.name == "New Element")
@@ -478,37 +533,39 @@ class ElementUnitTests(TestCase):
         e.assign_owner_permissions(u)
         perms = get_user_perms(u, e)
         self.assertTrue(len(perms) == 4)
-        self.assertIn('add_element', perms)
-        self.assertIn('change_element', perms)
-        self.assertIn('delete_element', perms)
-        self.assertIn('view_element', perms)
+        self.assertIn("add_element", perms)
+        self.assertIn("change_element", perms)
+        self.assertIn("delete_element", perms)
+        self.assertIn("view_element", perms)
 
     def test_element_copy(self):
         """Test copying an element"""
 
         # Create an element
-        e = Element.objects.create(name="OAuth", full_name="OAuth Service", element_type="system_element")
+        e = Element.objects.create(
+            name="OAuth", full_name="OAuth Service", element_type="system_element"
+        )
         self.assertTrue(e.id is not None)
         self.assertTrue(e.name == "OAuth")
         e.save()
 
         # Create smts of type control_implementation_prototype for element
         smt_1 = Statement.objects.create(
-            sid = "au-3",
-            sid_class = "NIST_SP-800-53_rev4",
-            body = "This is the first test statement.",
+            sid="au-3",
+            sid_class="NIST_SP-800-53_rev4",
+            body="This is the first test statement.",
             statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
-            status = "Implemented",
-            producer_element = e
+            status="Implemented",
+            producer_element=e,
         )
         smt_1.save()
         smt_2 = Statement.objects.create(
-            sid = "au-4",
-            sid_class = "NIST_SP-800-53_rev4",
-            body = "This is the first test statement.",
+            sid="au-4",
+            sid_class="NIST_SP-800-53_rev4",
+            body="This is the first test statement.",
             statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name,
-            status = "Implemented",
-            producer_element = e
+            status="Implemented",
+            producer_element=e,
         )
         smt_2.save()
 
@@ -522,14 +579,21 @@ class ElementUnitTests(TestCase):
         self.assertTrue(e_copy.name == "OAuth copy")
 
         # Test statements copied
-        smts = e_copy.statements(StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name)
+        smts = e_copy.statements(
+            StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name
+        )
         self.assertEqual(len(smts), 2)
 
     def test_element_rename(self):
         """Test renaming an element"""
 
         # Create an element
-        e = Element.objects.create(name="Element A", full_name="Element A Full Name",description="Element A Description",element_type="system_element")
+        e = Element.objects.create(
+            name="Element A",
+            full_name="Element A Full Name",
+            description="Element A Description",
+            element_type="system_element",
+        )
         self.assertIsNotNone(e.id)
         self.assertEqual(e.name, "Element A")
         self.assertEqual(e.description, "Element A Description")
@@ -540,82 +604,102 @@ class ElementUnitTests(TestCase):
         self.assertEqual(e.description, "Renamed Element A Description")
 
     def test_component_type_state(self):
-        e = Element.objects.create(name="New component",  element_type="system")
+        e = Element.objects.create(name="New component", element_type="system")
         self.assertTrue(e.id is not None)
         self.assertTrue(e.component_type == "software")
         self.assertTrue(e.component_state == "operational")
-        e2 = Element.objects.create(name="New component2",  element_type="system", component_type="hardware", component_state="disposition")
+        e2 = Element.objects.create(
+            name="New component2",
+            element_type="system",
+            component_type="hardware",
+            component_state="disposition",
+        )
         self.assertTrue(e2.id is not None)
         self.assertTrue(e2.component_type == "hardware")
         self.assertTrue(e2.component_state == "disposition")
 
-class ElementControlUnitTests(SeleniumTest):
 
+class ElementControlUnitTests(SeleniumTest):
     def test_assign_baseline(self):
 
         # Create root_element - no relayed controls should exist
         element = Element(name="sys_root_element")
         element.save()
-        self.assertEqual(0,len(element.controls.all()))
+        self.assertEqual(0, len(element.controls.all()))
         # Create system
         system = System(root_element=element)
         system.save()
 
         # Create a user because method expect user with correct permission
-        user = User(email='jane@example.com', username="Jane")
+        user = User(email="jane@example.com", username="Jane")
         user.save()
         # Assign owner permissions
         element.assign_edit_permissions(user)
 
         # Assign low baseline and some controls should exist
-        result = element.assign_baseline_controls(user, 'NIST_SP-800-53_rev4', 'low')
-        self.assertLess(110,len(element.controls.all()))
-        self.assertGreater(135,len(element.controls.all()))
+        element.assign_baseline_controls(user, "NIST_SP-800-53_rev4", "low")
+        self.assertLess(110, len(element.controls.all()))
+        self.assertGreater(135, len(element.controls.all()))
 
         # Assign moderate baseline and more controls should exist
-        element.assign_baseline_controls(user, 'NIST_SP-800-53_rev4', 'moderate')
-        self.assertLess(210,len(element.controls.all()))
-        self.assertGreater(280,len(element.controls.all()))
+        element.assign_baseline_controls(user, "NIST_SP-800-53_rev4", "moderate")
+        self.assertLess(210, len(element.controls.all()))
+        self.assertGreater(280, len(element.controls.all()))
 
         # Assign low baseline and controls should be removed
-        element.assign_baseline_controls(user, 'NIST_SP-800-53_rev4', 'low')
-        self.assertLess(110,len(element.controls.all()))
-        self.assertGreater(135,len(element.controls.all()))
+        element.assign_baseline_controls(user, "NIST_SP-800-53_rev4", "low")
+        self.assertLess(110, len(element.controls.all()))
+        self.assertGreater(135, len(element.controls.all()))
 
     def test_element_role(self):
         """Test adding a role to an element"""
 
         # Create an element and make sure it has an id
-        ele = Element.objects.create(name="Element A", full_name="Element A Full Name",description="Element A Description",element_type="system_element")
+        ele = Element.objects.create(
+            name="Element A",
+            full_name="Element A Full Name",
+            description="Element A Description",
+            element_type="system_element",
+        )
         self.assertIsNotNone(ele.id)
 
         # No elements have a role
-        self.assertEqual(ele.roles.values_list('role', flat=True).count(), 0)
+        self.assertEqual(ele.roles.values_list("role", flat=True).count(), 0)
 
-        ele_role = ElementRole.objects.create(id=1, role="add", description="testing adding a description")
+        ele_role = ElementRole.objects.create(
+            id=1, role="add", description="testing adding a description"
+        )
         # Adding the add role to the element
         ele.roles.add(ele_role)
 
         # One element has a role
-        self.assertEqual(ele.roles.values_list('role', flat=True).count(), 1)
+        self.assertEqual(ele.roles.values_list("role", flat=True).count(), 1)
 
-        ele2 = Element.objects.create(name="Element B", full_name="Element B Full Name",description="Element B Description",element_type="system_element")
+        Element.objects.create(
+            name="Element B",
+            full_name="Element B Full Name",
+            description="Element B Description",
+            element_type="system_element",
+        )
         # Do we have two elements?
         self.assertEqual(Element.objects.all().count(), 2)
 
         # Even with two elements there is still only one element with a role
-        self.assertEqual(ele.roles.values_list('role', flat=True).count(), 1)
+        self.assertEqual(ele.roles.values_list("role", flat=True).count(), 1)
+
 
 class SystemUnitTests(TestCase):
     def test_system_create(self):
-        sre = Element.objects.create(name="New Element", full_name="New Element Full Name", element_type="system")
+        sre = Element.objects.create(
+            name="New Element", full_name="New Element Full Name", element_type="system"
+        )
         self.assertTrue(sre.id is not None)
         self.assertTrue(sre.name == "New Element")
         self.assertTrue(sre.full_name == "New Element Full Name")
         self.assertTrue(sre.element_type == "system")
         s = System(root_element=sre)
         s.save()
-        self.assertEqual(s.root_element.name,sre.name)
+        self.assertEqual(s.root_element.name, sre.name)
 
         u2 = User.objects.create(username="Jane2", email="jane@example.com")
         # Test no permissions for user
@@ -626,34 +710,39 @@ class SystemUnitTests(TestCase):
         s.assign_owner_permissions(u2)
         perms = get_user_perms(u2, s)
         self.assertTrue(len(perms) == 4)
-        self.assertIn('add_system', perms)
-        self.assertIn('change_system', perms)
-        self.assertIn('delete_system', perms)
-        self.assertIn('view_system', perms)
+        self.assertIn("add_system", perms)
+        self.assertIn("change_system", perms)
+        self.assertIn("delete_system", perms)
+        self.assertIn("view_system", perms)
 
         # Create an element with control implementation statements and assign to system
-        e = Element.objects.create(name="OAuth", full_name="OAuth Service", element_type="system_element", component_state="operational")
+        e = Element.objects.create(
+            name="OAuth",
+            full_name="OAuth Service",
+            element_type="system_element",
+            component_state="operational",
+        )
         self.assertTrue(e.id is not None)
         self.assertTrue(e.name == "OAuth")
         e.save()
         smt_1 = Statement.objects.create(
-            sid = "au-3",
-            sid_class = "NIST_SP-800-53_rev4",
-            body = "This is the first test statement.",
+            sid="au-3",
+            sid_class="NIST_SP-800-53_rev4",
+            body="This is the first test statement.",
             statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name,
-            status = "Implemented",
-            producer_element = e,
-            consumer_element = s.root_element
+            status="Implemented",
+            producer_element=e,
+            consumer_element=s.root_element,
         )
         smt_1.save()
         smt_2 = Statement.objects.create(
-            sid = "au-4",
-            sid_class = "NIST_SP-800-53_rev4",
-            body = "This is the first test statement.",
+            sid="au-4",
+            sid_class="NIST_SP-800-53_rev4",
+            body="This is the first test statement.",
             statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name,
-            status = "Implemented",
-            producer_element = e,
-            consumer_element = s.root_element
+            status="Implemented",
+            producer_element=e,
+            consumer_element=s.root_element,
         )
         smt_2.save()
 
@@ -667,11 +756,12 @@ class SystemUnitTests(TestCase):
         smt_2_updated = Statement.objects.get(pk=smt_2.id)
         self.assertTrue(smt_2_updated.status, control_status)
 
+
 class SystemUITests(OrganizationSiteFunctionalTests):
 
     # Skip test since it's reliant on a new project being created.
     # If we want to keep deployments page functionality, then fix this test.
-    @unittest.skip
+    @unittest.skip("Inherited")
     def test_deployments_page_exists(self):
 
         # login as the first user and create a new project
@@ -683,27 +773,38 @@ class SystemUITests(OrganizationSiteFunctionalTests):
         system = project.system
 
         self.navigateToPage(f"/systems/{system.id}/deployments")
-        wait_for_sleep_after(lambda: self.assertInNodeText("New Deployment", ".systems-element-button"))
+        wait_for_sleep_after(
+            lambda: self.assertInNodeText("New Deployment", ".systems-element-button")
+        )
 
         # Add default deployments to system
-        deployment = Deployment(name="Training", description="Training environment", system=system)
+        deployment = Deployment(
+            name="Training", description="Training environment", system=system
+        )
         deployment.save()
 
         # Does new deployment appear on deployments list?
         self.navigateToPage(f"/systems/{system.id}/deployments")
-        var_sleep(3) # wait for page to open
-        wait_for_sleep_after(lambda: self.assertInNodeText("New Deployment", ".systems-element-button"))
+        var_sleep(3)  # wait for page to open
+        wait_for_sleep_after(
+            lambda: self.assertInNodeText("New Deployment", ".systems-element-button")
+        )
+
 
 class PoamUnitTests(TestCase):
     """Class for Poam Unit Tests"""
 
-    ## Simply dummy test ##
+    # Simply dummy test ##
     def test_tests(self):
-        self.assertEqual(1,1)
+        self.assertEqual(1, 1)
 
     def test_element_create(self):
         # Create a root_element and system
-        e = Element.objects.create(name="New Element 2", full_name="New Element 2 Full Name", element_type="system")
+        e = Element.objects.create(
+            name="New Element 2",
+            full_name="New Element 2 Full Name",
+            element_type="system",
+        )
         self.assertTrue(e.id is not None)
         self.assertTrue(e.name == "New Element 2")
         self.assertTrue(e.full_name == "New Element 2 Full Name")
@@ -712,50 +813,47 @@ class PoamUnitTests(TestCase):
         e.save()
         s = System(root_element=e)
         s.save()
-        self.assertEqual(s.root_element.name,e.name)
+        self.assertEqual(s.root_element.name, e.name)
 
         # Create a Poam for the system
         smt = Statement.objects.create(
-            sid = None,
-            sid_class = None,
-            pid = None,
-            body = "This is a test Poam statement.",
-            statement_type = "Poam",
-            status = "New",
-            consumer_element = e
+            sid=None,
+            sid_class=None,
+            pid=None,
+            body="This is a test Poam statement.",
+            statement_type="Poam",
+            status="New",
+            consumer_element=e,
         )
         smt.save()
-        poam = Poam.objects.create(statement = smt, poam_group = "New POA&M Group")
+        poam = Poam.objects.create(statement=smt, poam_group="New POA&M Group")
         self.assertTrue(poam.poam_group == "New POA&M Group")
-        # self.assertTrue(poam.name == "New Element")
-        # self.assertTrue(poam.full_name == "New Element Full Name")
-        # self.assertTrue(poam.element_type == "system")
         poam.save()
-        # poam.delete()
-        # self.assertTrue(poam.uuid is None)
+
 
 class OrgParamTests(SeleniumTest):
     """Class for OrgParam Unit Tests"""
 
     def test_org_params(self):
         odp = OrgParams()
-        self.assertIn('mod_fedramp', odp.get_names())
+        self.assertIn("mod_fedramp", odp.get_names())
         odp53 = odp.get_params("mod_fedramp")
-        self.assertTrue('at least every 3 years' == odp53['ac-1_prm_2'])
+        self.assertTrue("at least every 3 years" == odp53["ac-1_prm_2"])
         self.assertEqual(177, len(odp53))
 
     def test_catalog_all_controls_with_organizational_parameters(self):
         odp = OrgParams()
-        self.assertIn('mod_fedramp', odp.get_names())
+        self.assertIn("mod_fedramp", odp.get_names())
         odp53 = odp.get_params("mod_fedramp")
         # parameter_values = { 'ac-1_prm_2': 'every 12 parsecs' }
         parameter_values = odp53
-        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4,
-                                 parameter_values=parameter_values)
+        cg = Catalog.GetInstance(
+            Catalogs.NIST_SP_800_53_rev4, parameter_values=parameter_values
+        )
         cg_flat = cg.get_flattened_controls_all_as_dict()
-        control = cg_flat['ac-1']
-        description = control['description']
-        self.assertTrue('at least every 3 years' in description, description)
+        control = cg_flat["ac-1"]
+        description = control["description"]
+        self.assertTrue("at least every 3 years" in description, description)
 
     def test_organizational_parameters_via_project(self):
 
@@ -778,34 +876,33 @@ class OrgParamTests(SeleniumTest):
             slug="system",
             is_system_source=True,
             defaults={
-                "spec": { # required system projects
+                "spec": {  # required system projects
                     "type": "local",
                     "path": "fixtures/modules/system",
                 }
-            }
+            },
         )
-        load_modules().handle() # load system modules
+        load_modules().handle()  # load system modules
 
         AppSource.objects.create(
             slug="project",
-            spec={ # contains a test project
+            spec={  # contains a test project
                 "type": "local",
                 "path": "fixtures/modules/other",
             },
-            trust_assets=True
-        )\
-            .add_app_to_catalog("simple_project")
+            trust_assets=True,
+        ).add_app_to_catalog("simple_project")
 
         user = User.objects.create(
-            username="me",
-            email="test+user@q.govready.com",
-            is_staff=True
+            username="me", email="test+user@q.govready.com", is_staff=True
         )
-        org = Organization.create(name="Our Organization", slug="testorg",
-                                  admin_user=user)
+        org = Organization.create(
+            name="Our Organization", slug="testorg", admin_user=user
+        )
 
-        root_element = Element(name="My Root Element",
-                               description="Description of my root element")
+        root_element = Element(
+            name="My Root Element", description="Description of my root element"
+        )
         root_element.save()
 
         system = System()
@@ -820,28 +917,30 @@ class OrgParamTests(SeleniumTest):
         self.assertEquals(parameter_values["ac-1_prm_2"], "at least every 3 years")
 
         # now, add an organizational setting and try again
-        OrganizationalSetting.objects.create(organization=org,
-                                             catalog_key=Catalogs.NIST_SP_800_53_rev4,
-                                             parameter_key="ac-1_prm_2",
-                                             value="at least every 100 years")
+        OrganizationalSetting.objects.create(
+            organization=org,
+            catalog_key=Catalogs.NIST_SP_800_53_rev4,
+            parameter_key="ac-1_prm_2",
+            value="at least every 100 years",
+        )
 
         # we should now see the organizational setting override
         parameter_values = project.get_parameter_values(Catalogs.NIST_SP_800_53_rev4)
         self.assertEquals(parameter_values["ac-1_prm_2"], "at least every 100 years")
 
-class ControlComponentTests(OrganizationSiteFunctionalTests):
 
+class ControlComponentTests(OrganizationSiteFunctionalTests):
     def create_test_statement(self, sid, sid_class, body, statement_type, status):
         """
         Creates and saves a new statement
         """
         # Create a smt
         smt = Statement.objects.create(
-            sid = sid,
-            sid_class = sid_class,
-            body = body,
-            statement_type = statement_type,
-            status = status
+            sid=sid,
+            sid_class=sid_class,
+            body=body,
+            statement_type=statement_type,
+            status=status,
         )
         smt.save()
         return smt
@@ -851,10 +950,16 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
 
         try:
             # Using full Xpath
-            comp_tab = self.browser.find_element_by_xpath("/html/body/div[1]/div/div[3]/ul/li[2]/a")
-        except:
+            comp_tab = self.browser.find_element_by_xpath(
+                "/html/body/div[1]/div/div[3]/ul/li[2]/a"
+            )
+        except Exception:
             # Non-full Xpath with wait
-            comp_tab = wait.until(EC.visibility_of_element_located((By.XPATH, "//a[contains(@href, '#component_controls')]")))
+            comp_tab = wait.until(
+                EC.visibility_of_element_located(
+                    (By.XPATH, "//a[contains(@href, '#component_controls')]")
+                )
+            )
 
         comp_tab.click()
 
@@ -866,9 +971,12 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         dropdown = Select(self.browser.find_element_by_id(dropdownid))
         return dropdown
 
-    def create_fill_statement_form(self, name, statement, part, status, statusvalue, remarks, num):
+    def create_fill_statement_form(
+        self, name, statement, part, status, statusvalue, remarks, num
+    ):
         """
-        In the component statements tab create and then fill a new component statement with the given information.
+        In the component statements tab create and then fill a new component statement with the
+        given information.
         """
 
         self.click_components_tab()
@@ -878,12 +986,20 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
 
         # Open the new component form open
         try:
-            new_comp_btn = self.browser.find_element_by_link_text("New Component Statement")
-        except:
-            new_comp_btn = self.browser.find_element_by_id(f"producer_element-{num}-title")
+            new_comp_btn = self.browser.find_element_by_link_text(
+                "New Component Statement"
+            )
+        except Exception:
+            new_comp_btn = self.browser.find_element_by_id(
+                f"producer_element-{num}-title"
+            )
         new_comp_btn.click()
         # Fill out form
-        wait_for_sleep_after(lambda: self.browser.find_element_by_id("producer_element_name").send_keys(name))
+        wait_for_sleep_after(
+            lambda: self.browser.find_element_by_id("producer_element_name").send_keys(
+                name
+            )
+        )
 
         self.browser.find_elements_by_name("body")[-1].send_keys(statement)
         self.browser.find_elements_by_name("pid")[-1].send_keys(part)
@@ -894,7 +1010,7 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         self.browser.find_elements_by_name("save")[-1].click()
         self.browser.refresh()
 
-    @unittest.skip
+    @unittest.skip("Inherited")
     def test_smt_autocomplete(self):
         """
         Testing if the textbox can autocomplete and filter for existing components
@@ -904,64 +1020,137 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         self._login()
         self._new_project()
 
-        # TODO: Why is system being overridden/conditional. system_id will be 1 in test class and 4 in full test suite
+        # TODO: Why is system being overridden/conditional. system_id will be 1 in test class
+        # and 4 in full test suite
         systemid = System.objects.all().first()
         self.navigateToPage(f"/systems/{systemid.id}/controls/selected")
 
         # Select moderate
-        self.navigateToPage(f"/systems/{systemid.id}/controls/baseline/NIST_SP-800-53_rev4/moderate/_assign")
+        self.navigateToPage(
+            f"/systems/{systemid.id}/controls/baseline/NIST_SP-800-53_rev4/moderate/_assign"
+        )
         # Head to the control ac-3
-        self.navigateToPage(f"/systems/{systemid.id}/controls/catalogs/NIST_SP-800-53_rev4/control/ac-3")
-
+        self.navigateToPage(
+            f"/systems/{systemid.id}/controls/catalogs/NIST_SP-800-53_rev4/control/ac-3"
+        )
 
         # How many components are there currently?
         # Confirm the dropdown sees all components
-        comps_dropdown = wait_for_sleep_after(lambda: self.dropdown_option("selected_producer_element_form_id"))
+        comps_dropdown = wait_for_sleep_after(
+            lambda: self.dropdown_option("selected_producer_element_form_id")
+        )
         num = len(comps_dropdown.options)
 
         # Create components
-        self.create_fill_statement_form("Component 1", "Component body", 'a', 'status_', "Planned", "Component remarks", num)
+        self.create_fill_statement_form(
+            "Component 1",
+            "Component body",
+            "a",
+            "status_",
+            "Planned",
+            "Component remarks",
+            num,
+        )
         num += 1
-        wait_for_sleep_after(lambda: self.create_fill_statement_form("Component 2", "Component body", 'b', 'status_', "Planned", "Component remarks", num))
+        wait_for_sleep_after(
+            lambda: self.create_fill_statement_form(
+                "Component 2",
+                "Component body",
+                "b",
+                "status_",
+                "Planned",
+                "Component remarks",
+                num,
+            )
+        )
         num += 1
-        wait_for_sleep_after(lambda: self.create_fill_statement_form("Component 3", "Component body", 'c', 'status_', "Planned", "Component remarks", num))
+        wait_for_sleep_after(
+            lambda: self.create_fill_statement_form(
+                "Component 3",
+                "Component body",
+                "c",
+                "status_",
+                "Planned",
+                "Component remarks",
+                num,
+            )
+        )
         num += 1
-        wait_for_sleep_after(lambda: self.create_fill_statement_form("Test name 1", "Component body", 'a', 'status_', "Planned", "Component remarks", num))
+        wait_for_sleep_after(
+            lambda: self.create_fill_statement_form(
+                "Test name 1",
+                "Component body",
+                "a",
+                "status_",
+                "Planned",
+                "Component remarks",
+                num,
+            )
+        )
         num += 1
-        wait_for_sleep_after(lambda: self.create_fill_statement_form("Test name 2", "Component body", 'b', 'status_', "Planned", "Component remarks", num))
+        wait_for_sleep_after(
+            lambda: self.create_fill_statement_form(
+                "Test name 2",
+                "Component body",
+                "b",
+                "status_",
+                "Planned",
+                "Component remarks",
+                num,
+            )
+        )
         num += 1
-        wait_for_sleep_after(lambda: self.create_fill_statement_form("Test name 3", "Component body", 'c', 'status_', "Planned", "Component remarks", num))
+        wait_for_sleep_after(
+            lambda: self.create_fill_statement_form(
+                "Test name 3",
+                "Component body",
+                "c",
+                "status_",
+                "Planned",
+                "Component remarks",
+                num,
+            )
+        )
 
         # Refresh page to refresh items in selection
-        self.navigateToPage(f"/systems/{systemid.id}/controls/catalogs/NIST_SP-800-53_rev4/control/ac-3")
+        self.navigateToPage(
+            f"/systems/{systemid.id}/controls/catalogs/NIST_SP-800-53_rev4/control/ac-3"
+        )
 
         wait_for_sleep_after(lambda: self.click_components_tab())
 
         # Confirm the dropdown sees all components
-        comps_dropdown = wait_for_sleep_after(lambda: self.dropdown_option("selected_producer_element_form_id"))
-
+        comps_dropdown = wait_for_sleep_after(
+            lambda: self.dropdown_option("selected_producer_element_form_id")
+        )
 
         self.assertEquals(len(comps_dropdown.options), 7)
 
         # Click on search bar
-        search_comps_txtbar = self.browser.find_elements_by_id("producer_element_search")
+        search_comps_txtbar = self.browser.find_elements_by_id(
+            "producer_element_search"
+        )
 
         # Type a few text combinations and make sure filtering is working
         # Need to click the new dropdown after sending keys
 
-        ## Search for Component
+        # Search for Component
         search_comps_txtbar[-1].click()
         search_comps_txtbar[-1].clear()
         search_comps_txtbar[-1].send_keys("Component")
-        self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()# Ajax request
+        self.browser.find_elements_by_id("selected_producer_element_form_id")[
+            -1
+        ].click()  # Ajax request
         var_sleep(1)
         assert len(comps_dropdown.options) == 3
 
-        ## Search for 2
+        # Search for 2
         search_comps_txtbar[-1].click()
         search_comps_txtbar[-1].clear()
         search_comps_txtbar[-1].send_keys("2")
-        self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()# Ajax request
+        self.browser.find_elements_by_id("selected_producer_element_form_id")[
+            -1
+        ].click()  # Ajax request
         var_sleep(1)
         # print("####### len(comps_dropdown.options)", len(comps_dropdown.options))
         assert len(comps_dropdown.options) == 2
@@ -970,51 +1159,73 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         testname2_ele = str(elements[5].id)
         component2_ele = str(elements[2].id)
         # Add a new component based on one of the options available in the filtered dropdown
-        ## Test name 2 has a value of 6 and Component 2 has a value of 3
+        # Test name 2 has a value of 6 and Component 2 has a value of 3
         self.select_option("select#selected_producer_element_form_id", testname2_ele)
-        assert self.find_selected_option("select#selected_producer_element_form_id").get_property("value") == testname2_ele
+        assert (
+            self.find_selected_option(
+                "select#selected_producer_element_form_id"
+            ).get_property("value")
+            == testname2_ele
+        )
 
-        ## Test name 2 has a value of 6 and Component 2 has a value of 3
+        # Test name 2 has a value of 6 and Component 2 has a value of 3
         self.select_option("select#selected_producer_element_form_id", component2_ele)
-        assert self.find_selected_option("select#selected_producer_element_form_id").get_property("value") == component2_ele
+        assert (
+            self.find_selected_option(
+                "select#selected_producer_element_form_id"
+            ).get_property("value")
+            == component2_ele
+        )
 
         # Open a modal will with component statements related to the select component prototype
-        add_related_statements_btn = self.browser.find_elements_by_id("add_related_statements")
+        add_related_statements_btn = self.browser.find_elements_by_id(
+            "add_related_statements"
+        )
         add_related_statements_btn[-1].click()
         # Ensure we can't submit no component statements and that the alert pops up.
-        wait_for_sleep_after(lambda: self.browser.find_element_by_xpath("//*[@id='relatedcompModal']/div/div[1]/div[4]/button").click())
+        wait_for_sleep_after(
+            lambda: self.browser.find_element_by_xpath(
+                "//*[@id='relatedcompModal']/div/div[1]/div[4]/button"
+            ).click()
+        )
 
         # Open the first panel
         component_element_btn = self.browser.find_element_by_id("related-panel-1")
         component_element_btn.click()
-        select_comp_statement_check = wait_for_sleep_after(lambda: self.browser.find_element_by_name("relatedcomps"))
+        select_comp_statement_check = wait_for_sleep_after(
+            lambda: self.browser.find_element_by_name("relatedcomps")
+        )
         var_sleep(1)
         wait_for_sleep_after(lambda: select_comp_statement_check.click())
         var_sleep(1)
         # Add component statement
-        submit_comp_statement = wait_for_sleep_after(lambda: self.browser.find_element_by_xpath("//*[@id='relatedcompModal']/div/div[1]/div[4]/button"))
+        submit_comp_statement = wait_for_sleep_after(
+            lambda: self.browser.find_element_by_xpath(
+                "//*[@id='relatedcompModal']/div/div[1]/div[4]/button"
+            )
+        )
         submit_comp_statement.click()
 
-class ControlTestHelper(object):
 
+class ControlTestHelper(object):
     def create_simple_import_record(self):
         # Create an Import Record with a component and statement
         import_record = ImportRecord.objects.create()
         import_record.save()
 
         component = Element.objects.create(
-            name='Test Component',
-            description='This is a test component',
+            name="Test Component",
+            description="This is a test component",
             element_type="system_element",
             import_record=import_record,
         )
         component.save()
 
         statement = Statement.objects.create(
-            sid='ac-7',
-            sid_class='NIST_SP-800-53_rev4',
-            pid='a',
-            body='This is a sample statement',
+            sid="ac-7",
+            sid_class="NIST_SP-800-53_rev4",
+            pid="a",
+            body="This is a sample statement",
             statement_type=StatementTypeEnum.CONTROL_IMPLEMENTATION.name,
             producer_element=component,
             import_record=import_record,
@@ -1023,15 +1234,17 @@ class ControlTestHelper(object):
 
         return import_record
 
+
 class ImportExportOSCALTests(OrganizationSiteFunctionalTests):
     """
     Testing the import and export of OSCAL JSON objects
     """
 
-    @unittest.skip
+    @unittest.skip("Inherited")
     def test_export_oscal_system_security_plan(self):
         """
-        Testing OSCAL_ssp_export to make sure the file is created with a status code of 200 utilizing the class OSCALSystemSecurityPlanSerializer's as_json() method
+        Testing OSCAL_ssp_export to make sure the file is created with a status code of 200
+        utilizing the class OSCALSystemSecurityPlanSerializer's as_json() method
         """
         self._login(self.user.username, self.user.clear_password)
         self._new_project()
@@ -1039,52 +1252,70 @@ class ImportExportOSCALTests(OrganizationSiteFunctionalTests):
         the_system = self.current_project.system
 
         # ssp_export_oscal with system id
-        response = OSCAL_ssp_export(self,"", {"system_id": the_system.id} )
+        response = OSCAL_ssp_export(self, "", {"system_id": the_system.id})
 
-        self.assertEqual(
-            response.status_code,
-            200
-        )
-        self.assertEqual(
-            response.get('Content-Type'),
-            'application/json'
-        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get("Content-Type"), "application/json")
         self.assertIn(
-        f"attachment; filename={the_system.root_element.name.replace(' ', '_')}_OSCAL_",
-        response.get('Content-Disposition')
+            f"attachment; filename={the_system.root_element.name.replace(' ', '_')}_OSCAL_",
+            response.get("Content-Disposition"),
         )
 
     def test_deoscalization_control_id(self):
         """
-        Tests de_oscalize_control_id function on expected formats from sid (oscal) format to regular.
+        Tests de_oscalize_control_id function on expected formats from sid (oscal) format
+        to regular.
         """
-        controls = ["ac-2.4", "ac-2.5", "ac-2.11","ac-2.13", "ac-3", "ac-4", "si-3.2", "si-4.2", "si-4.5"]
+        controls = [
+            "ac-2.4",
+            "ac-2.5",
+            "ac-2.11",
+            "ac-2.13",
+            "ac-3",
+            "ac-4",
+            "si-3.2",
+            "si-4.2",
+            "si-4.5",
+        ]
         regular_sid_controls = [de_oscalize_control_id(control) for control in controls]
-        self.assertEqual(['AC-2(4)', 'AC-2(5)', 'AC-2(11)', 'AC-2(13)', 'AC-3', 'AC-4', 'SI-3(2)', 'SI-4(2)', 'SI-4(5)'], regular_sid_controls)
+        self.assertEqual(
+            [
+                "AC-2(4)",
+                "AC-2(5)",
+                "AC-2(11)",
+                "AC-2(13)",
+                "AC-3",
+                "AC-4",
+                "SI-3(2)",
+                "SI-4(2)",
+                "SI-4(5)",
+            ],
+            regular_sid_controls,
+        )
+
 
 class CatalogTests(TestCase):
-
     def test_catalog_get_instance(self):
         catalog = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4)
         self.assertIsInstance(catalog, Catalog)
         self.assertEqual(catalog.catalog_key, Catalogs.NIST_SP_800_53_rev4)
 
     def test_catalog_get_instance_unknown(self):
-        catalog = Catalog.GetInstance('XYZZY')
+        catalog = Catalog.GetInstance("XYZZY")
         # TODO: this covers the current behavior, which is problematic me thinks
         self.assertEqual(catalog.status, "error")
 
     def test_catalog_title(self):
         catalog = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4)
-        expected_title = \
-            "NIST Special Publication 800-53 Revision 4: Security and" \
-                " Privacy Controls for Federal Information Systems" \
-                " and Organizations"
+        expected_title = (
+            "NIST Special Publication 800-53 Revision 4: Security and"
+            " Privacy Controls for Federal Information Systems"
+            " and Organizations"
+        )
         self.assertEqual(catalog.catalog_title, expected_title)
 
 
 class CatalogsTest(TestCase):
-
     def test_catalogs_keys(self):
         keys = Catalogs.keys()
         # 4 "built in" catalogs

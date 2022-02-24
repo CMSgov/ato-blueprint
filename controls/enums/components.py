@@ -9,6 +9,7 @@ class ComponentTypeEnum(BaseEnum):
     PROCESS = "process"
     PROCEDURE = "procedure"
 
+
 class ComponentStateEnum(BaseEnum):
     UNDER_DEVELOPMENT = "under-development"
     OPERATIONAL = "operational"

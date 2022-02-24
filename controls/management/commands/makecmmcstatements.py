@@ -40,25 +40,41 @@ logger = get_logger()
 
 
 class Command(BaseCommand):
-    help = 'Make CMMC statements from 800-53 statements'
+    help = "Make CMMC statements from 800-53 statements"
 
     def add_arguments(self, parser):
         # parser.add_argument('--format', metavar='format', nargs='?', default="oscal", help="File format")
         # parser.add_argument('--path', metavar='dir_or_pdf', nargs='?', default="local/export/components", help="The directory path containing component files to import.")
 
-        parser.add_argument('--importname', metavar='import_name', nargs='?', type=str, default="Batch CMMC component statement creation", help="Name to identify the batch creation of statements")
+        parser.add_argument(
+            "--importname",
+            metavar="import_name",
+            nargs="?",
+            type=str,
+            default="Batch CMMC component statement creation",
+            help="Name to identify the batch creation of statements",
+        )
 
-        parser.add_argument('--component_ids', metavar='component_ids', nargs='+', required=True, type=int, help="Space delimited list of component IDs")
+        parser.add_argument(
+            "--component_ids",
+            metavar="component_ids",
+            nargs="+",
+            required=True,
+            type=int,
+            help="Space delimited list of component IDs",
+        )
 
-        parser.add_argument('--stopinvalid', default=True, action='store_true')
-        parser.add_argument('--no-stopinvalid', dest='stopinvalid', action='store_false')
+        parser.add_argument("--stopinvalid", default=True, action="store_true")
+        parser.add_argument(
+            "--no-stopinvalid", dest="stopinvalid", action="store_false"
+        )
 
     def handle(self, *args, **options):
 
         # Set up
         # Create import record so we easily bulk delete
-        import_name = options['importname']
-        component_ids = options['component_ids']
+        import_name = options["importname"]
+        component_ids = options["component_ids"]
 
         import_rec = ImportRecord.objects.create(name=import_name)
         CIP = StatementTypeEnum.CONTROL_IMPLEMENTATION_PROTOTYPE.name
@@ -66,7 +82,7 @@ class Command(BaseCommand):
         # Get the CMMC Catalog instance
         catalog_key = "CMMC_ver1"
         cmmc = Catalog.GetInstance(catalog_key=catalog_key)
-        c_dict= cmmc.get_flattened_controls_all_as_dict()
+        c_dict = cmmc.get_flattened_controls_all_as_dict()
 
         def get_catalog_key_from_ref(ref):
             """Extract the catalog_key from a OSCAL catalog link href string"""
@@ -78,7 +94,9 @@ class Command(BaseCommand):
             return catalog_key
 
         # Process components and their statements
-        emt_smts = Statement.objects.filter(producer_element__in=component_ids, statement_type=CIP).order_by('producer_element')
+        emt_smts = Statement.objects.filter(
+            producer_element__in=component_ids, statement_type=CIP
+        ).order_by("producer_element")
         smts_grouped = defaultdict(list)
         for s in emt_smts:
             smts_grouped[s.producer_element].append(s)
@@ -86,11 +104,30 @@ class Command(BaseCommand):
             print(f"\n{emt.name} ({emt.id})")
             for smt in smts_grouped[emt]:
                 print(f"# Analyze {smt}")
-                r = [sid for sid in c_dict.keys() if len([gl['text'] for gl in c_dict[sid]['guidance_links'] if gl['text']==de_oscalize_control_id(smt.sid, get_catalog_key_from_ref(gl['href']) ) ])>0]
+                r = [
+                    sid
+                    for sid in c_dict.keys()
+                    if len(
+                        [
+                            gl["text"]
+                            for gl in c_dict[sid]["guidance_links"]
+                            if gl["text"]
+                            == de_oscalize_control_id(
+                                smt.sid, get_catalog_key_from_ref(gl["href"])
+                            )
+                        ]
+                    )
+                    > 0
+                ]
                 print(f"- Found links to: {r}")
                 for rc in r:
-                    new_smt, created = Statement.objects.get_or_create(sid=rc, sid_class=catalog_key, producer_element=emt, statement_type=CIP)
-                    new_smt.change_log = { "change_log": {"changes": []} }
+                    new_smt, created = Statement.objects.get_or_create(
+                        sid=rc,
+                        sid_class=catalog_key,
+                        producer_element=emt,
+                        statement_type=CIP,
+                    )
+                    new_smt.change_log = {"change_log": {"changes": []}}
                     change = {
                         "datetimestamp": new_smt.updated.isoformat(),
                         "event": None,
@@ -99,28 +136,37 @@ class Command(BaseCommand):
                         "fields": {
                             "sid": new_smt.sid,
                             "sid_class": new_smt.sid_class,
-                            "body": new_smt.body
-                        }
+                            "body": new_smt.body,
+                        },
                     }
                     if created:
                         print(f"- Created smt id {new_smt.id}")
                         new_smt.import_record = import_rec
-                        change['event'] = 'created'
+                        change["event"] = "created"
                         new_smt.body = smt.body
-                        logger.info(event=f"new_statement makecmmcstatements",
-                                object={"object": "statement", "id": new_smt.id},
-                                user={"id": None, "username": None})
+                        logger.info(
+                            event=f"new_statement makecmmcstatements",
+                            object={"object": "statement", "id": new_smt.id},
+                            user={"id": None, "username": None},
+                        )
                     else:
                         # TODO test if remote_type origin already exists for record and skip if exists
                         print(f"- Updating smt id {new_smt.id}")
-                        if new_smt.body is None: new_smt.body = ""
+                        if new_smt.body is None:
+                            new_smt.body = ""
                         new_smt.body = new_smt.body + "\n\n" + smt.body
-                        change['event'] = 'updated'
-                        logger.info(event=f"update_statement makecmmcstatements",
-                                object={"object": "statement", "id": new_smt.id},
-                                user={"id": None, "username": None})
-                    change['fields']['body'] = new_smt.body
+                        change["event"] = "updated"
+                        logger.info(
+                            event=f"update_statement makecmmcstatements",
+                            object={"object": "statement", "id": new_smt.id},
+                            user={"id": None, "username": None},
+                        )
+                    change["fields"]["body"] = new_smt.body
                     new_smt.change_log_add_entry(change)
                     new_smt.save()
                     # Create remote record
-                    smt_r = StatementRemote.objects.create(statement=new_smt, remote_statement=smt, remote_type=RemoteTypeEnum.ORIGIN.name)
+                    smt_r = StatementRemote.objects.create(
+                        statement=new_smt,
+                        remote_statement=smt,
+                        remote_type=RemoteTypeEnum.ORIGIN.name,
+                    )

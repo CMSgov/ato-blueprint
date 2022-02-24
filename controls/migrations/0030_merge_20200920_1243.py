@@ -6,9 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0029_auto_20200909_1812'),
-        ('controls', '0028_elementcontrol_uuid'),
+        ("controls", "0029_auto_20200909_1812"),
+        ("controls", "0028_elementcontrol_uuid"),
     ]
 
-    operations = [
-    ]
+    operations = []

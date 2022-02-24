@@ -6,13 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0027_auto_20200804_1011'),
+        ("controls", "0027_auto_20200804_1011"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='poam',
-            name='poam_group',
-            field=models.CharField(blank=True, help_text='The name of the POA&M group, if any, this control belongs to.', max_length=50, null=True),
+            model_name="poam",
+            name="poam_group",
+            field=models.CharField(
+                blank=True,
+                help_text="The name of the POA&M group, if any, this control belongs to.",
+                max_length=50,
+                null=True,
+            ),
         ),
     ]

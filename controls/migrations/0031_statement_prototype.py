@@ -7,13 +7,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0030_merge_20200920_1243'),
+        ("controls", "0030_merge_20200920_1243"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='statement',
-            name='prototype',
-            field=models.ForeignKey(blank=True, help_text='Prototype statement', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='instances', to='controls.Statement'),
+            model_name="statement",
+            name="prototype",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="Prototype statement",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="instances",
+                to="controls.Statement",
+            ),
         ),
     ]

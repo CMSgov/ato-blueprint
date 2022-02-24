@@ -6,13 +6,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0064_auto_20210915_1717'),
+        ("controls", "0064_auto_20210915_1717"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='elementcontrol',
-            name='status',
-            field=models.IntegerField(choices=[(2, 'Needs work'), (3, 'Ready for assessment'), (4, 'Assessed'), (5, 'Changes requested')], default=2),
+            model_name="elementcontrol",
+            name="status",
+            field=models.IntegerField(
+                choices=[
+                    (2, "Needs work"),
+                    (3, "Ready for assessment"),
+                    (4, "Assessed"),
+                    (5, "Changes requested"),
+                ],
+                default=2,
+            ),
         ),
     ]
