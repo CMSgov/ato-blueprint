@@ -202,7 +202,7 @@ class AppSourceAdmin(admin.ModelAdmin):
     form = AppSourceAdminForm # customize spec widget
     list_display = ('id', 'slug', 'source', 'flags')
     filter_horizontal = ('available_to_orgs', "available_to_individual")
-    readonly_fields = ('is_system_source', "available_to_role",)
+    readonly_fields = ('is_system_source',)
     ordering = ('id',)
     formfield_overrides = {
         JSONField: {'widget': JSONEditorWidget},
