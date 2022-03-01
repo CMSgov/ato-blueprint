@@ -64,7 +64,6 @@ urlpatterns = [
     url(r'account/settings$', views.account_settings, name="account_settings"),
 
     # projects
-    path('project/', include("project.urls")),
     url(r"^projects$", views.ProjectList.as_view(), name="projects"),
     url(r"^projects/lifecycle$", views.project_list_lifecycle, name="projects_lifecycle"),
     url(r'^projects/(?P<project_id>.*)/__edit$', views.project_edit, name="edit_project"),
@@ -86,6 +85,9 @@ urlpatterns = [
     url(r'^projects/(\d+)/(?:[\w\-]+)(/outputs)$', views.project_outputs), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/api)$', views.project_api), # must be last because regex matches some previous URLs
     path('projects/<int:project_id>/<slug:title>/downloads', views.project_downloads, name='project_downloads'),
+
+    # individual project
+    path('project/', include("project.urls")),
 
     # portfolios
     url(r'^portfolios$', views.portfolio_list, name="list_portfolios"),

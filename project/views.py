@@ -1,6 +1,6 @@
-from django.shortcuts import render
-
+from django.shortcuts import redirect, render
 from .models import Package
+from .forms import PackageForm
 
 from utils import project_navigation
 
@@ -28,3 +28,27 @@ def project_component_detail(request, project_id, component_id):
     return render(request, "project.html", {
         "project": project,
     })
+
+def create_project(request):
+    # If this is a POST request then process the form data
+    if request.method == "POST":
+
+        # Create a form instance and populate it with data from the request
+        form = PackageForm(request.POST)
+
+        if form.is_valid():
+            new_project = form.save(commit=False)
+            new_project.creator_id = request.user.id
+            new_project.save()
+
+            return redirect('projects')
+
+    # If this is a GET (or any other method) create the default form
+    else:
+        form = PackageForm()
+
+    context = {
+        "form": form,
+    }
+
+    return render(request, "project/project-create.html", context)
