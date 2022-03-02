@@ -1,8 +1,10 @@
 from django.shortcuts import redirect, render
-from .models import Package
-from .forms import PackageForm
 
 from utils import package_navigation
+
+from .forms import PackageForm
+from .models import Package
+
 
 def project(request, project_id):
     project = Package.objects.get(id=project_id)

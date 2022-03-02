@@ -1,7 +1,7 @@
 from django.contrib import admin
-from .models import (
-    Package,
-)
+
+from .models import Package
+
 
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ('id','title', 'acronym', 'impact_level', 'location', 'catalog', 'creator')

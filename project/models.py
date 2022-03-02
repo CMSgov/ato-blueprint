@@ -1,7 +1,9 @@
 from django.db import models
+
 from controls.models import Element
 from controls.oscal import CatalogData
 from siteapp.models import User
+
 
 # TODO "PackageRename" rename class to Project once the old Project class in /siteapp/models has been removed
 class Package(models.Model):
