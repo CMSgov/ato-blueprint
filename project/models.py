@@ -37,7 +37,7 @@ class Package(models.Model):
         ]
 
     def __str__(self):
-        return "'Project %s id=%d'" % (self.title, self.id)
+        return "%s id=%d" % (self.title, self.id)
 
     def get_absolute_url(self):
         return f"/project/{self.id}"
