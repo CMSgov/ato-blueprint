@@ -1,5 +1,3 @@
-from asyncio.windows_events import NULL
-
 from django.test import TestCase
 
 from project.models import Package
