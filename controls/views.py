@@ -1684,9 +1684,8 @@ def component_library_component(request, element_id, statement_id=None):
     for s in systems:
         root_ids.append(s.root_element_id)
         cat_id = ElementControl.objects.filter(element_id=s.root_element_id).first()
-        if cat_id.oscal_catalog_key == catalog_key:
-            options[s.id]["pid"] = s.root_element_id
-
+        if cat_id.oscal_catalog_key != catalog_key:
+            options.pop(s.id)
     existing_list = (
         Statement.objects.filter(consumer_element_id__in=root_ids)
         .filter(producer_element_id=element_id)
