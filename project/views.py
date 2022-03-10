@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from utils import package_navigation
@@ -6,6 +7,7 @@ from .forms import PackageForm
 from .models import Package
 
 
+@login_required
 def project(request, project_id):
     project = Package.objects.get(id=project_id)
 
@@ -25,7 +27,8 @@ def project(request, project_id):
         "nav": package_navigation(project),
     })
 
-# Example def that is not yet functional
+# TODO Example def that is not yet functional
+@login_required
 def project_component_detail(request, project_id, component_id):
     project = Package.objects.get(id=project_id)
 
@@ -33,6 +36,7 @@ def project_component_detail(request, project_id, component_id):
         "project": project,
     })
 
+@login_required
 def create_project(request):
     # If this is a POST request then process the form data
     if request.method == "POST":
