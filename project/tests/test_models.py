@@ -82,9 +82,12 @@ class PackageModelTest(TestCase):
     def test_object_str_returns_project_title_and_id(self):
         project = Package.objects.get(id=1)
         expected_object_name = f'{project.title} id={project.id}'
+
         self.assertEqual(str(project), expected_object_name)
 
     def test_get_absolute_url(self):
         test_id=1
+        expected_url = f'/project/{test_id}'
+
         project = Package.objects.get(id=test_id)
-        self.assertEqual(project.get_absolute_url(), f'/project/{test_id}')
+        self.assertEqual(project.get_absolute_url(), expected_url)
