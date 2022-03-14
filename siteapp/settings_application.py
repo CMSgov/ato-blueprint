@@ -154,7 +154,7 @@ DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TOOLBAR_CALLBACK': DEBUG_TOOLBAR_SHOW_TOOLBAR_CALLBACK,
 }
 
-LOGIN_REDIRECT_URL = "/projects"
+LOGIN_REDIRECT_URL = "/"
 
 if (GOVREADY_URL.hostname and GOVREADY_URL.hostname != ""):
     EMAIL_DOMAIN = environment.get("email", {}).get("domain", GOVREADY_URL.hostname)
