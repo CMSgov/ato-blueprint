@@ -197,3 +197,33 @@ footer {
     }
   }
 }
+
+.project-create-form {
+  .section {
+    margin-top: 55px;
+  }
+
+  .section-header {
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+
+  .usa-label {
+    font-family: Public Sans;
+  }
+
+  .usa-radio {
+    label {
+      background-color: #F0F0F0;
+      border-color: #DCDEE0;
+      border-radius: 2px;
+      border-width: 1px;
+      font-family: Public Sans;
+    }
+    // when selected
+    input[type=radio]:checked + label { 
+      background-color: #D9E8F6;
+      border-color: #73B3E7;
+    } 
+  }
+}

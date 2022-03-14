@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+  Project Setup
+{% endblock %}
+
+{% block breadcrumbs_extension %}
+  <li class="usa-breadcrumb__list-item usa-current" aria-current="Project Settings">
+    <span>Project Setup</span>
+  </li>
+{% endblock %}
+
+{% block breadcrumbs %}
+  <nav class="usa-breadcrumb" aria-label="Breadcrumbs">
+    <ol class="usa-breadcrumb__list">
+      <li class="usa-breadcrumb__list-item">
+        <a href="/" class="usa-breadcrumb__link"><span>Home</span></a>
+      </li>
+      <li class="usa-breadcrumb__list-item usa-current" aria-current="Project Settings">
+        <span>Project Setup</span>
+      </li>
+    </ol>
+  </nav>
+{% endblock %}
+
+{% block pagetitle %}
+  <div class="margin-bottom-3">
+    Tell us a little about this system
+  </div>
+{% endblock %}
+
+{% block pagesubtitle %}
+  This will help us suggest System Components and an initial control baseline.
+{% endblock %}
+
+{% block body %}
+  <form class="project-create-form" role="form" method="POST">
+    {% csrf_token %}
+    <div class="measure-1">
+      <b>What is the name of the system?</b>
+      <label class="usa-label" for="input-type-text">Full name</label>
+      {{form.title}}
+      <label class="usa-label" for="input-type-text">Acronym</label>
+      {{form.acronym}}
+    </div>
+    <div class="section">
+      <div class="section-header">Where is this system going to be located?</div>
+      <fieldset class="usa-fieldset">
+        {% for radio in form.location %}
+          <div class="usa-radio">
+            {{ radio.tag }}
+            <label class="usa-radio__label" for="{{ radio.id_for_label }}">
+              {{ radio.choice_label }}
+            </label> 
+          </div>
+        {% endfor %}
+      </fieldset>
+    </div>
+    <div class="section">
+      <div class="section-header">What is the FISMA Impact level of this system?</div>
+      <fieldset class="usa-fieldset">
+        {% for radio in form.impact_level %}
+          <div class="usa-radio">
+            {{ radio.tag }}
+            <label class="usa-radio__label" for="{{ radio.id_for_label }}">
+              {{ radio.choice_label }}
+            </label> 
+          </div>
+        {% endfor %}
+      </fieldset>
+    </div>
+    <div class="section">
+      <button id="back-button" class="usa-button usa-button--outline margin-right-3 button-link" onclick="">Back</button>
+      <button id="next-button" class="usa-button button-link" type="submit">Next</button>
+    </div>
+  </form>
+{% endblock %}
+
+{% block scripts %}
+  <script type="text/javascript">
+    document.getElementById("back-button").onclick = function () {
+        location.href = "/";
+    };
+  </script>
+{% endblock %}

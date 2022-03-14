@@ -1,0 +1,32 @@
+{% extends "task-base.html" %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{m.title}}
+{% endblock %}
+
+{% block head %}
+{{block.super}}
+{% endblock %}
+
+{% block pagetitle %}
+  <h1 class="task-done">Great!</h1>
+{% endblock %}
+
+{% block body %}
+{{ block.super }}
+
+<div class="col" style="margin: auto;">
+  <div class="col-md-9 order-12">
+    <div id="focus-area-wrapper" class="project-setup-confirmation measure-6">
+      <p>Click “Next” to continue building your SSP!</p>
+      <p>If you have questions, you can always click the “Help” link at the top of the page.</p>
+      <p class="padding-top-3">
+        <a href="{{project.get_absolute_url}}" class="usa-button">Next</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
