@@ -247,7 +247,9 @@ def get_next_question(current_question, task):
 
 @task_view
 def save_answer(request, task, answered, context, __):
+    logger.info(f"Saving answer for {task.id}")
     if request.method != "POST":
+        logger.error(f"Method is not POST for {task.id} - not allowed")
         return HttpResponseNotAllowed(["POST"])
 
     # does user have write privs?
@@ -260,7 +262,7 @@ def save_answer(request, task, answered, context, __):
             user={"id": request.user.id, "username": request.user.username}
         )
         return HttpResponseForbidden("Permission denied. {} does not have write privileges to task answer.".format(request.user.username))
-
+    logger.info(f"POST method for {task.id} - proceeding to save")
     # validate question
     q = task.module.questions.get(id=request.POST.get("question"))
     # store question/tasks for back button
