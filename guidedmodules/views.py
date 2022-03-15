@@ -325,7 +325,9 @@ def save_answer(request, task, answered, context, __):
             value = answer_validation.validator.validate(q, value)
         except ValueError as e:
             # client side validation should have picked this up
-            return JsonResponse({ "status": "error", "message": str(e) })
+            logger.error(f"Error occured trying to save {task.id} for {task.get_slug()}" )
+            logger.error(f"Error is: {e} for {task.get_slug()}" )
+            return JsonResponse({ "status": "error", "message" : str(e) })
 
         cleared = False
         skipped_reason = None
