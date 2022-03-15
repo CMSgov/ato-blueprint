@@ -30,6 +30,9 @@ OIDC_CONFIG = environment.get("oidc", {})
 if OIDC_CONFIG.get("disabled", False):
     OIDC_CONFIG = {}
 
+BASE_URL = environment['govready-url'].replace(':443', '')
+LOGIN_REDIRECT_URL = f"{BASE_URL}/"
+
 # https://blog.theodo.com/2021/03/okta-sso-with-django-admin/ - example for login override
 if OIDC_CONFIG:
     logger.info("OpenID Connect configuration found and enabled")
@@ -39,7 +42,6 @@ if OIDC_CONFIG:
     LOGIN_ENABLED = False
     AUTHENTICATION_BACKENDS += ['siteapp.authentication.OIDCAuthentication.OIDCAuth', ]   
     OIDC_DOMAIN = profile.domain
-    BASE_URL = environment['govready-url'].replace(':443', '')
     logger.debug("OIDC BASE_URL = %s", BASE_URL)
     logger.debug("OIDC DOMAIN = %s", OIDC_DOMAIN)
     # User information
@@ -56,7 +58,6 @@ if OIDC_CONFIG:
     OIDC_RP_CLIENT_ID = profile.client_id
     OIDC_RP_CLIENT_SECRET = profile.client_secret
     OIDC_VERIFY_SSL = True
-    LOGIN_REDIRECT_URL = f"{BASE_URL}/"
     # OIDC_REDIRECT_URL = f"{BASE_URL}/oidc/callback/"
     # OIDC_AUTH_REQUEST_EXTRA_PARAMS = {"redirect_uri": OIDC_REDIRECT_URL}
     # OIDC_AUTHENTICATION_CALLBACK_URL = f"{BASE_URL}/oidc/callback/"
@@ -153,8 +154,6 @@ def DEBUG_TOOLBAR_SHOW_TOOLBAR_CALLBACK(r):
 DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TOOLBAR_CALLBACK': DEBUG_TOOLBAR_SHOW_TOOLBAR_CALLBACK,
 }
-
-LOGIN_REDIRECT_URL = "/"
 
 if (GOVREADY_URL.hostname and GOVREADY_URL.hostname != ""):
     EMAIL_DOMAIN = environment.get("email", {}).get("domain", GOVREADY_URL.hostname)
