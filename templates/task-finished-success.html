@@ -17,28 +17,24 @@
 {% block body %}
 {{ block.super }}
 
-<div class="col" style="margin: auto;">
-  <div class="col-md-9 order-12">
-    <div id="focus-area-wrapper" class="project-setup-confirmation measure-6">
-      <p>Based on your environment and <b>{{ security_sensitivity }}</b> FISMA Impact Level, we assigned <b>{{ num_components }}</b> Component{{ num_components|pluralize }} to your system{% if num_components > 0%}:{% else %}.{% endif %}</p>
-      {% if num_components > 0 %}
-        <p>
-          <ul class="usa-list">
-            {% for component in components %}
-              <li>{{ component.name }}</li>
-            {% endfor %}
-          </ul>
-        </p>
-      {% endif %}
-      <p>Components are groups of control implementation statements to help complete your System Security Plan.</p>
-      <p>Based on the components added, you already have <b>{{ controls_addressed_count }}</b> complete and partial control implementation statement{{ controls_addressed_count|pluralize }} in your SSP.</p>
-      <p>Click “Next” to continue building your SSP!</p>
-      <p>If you have questions, you can always click the “Help” link at the top of the page.</p>
-      <p class="padding-top-3">
-        <a href="{{task.project.get_absolute_url}}" class="usa-button">Next</a>
-      </p>
-    </div>
-  </div>
+<div class="project-setup-confirmation measure-5">
+  <p>Based on your environment and <b>{{ security_sensitivity }}</b> FISMA Impact Level, we assigned <b>{{ num_components }}</b> Component{{ num_components|pluralize }} to your system{% if num_components > 0%}:{% else %}.{% endif %}</p>
+  {% if num_components > 0 %}
+    <p>
+      <ul class="usa-list">
+        {% for component in components %}
+          <li>{{ component.name }}</li>
+        {% endfor %}
+      </ul>
+    </p>
+  {% endif %}
+  <p>Components are groups of control implementation statements to help complete your System Security Plan.</p>
+  <p>Based on the components added, you already have <b>{{ controls_addressed_count }}</b> complete and partial control implementation statement{{ controls_addressed_count|pluralize }} in your SSP.</p>
+  <p>Click “Next” to continue building your SSP!</p>
+  <p>If you have questions, you can always click the “Help” link at the top of the page.</p>
+  <p class="padding-top-3">
+    <a href="{{task.project.get_absolute_url}}" class="usa-button">Next</a>
+  </p>
 </div>
 
 {% endblock %}
