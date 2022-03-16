@@ -277,12 +277,11 @@ h3.question-group-title {
   text-anchor: middle;
 }
 
-.project-setup-confirmation p {
-  font-size: 20px;
-  margin-bottom: 20px;
+.project-setup-confirmation {
+  margin-top: -50px;
 }
-.project-setup-confirmation ul {
-  font-size: 20px;
+.project-setup-confirmation p {
+  line-height: 26px;
 }
 
 .project-card-body {
