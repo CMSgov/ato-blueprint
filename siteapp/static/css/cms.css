@@ -186,6 +186,7 @@ footer li.usa-footer__primary-content {
   border-radius: 2px;
   border-width: 1px;
   font-family: Public Sans;
+  font-size: 16px;
 }
 .project-create-form .usa-radio input[type=radio]:checked + label {
   background-color: #D9E8F6;
