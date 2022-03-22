@@ -86,8 +86,8 @@ urlpatterns = [
     url(r'^projects/(\d+)/(?:[\w\-]+)(/api)$', views.project_api), # must be last because regex matches some previous URLs
     path('projects/<int:project_id>/<slug:title>/downloads', views.project_downloads, name='project_downloads'),
 
-    # individual project
-    path('project/', include("project.urls")),
+    # individual projects
+    path('packages/', include("project.urls")),
 
     # portfolios
     url(r'^portfolios$', views.portfolio_list, name="list_portfolios"),
