@@ -123,3 +123,4 @@ environment.okta.json
 
 # node installations
 node_modules/
+cypress/screenshots/
