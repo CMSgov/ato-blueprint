@@ -18,7 +18,7 @@ Welcome to Compliance Automation
       {% if not hide_registration %}
         <ul class="nav nav-tabs" role="tablist">
           <li id="tab-register" role="presentation" {% if request.POST.action|escapejs != 'login' %}class="active"{% endif %}><a href="#register" aria-controls="register" role="tab" data-toggle="tab">Register</a></li>
-          <li id="tab-signin" role="presentation" {% if request.POST.action|escapejs == 'login' %}class="active"{% endif %}><a href="#signin" aria-controls="signin" role="tab" data-toggle="tab">Sign in</a></li>
+          <li id="tab-signin" role="presentation" {% if request.POST.action|escapejs == 'login' %}class="active"{% endif %}><a href="#signin" id="sign-in-toggle" aria-controls="signin" role="tab" data-toggle="tab">Sign in</a></li>
         </ul>
       {% endif %}
 
@@ -32,7 +32,7 @@ Welcome to Compliance Automation
               {% csrf_token %}
               <input type=hidden name=action value=login>
               {% bootstrap_form login_form %}
-              <p><button type="submit" class="usa-button">Sign in &raquo;</button></p>
+              <p><button type="submit" id="sign-in-submit" class="usa-button">Sign in &raquo;</button></p>
             </form>
             <div><a href="/accounts/password/reset">Forgot password?</a></div>
             {% else %}
