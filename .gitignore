@@ -120,3 +120,7 @@ env_var.sh
 dev_env/docker/ssh/
 environment.json
 environment.okta.json
+
+# node installations
+node_modules/
+cypress/screenshots/
