@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load guardian_tags %}
+{% load q %}
+{% load humanize %}
+
+{% block breadcrumbs %}
+<nav class="usa-breadcrumb" aria-label="Breadcrumbs">
+  <ol class="usa-breadcrumb__list">
+    <li class="usa-breadcrumb__list-item">
+      <a href="/" class="usa-breadcrumb__link"><span>Home</span></a>
+    </li>
+    <li class="usa-breadcrumb__list-item">
+      <span>Projects</span>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block pagetitle %}
+  <div class="margin-bottom-3">
+    Projects
+  </div>
+{% endblock %}
+
+{% block pagesubtitle %}
+  {% if projects|length < 1 %}
+    You do not currently have access to any projects.
+  {% else %}
+    You have access to {{ projects|length }} project{{ projects|pluralize }}.
+  {% endif %}
+{% endblock %}
+
+{% block body %}
+<div>
+  <ul class="usa-card-group">
+    {% for project in projects %}
+      <li class="tablet:grid-col-4 usa-card">
+        <div class="usa-card__container border-width-1px radius-md">
+          <header class="usa-card__header">
+            <h2 class="usa-card__heading">
+              {{ project.title }}
+              <br>
+              {% if project.acronym %}
+                ({{ project.acronym }})
+              {% endif %}
+            </h2>
+          </header>
+          <div class="usa-card__body padding-bottom-2 project-card-body">
+            <div class="margin-bottom-2">
+              <svg width="230" height="8" class="padding-right-1">
+                <rect width="100%" height="100%" fill="#DFE1E2" />
+                <rect width="{{ project.percent_compliant }}%" height="100%" fill="#4CC790"/>
+              </svg>
+              {{ project.percent_compliant|floatformat:0 }}%
+            </div>
+            <a href="{{project.get_absolute_url}}/components">Manage Components</a><br>
+            <a href="{{project.get_absolute_url}}/controls">View Controls</a><br>
+            <a href="{{project.get_absolute_url}}/settings">View Settings</a>
+          </div>
+          <div class="usa-card__footer">
+            <a  href="{{project.get_absolute_url}}" class="usa-button button-link">View Project</a>
+          </div>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+  {% include 'components/paginate_comp.html' with projects=page_obj %}
+</div>
+
+{% endblock %}
