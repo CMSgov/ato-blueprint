@@ -17,13 +17,20 @@ logger = logging.getLogger(__name__)
 
 class OIDCAuth(OIDCAuthenticationBackend):
 
+    def verify_claims(self, claims):
+        logger.debug("OIDCAuth.verify_claims(claims = %r)", claims)
+        profile = settings.OIDC_PROFILE
+        verify = profile.verify(claims)
+        logger.debug("OIDCAuth.verify_claims: returning %r", verify)
+        return verify        
 
     def filter_users_by_claims(self, claims):
         logger.debug("OIDCAuth.filter_users_by_claims(claims=%r)", claims)
         profile = settings.OIDC_PROFILE
         username = claims.get(profile.get_claim_name("username"))
         if not username:
-            logger.debug("OIDCAuth.filter_users_by_claims: no username %r found", username)
+            logger.debug("OIDCAuth.filter_users_by_claims: no username %r found",
+                         username)
             return self.UserModel.objects.none()
         user = self.UserModel.objects.filter(username__iexact=username)
         logger.debug("OIDCAuth.filter_users_by_claims: found user %r for username %s",
@@ -46,6 +53,10 @@ class OIDCAuth(OIDCAuthenticationBackend):
     def update_user(self, user, claims):
         logger.debug("OIDCAuth.update_user(user=%r, claims=%r)", user, claims)
         profile = settings.OIDC_PROFILE
+        if not profile.sync_users:
+            logger.debug("OIDCAuth.update_user: user sync disabled; ignoring")
+            user = self.UserModel.objects.filter(username__iexact=data["username"])
+            return user
 
         original_values = [getattr(user, x.name) for x in user._meta.get_fields() if hasattr(user, x.name)]
         data = profile.get_user_attrs(claims)
