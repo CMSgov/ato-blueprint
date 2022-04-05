@@ -6,29 +6,25 @@ from datetime import datetime
 from pathlib import PurePath
 from zipfile import BadZipFile, ZipFile
 
+import controls.utils as utils
 import fs
 import fs.errors
-
 from controls.enums.statements import StatementTypeEnum
 from controls.models import Element, Statement
 from controls.oscal import Catalog
 from controls.utilities import de_oscalize_control_id
-import controls.utils as utils
-
 from discussion.models import Discussion
 from discussion.validators import validate_file_extension
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-from django.db import transaction, IntegrityError
+from django.db import IntegrityError, transaction
 from django.http import (Http404, HttpResponse, HttpResponseForbidden,
                          HttpResponseNotAllowed, HttpResponseRedirect,
                          JsonResponse)
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.text import slugify
-
 from siteapp.models import Invitation, Project
 from siteapp.views import project_navigation
 
@@ -508,7 +504,7 @@ def save_answer(request, task, answered, context, __):
                             security_sensitivity_level, smt = system.set_security_sensitivity_level(baseline)
                             if security_sensitivity_level == baseline.lower():
                                 messages.add_message(request, messages.INFO,
-                                                              f'System FISMA impact level was set to{security_sensitivity_level}.')
+                                                              f'System FISMA impact level was set to {security_sensitivity_level}.')
                                 # Log setting security_sensitivity_level
                                 logger.info(
                                     event=f"system assign_security_sensitivity_level {security_sensitivity_level}",
