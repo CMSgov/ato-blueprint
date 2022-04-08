@@ -188,3 +188,75 @@ class CreateProjectViewTest(TestCase):
         self.client.login(username="testuser", password="password")
         response = self.client.post("/packages/create", required_data)
         self.assertRedirects(response, reverse("projects"))
+
+
+# Projects page
+class ProjectListViewTest(TestCase):
+    def setUp(self):
+        # Create a user
+        test_user = User.objects.create_user(
+            username="testuser",
+            password="password",
+            is_superuser=True,
+            is_staff=True,
+            is_active=True,
+        )
+
+        # Create 10 projects for pagination tests
+        number_of_projects = 10
+
+        for project_id in range(number_of_projects):
+            Package.objects.create(
+                title=f"Rapid Rabbit {project_id}",
+                acronym="RR",
+                location="other",
+                impact_level="low",
+                creator=test_user,
+            )
+
+    def test_redirect_if_not_logged_in(self):
+        test_project_url = "/packages/"
+
+        response = self.client.get(test_project_url)
+        self.assertRedirects(response, f"/accounts/login/?next={test_project_url}")
+
+    def test_view_url_exists_at_desired_location(self):
+        test_project_url = "/packages/"
+
+        logged_in = self.client.login(username="testuser", password="password")
+        self.assertTrue(logged_in)
+
+        response = self.client.get(test_project_url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_url_accessible_by_name(self):
+        self.client.login(username="testuser", password="password")
+
+        response = self.client.get(reverse("projects_list"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_uses_correct_template(self):
+        self.client.login(username="testuser", password="password")
+
+        response = self.client.get(reverse("projects_list"))
+        self.assertEqual(response.status_code, 200)
+
+        self.assertTemplateUsed(response, "packages.html")
+
+    def test_pagination_is_nine(self):
+        self.client.login(username="testuser", password="password")
+        response = self.client.get(reverse("projects_list"))
+
+        self.assertTrue("is_paginated" in response.context)
+        self.assertTrue(response.context["is_paginated"] == True)  # noqa: E712
+        self.assertEqual(len(response.context["projects"]), 9)
+
+    def test_lists_all_projects(self):
+        self.client.login(username="testuser", password="password")
+
+        # Get second page to confirm it has (exactly) remaining 1 item
+        response = self.client.get(reverse("projects_list") + "?page=2")
+
+        self.assertTrue("is_paginated" in response.context)
+        self.assertTrue(response.context["is_paginated"] == True)  # noqa: E712
+        self.assertEqual(len(response.context["projects"]), 1)

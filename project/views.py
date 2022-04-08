@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
+from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 
 from utils import package_navigation
@@ -8,7 +9,7 @@ from .forms import PackageForm
 from .models import Package
 
 
-@login_required
+@method_decorator(login_required, name="dispatch")
 class PackageList(ListView):
     model = Package
     template_name = "packages.html"
@@ -17,7 +18,7 @@ class PackageList(ListView):
     paginate_by = 9
 
     def get_queryset(self):
-        projects = Package.objects.all()
+        projects = Package.objects.filter(creator=self.request.user.id)
         return list(projects)
 
     def get_context_data(self, **kwargs):

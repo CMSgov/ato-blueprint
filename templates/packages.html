@@ -26,7 +26,7 @@
   {% if projects|length < 1 %}
     You do not currently have access to any projects.
   {% else %}
-    You have access to {{ projects|length }} project{{ projects|pluralize }}.
+    You have access to {{ page_obj.paginator.count }} project{% if page_obj.paginator.count > 1%}s{% endif %}.
   {% endif %}
 {% endblock %}
 
