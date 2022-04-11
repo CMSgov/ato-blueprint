@@ -64,9 +64,9 @@ class OIDCProfile:
 
     """ check if both admin and user job codes are not present in claims map """
     def hasProperJobcode(self):
-        if is_admin(claims.get(self.get_claim_name("groups"), {})):
+        if self.is_admin(claims.get(self.get_claim_name("groups"), {})):
             return True
-        if is_user(claims.get(self.get_claim_name("groups"), {})):
+        if self.is_user(claims.get(self.get_claim_name("groups"), {})):
             return True
         return False
 
