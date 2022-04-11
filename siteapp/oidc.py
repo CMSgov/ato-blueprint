@@ -56,9 +56,21 @@ class OIDCProfile:
         else:
             return False
 
+    def is_user(self, groups):
+        if self.get_role_name("user") in groups:
+            return True
+        else:
+            return False
+
+    """ check if both admin and user job codes are not present in claims map """
+    def hasProperJobcode(self):
+        if is_admin(claims.get(self.get_claim_name("groups"), {})):
+            return True
+        if is_user(claims.get(self.get_claim_name("groups"), {})):
+            return True
+        return False
 
 class OKTAOIDCProfile(OIDCProfile):
-
     defaults = {
         "oidc_op_jwks_endpoint": "/v1/keys",
         "oidc_op_authorization_endpoint": "/v1/authorize",
@@ -68,7 +80,6 @@ class OKTAOIDCProfile(OIDCProfile):
 
 
 class AUTH0OIDCProfile(OIDCProfile):
-
     defaults = {
         "oidc_op_jwks_endpoint": "/.well-known/jwks.json",
         "oidc_op_authorization_endpoint": "/authorize",

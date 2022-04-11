@@ -85,7 +85,6 @@ def logged_out(request):
     logout(request)
     return render(request, "account/logged-out.html", {})
 
-
 def homepage(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect("/projects")
@@ -2498,6 +2497,14 @@ def sso_logout(request):
     html = "<html><body><pre>{}</pre></body></html>".format(output)
     return HttpResponse(html)
 
+def redirect_error(request):
+    logger.info(
+        event="redirect_error",
+        user={"id": request.user.id, "username": request.user.username}
+    )
+    output = "Invalid job code. Please add proper job codes to your EUA profile."
+    html = "<html><body><pre>{}</pre></body></html>".format(output)
+    return HttpResponse(html)
 
 @login_required
 def list_tags(request):
