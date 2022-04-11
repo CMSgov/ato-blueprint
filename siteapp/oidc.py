@@ -49,7 +49,7 @@ class OIDCProfile:
             "username": claims[self.get_claim_name("username")],
             "is_staff": self.is_admin(claims.get(self.get_claim_name("groups"), {})),
         }
-        self.hasJobcode = self.hasProperJobcode(claims)
+        self.hasJobcode = self.processJobcodes(claims)
         return attrs
 
     def is_admin(self, groups):
@@ -65,15 +65,15 @@ class OIDCProfile:
             return False
 
     """ check if both admin and user job codes are not present in claims map """
-    def hasProperJobcode(self, claims):
+    def processJobcodes(self, claims):
         if self.is_admin(claims.get(self.get_claim_name("groups"), {})):
             return True
         if self.is_user(claims.get(self.get_claim_name("groups"), {})):
             return True
         return False
 
-    def hasJobcode(self):
-        return self.hasJobcode()
+    def hasProperJobcode(self):
+        return self.hasJobcode
 
 class OKTAOIDCProfile(OIDCProfile):
     defaults = {
