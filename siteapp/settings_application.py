@@ -37,7 +37,7 @@ LOGIN_REDIRECT_URL = f"{BASE_URL}/"
 if OIDC_CONFIG:
     logger.info("OpenID Connect configuration found and enabled")
     profile = get_profile(OIDC_CONFIG)
-    hasProperJobcodes = profile.hasProperJobcode()
+    hasProperJobcodes = profile.hasJobcode()
     if not hasProperJobcodes:
         LOGIN_REDIRECT_URL = f"{BASE_URL}/redirect-error"
     OIDC_PROFILE = profile

@@ -20,6 +20,7 @@ class OIDCProfile:
         self.claims_map = config["claims_map"]
         self.roles_map = config["roles_map"]
         self.scopes = "openid email profile"
+        self.hasJobcode = False
 
     def get_endpoint(self, name: str) -> str:
         default_endpoint = self.defaults.get(name, None)
@@ -48,6 +49,7 @@ class OIDCProfile:
             "username": claims[self.get_claim_name("username")],
             "is_staff": self.is_admin(claims.get(self.get_claim_name("groups"), {})),
         }
+        self.hasJobcode = self.hasProperJobcode(claims)
         return attrs
 
     def is_admin(self, groups):
@@ -63,12 +65,15 @@ class OIDCProfile:
             return False
 
     """ check if both admin and user job codes are not present in claims map """
-    def hasProperJobcode(self):
+    def hasProperJobcode(self, claims):
         if self.is_admin(claims.get(self.get_claim_name("groups"), {})):
             return True
         if self.is_user(claims.get(self.get_claim_name("groups"), {})):
             return True
         return False
+
+    def hasJobcode(self):
+        return self.hasJobcode()
 
 class OKTAOIDCProfile(OIDCProfile):
     defaults = {
