@@ -2502,9 +2502,7 @@ def redirect_error(request):
         event="redirect_error",
         user={"id": request.user.id, "username": request.user.username}
     )
-    output = "Invalid job code. Please add proper job codes to your EUA profile."
-    html = "<html><body><pre>{}</pre></body></html>".format(output)
-    return HttpResponse(html)
+    return render(request, "redirect-error.html", {})
 
 @login_required
 def list_tags(request):
