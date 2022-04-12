@@ -141,6 +141,7 @@ if settings.OIDC_CONFIG:
     urlpatterns += [
         path('oidc/', include('mozilla_django_oidc.urls')),
         url(r'^accounts/logout/$', views.logged_out, name="logged_out"),
+        path('redirect-error/', views.redirect_error, name="redirect-error"),
         re_path(r'^accounts/login/$', RedirectView.as_view(url='/oidc/authenticate', permanent=False), name='login2')
     ]
 
