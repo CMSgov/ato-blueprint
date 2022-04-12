@@ -1,11 +1,9 @@
-{% block title %}
-Error
-{% endblock %}
-{% block body %}
+{% extends "base.html" %}
+{% load bootstrap3 %}
+
+{% block head_title %}Job Code Error{% endblock %}
+
+{% block content %}
     <h1>Invalid job code</h1>
-    <div style="margin-top: 30px">
-      <div class="container">
-        <p>Please add proper job codes to your EUA profile.</p>
-      </div>
-    </div>
+    <p>Please add proper job codes to your EUA profile.</p>
 {% endblock %}
