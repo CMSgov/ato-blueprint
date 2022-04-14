@@ -220,3 +220,13 @@ When GovReady-Q is running, visit http://localhost:8000/ with your web browser.
 ```
 
 Congratulations, you have installed GovReady-Q!
+
+## Running End-to-End Tests
+
+1. Make sure you have the latest `develop` branch pulled down to your local environment
+2. Run `npm install` from the root directory of the project
+3. Make sure that your local Django project is running and that it is accessible through your browser
+4. If you are running your Django Docker container on something other than port 8000, go to the `/cypress.json` file and update the URLs accordingly.
+5. If you already have a local admin user created, add those credentials to the `dev_user` object in `/cypress.json`.
+6. You can now run `npx cypress open` to start the Cypress testing framework
+7. For more information, checkout https://docs.cypress.io/guides/overview/why-cypress.
