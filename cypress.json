@@ -1,1 +1,10 @@
-{}
+{
+  "env": {
+    "baseUrl": "localhost:8000",
+    "loginUrl": "localhost:8000/login",
+    "dev_user": {
+      "name": "admin",
+      "password": "thVHc4uusAEB"
+    }
+  }
+}
