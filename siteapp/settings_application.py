@@ -37,11 +37,6 @@ LOGIN_REDIRECT_URL = f"{BASE_URL}/"
 if OIDC_CONFIG:
     logger.info("OpenID Connect configuration found and enabled")
     profile = get_profile(OIDC_CONFIG)
-    hasProperJobcodes = profile.hasProperJobcode()
-    if hasProperJobcodes:
-        LOGIN_REDIRECT_URL = f"{BASE_URL}/"
-    else:
-        LOGIN_REDIRECT_URL = f"{BASE_URL}/redirect-error"
     OIDC_PROFILE = profile
     logger.debug("OIDC using profile %r", profile)
     LOGIN_ENABLED = False
@@ -67,6 +62,7 @@ if OIDC_CONFIG:
     # OIDC_AUTH_REQUEST_EXTRA_PARAMS = {"redirect_uri": OIDC_REDIRECT_URL}
     # OIDC_AUTHENTICATION_CALLBACK_URL = f"{BASE_URL}/oidc/callback/"
     LOGOUT_REDIRECT_URL = f"{BASE_URL}/logged-out"
+    LOGIN_REDIRECT_URL_FAILURE = f"{BASE_URL}/redirect-error"
 
     logger.debug("OIDC AUTHORIZATION ENDPOINT = %s", OIDC_OP_AUTHORIZATION_ENDPOINT)
     logger.debug("OIDC LOGIN REDIRECT URL = %s", LOGIN_REDIRECT_URL)
