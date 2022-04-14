@@ -31,8 +31,5 @@ context('Component Library', () => {
 
     // always visibile on page load
     cy.get('#b-a3').should('be.visible')
-
-    // left Controls nav is loaded
-    cy.get('h4').contains('Controls').should('be.visibile')
   })
 })
