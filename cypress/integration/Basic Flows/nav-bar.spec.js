@@ -1,7 +1,5 @@
 /// <reference types="cypress" />
 
-const { get } = require("lodash")
-
 context('Navigation', () => {
     beforeEach(() => {
         cy.loginWithUI()
