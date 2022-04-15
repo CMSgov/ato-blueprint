@@ -17,6 +17,14 @@ logger = logging.getLogger(__name__)
 
 class OIDCAuth(OIDCAuthenticationBackend):
 
+    def verify_claims(self, claims):
+        """check valid job codes to prevent too many redirects error"""
+        logger.debug("OIDCAuth.verify_claims(claims=%r)", claims)
+        profile = settings.OIDC_PROFILE
+        if not profile.hasProperJobcode(claims):
+            logger.debug("OIDCAuth.verify_claims: invalid job codes found in claims")
+            return False
+        return True
 
     def filter_users_by_claims(self, claims):
         logger.debug("OIDCAuth.filter_users_by_claims(claims=%r)", claims)
