@@ -1,8 +1,15 @@
+from pprint import pprint
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
+from guardian.shortcuts import get_objects_for_user
 
+from access_management.permission_constants import (
+    edit_project_permission,
+    view_project_permission,
+)
 from utils import package_navigation
 
 from .forms import PackageForm
@@ -18,8 +25,17 @@ class PackageList(ListView):
     paginate_by = 9
 
     def get_queryset(self):
-        projects = Package.objects.filter(creator=self.request.user.id)
-        return list(projects)
+        # Get Project objects for which the given user has either edit or view permission
+        projects_list = get_objects_for_user(
+            self.request.user,
+            [edit_project_permission[0], view_project_permission[0]],
+            any_perm=True,
+            klass=Package,
+        )
+        pprint("---project list")
+        pprint(projects_list)
+
+        return list(projects_list)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -39,20 +55,6 @@ def project(request, project_id):
             "project_title": project.title,
             "impact_level": project.impact_level,
             "nav": package_navigation(project),
-        },
-    )
-
-
-# TODO Example def that is not yet functional
-@login_required
-def project_component_detail(request, project_id, component_id):
-    project = Package.objects.get(id=project_id)
-
-    return render(
-        request,
-        "project.html",
-        {
-            "project": project,
         },
     )
 
