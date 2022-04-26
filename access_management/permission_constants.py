@@ -1,7 +1,7 @@
 # # Project permissions name and code
-manage_project_users_permission = ('project_can_manage_users', 'Can manage users on project')
-edit_project_permission = ('project_can_edit', 'Can edit project')
-view_project_permission = ('project_can_view', 'Can view project')
+manage_project_users_permission = ('manage_project_users', 'Can manage users on project')
+edit_project_permission = ('edit_project', 'Can edit project')
+view_project_permission = ('view_project', 'Can view project')
 
 # # Project permission list associated with groups
 project_admin_permissions = [manage_project_users_permission, edit_project_permission, view_project_permission]
