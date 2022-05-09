@@ -14,7 +14,6 @@ Read [What You Most Need to Know About GovReady-Q](http://govready-q.readthedocs
 
 If you have questions about if hosted version, email <a href="mailto:info@govready.com">info@govready.com</a>.
 
-
 ## Support
 
 [Join our mailing list](http://eepurl.com/cN7oJL) and stay informed of developments.
