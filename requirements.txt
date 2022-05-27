@@ -451,7 +451,7 @@ httpcore==0.13.6 \
     --hash=sha256:b0d16f0012ec88d8cc848f5a55f8a03158405f4bca02ee49bc4ca2c1fda49f3e \
     --hash=sha256:db4c0dcb8323494d01b8c6d812d80091a31e520033e7b0120883d6f52da649ff
     # via httpx
-httpx==0.19.0 \
+httpx==0.23.0 \
     --hash=sha256:92ecd2c00c688b529eda11cedb15161eaf02dee9116712f621c70d9a40b2cdd0 \
     --hash=sha256:9bd728a6c5ec0a9e243932a9983d57d3cc4a87bb4f554e1360fce407f78f9435
     # via datamodel-code-generator
