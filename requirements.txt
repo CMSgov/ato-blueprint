@@ -229,7 +229,7 @@ dj-database-url==0.5.0 \
     --hash=sha256:4aeaeb1f573c74835b0686a2b46b85990571159ffc21aa57ecd4d1e1cb334163 \
     --hash=sha256:851785365761ebe4994a921b433062309eb882fedd318e1b0fcecc607ed02da9
     # via -r requirements.in
-django==3.2.5 \
+django==3.2.14 \
     --hash=sha256:3da05fea54fdec2315b54a563d5b59f3b4e2b1e69c3a5841dda35019c01855cd \
     --hash=sha256:c58b5f19c5ae0afe6d75cbdd7df561e6eb929339985dbbda2565e1cabb19a62e
     # via
@@ -623,7 +623,7 @@ markupsafe==1.1.1 \
     #   -r requirements.in
     #   compliance-trestle
     #   jinja2
-mistune==2.0.0rc1 \
+mistune==2.0.3 \
     --hash=sha256:02437870a8d594e61e4f6cff2f56f5104d17d56e3fea5fb234070ede5e7c2eae \
     --hash=sha256:452bdba97c27efc7c1a83823ed0d6a08a9ad6ea5c67648248509f618b68aa7d9
     # via compliance-trestle
