@@ -1,5 +1,5 @@
 # Ubuntu 20.04 focal-20210119
-FROM ubuntu:focal-20210119
+FROM ubuntu:focal-20220801
 
 # Update package list.
 ENV DEBIAN_FRONTEND=noninteractive
