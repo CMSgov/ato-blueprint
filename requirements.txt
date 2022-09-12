@@ -643,7 +643,7 @@ nplusone==1.0.0 \
     --hash=sha256:1726c0a10c0aa7eabb04e24db2882ff97b6b7ee29d729a8d97dcbd12ef5a5651 \
     --hash=sha256:96b1e6e29e6af3e71b67d0cc012a5ec8c97c6a2f5399f4ba41a2bbe0e253a9ac
     # via -r requirements.in
-oauthlib==3.1.1 \
+oauthlib==3.2.1 \
     --hash=sha256:42bf6354c2ed8c6acb54d971fce6f88193d97297e18602a3a886603f9d7730cc \
     --hash=sha256:8f0215fcc533dd8dd1bee6f4c412d4f0cd7297307d43ac61666389e3bc3198a3
     # via requests-oauthlib
