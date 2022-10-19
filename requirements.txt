@@ -623,7 +623,7 @@ markupsafe==1.1.1 \
     #   -r requirements.in
     #   compliance-trestle
     #   jinja2
-mistune==2.0.0rc1 \
+mistune==2.0.3 \
     --hash=sha256:02437870a8d594e61e4f6cff2f56f5104d17d56e3fea5fb234070ede5e7c2eae \
     --hash=sha256:452bdba97c27efc7c1a83823ed0d6a08a9ad6ea5c67648248509f618b68aa7d9
     # via compliance-trestle
@@ -671,7 +671,7 @@ packaging==21.0 \
     # via
     #   dparse
     #   safety
-paramiko==2.7.2 \
+paramiko==2.10.1 \
     --hash=sha256:4f3e316fef2ac628b05097a637af35685183111d4bc1b5979bd397c2ab7b5898 \
     --hash=sha256:7f36f4ba2c0d81d219f4595e35f70d56cc94f9ac40a6acdf51d6ca210ce65035
     # via compliance-trestle
